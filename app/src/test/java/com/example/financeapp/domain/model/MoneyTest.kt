@@ -1,5 +1,6 @@
 package com.example.financeapp.domain.model
 
+import java.math.BigDecimal
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Test
@@ -32,6 +33,14 @@ class MoneyTest {
         val money = Money(amountInMinorUnits = 0)
 
         assertEquals(Currency.RUB, money.currency)
+    }
+
+    @Test
+    fun equals_ignoresBigDecimalScale() {
+        assertEquals(
+            Money(amount = BigDecimal("1.0"), currency = Currency.RUB),
+            Money(amount = BigDecimal("1.00"), currency = Currency.RUB)
+        )
     }
 
     @Test

@@ -11,3 +11,95 @@
 *.jks
 *.keystore
 secrets.properties
+
+# Logs
+*.log
+
+# Android build artifacts
+*.apk
+*.ap_
+*.aab
+*.dex
+output.json
+gen-external-apklibs
+bin/
+gen/
+out/
+obj/
+
+# Local/generated project files
+local.properties
+captures/
+.navigation/
+*.hprof
+
+# IntelliJ / Android Studio user-specific files
+misc.xml
+deploymentTargetDropDown.xml
+render.experimental.xml
+*.ipr
+*.iws
+*~
+*.swp
+/*/local.properties
+/*/out
+/*/*/production
+.idea/caches/
+.idea/libraries/
+.idea/shelf/
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/.name
+.idea/compiler.xml
+.idea/copyright/profiles_settings.xml
+.idea/encodings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/scopes/scope_settings.xml
+.idea/dictionaries/
+.idea/vcs.xml
+.idea/jsLibraryMappings.xml
+.idea/datasources.xml
+.idea/dataSources.ids
+.idea/sqlDataSources.xml
+.idea/dynamic.xml
+.idea/uiDesigner.xml
+.idea/assetWizardSettings.xml
+.idea/gradle.xml
+.idea/jarRepositories.xml
+.idea/navEditor.xml
+
+# Archives/packages
+*.class
+*.ctxt
+.mtj.tmp/
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# JVM crash logs
+hs_err_pid*
+replay_pid*
+
+# Signing / services
+.signing/
+google-services.json
+
+# Legacy Eclipse project files
+.classpath
+.project
+.cproject
+.settings/
+.idea_modules/
+
+# Crashlytics
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
+
+!/gradle/wrapper/gradle-wrapper.jar

@@ -4,5 +4,6 @@ data class Category(
     val id: Long,
     val name: String,
     val emoji: String,
-    val type: TransactionType
+    val type: TransactionType,
+    val kind: TransactionCategory
 )
