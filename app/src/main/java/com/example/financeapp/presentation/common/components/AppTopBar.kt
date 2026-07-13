@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -26,10 +27,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.example.financeapp.R
 import com.example.financeapp.core.theme.FinanceAppTheme
+import com.example.financeapp.core.theme.LocalSizing
 import com.example.financeapp.core.theme.LocalSpacing
 import com.example.financeapp.presentation.common.icons.FinanceBarChartIcon
 import com.example.financeapp.presentation.common.icons.FinanceCalendarIcon
@@ -45,55 +47,64 @@ fun AppTopBar(
     modifier: Modifier = Modifier
 ) {
     val spacing = LocalSpacing.current
-    val dateShape = RoundedCornerShape(spacing.topBarDateIcon)
+    val sizing = LocalSizing.current
+    val dateShape = RoundedCornerShape(sizing.dateChipCorner)
 
     Row(
         modifier = modifier
-            .height(spacing.topBarHeight)
-            .padding(horizontal = spacing.l),
+            .height(sizing.topBarHeight)
+            .padding(horizontal = spacing.topBarHorizontal),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Surface(
             modifier = Modifier
                 .clip(dateShape)
-                .height(32.dp)
-                .width(104.dp),
+                .height(sizing.dateChipHeight)
+                .widthIn(min = sizing.dateChipWidth),
             color = MaterialTheme.colorScheme.surfaceVariant,
             shape = dateShape
         ) {
             Row(
                 modifier = Modifier.padding(
-                    horizontal = spacing.xs,
-                    vertical = spacing.xs
+                    horizontal = spacing.dateChipHorizontal,
+                    vertical = spacing.dateChipVertical
                 ),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(spacing.s)
+                horizontalArrangement = Arrangement.spacedBy(spacing.dateChipGap)
             ) {
                 FinanceCalendarIcon(
                     color = MaterialTheme.colorScheme.outline,
-                    modifier = Modifier.size(spacing.IconSize)
+                    modifier = Modifier.size(sizing.smallIcon)
                 )
                 Text(
                     text = selectedDate.formatDayMonth(),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.outline
+                    color = MaterialTheme.colorScheme.outline,
+                    maxLines = 1,
+                    overflow = TextOverflow.Visible,
+                    softWrap = false
                 )
             }
         }
 
         Spacer(modifier = Modifier.weight(1f))
-        Row (Modifier.height(48.dp).width(100.dp)){
+        Row(
+            modifier = Modifier
+                .height(sizing.topBarActionSize)
+                .width(sizing.topBarActionsWidth),
+            horizontalArrangement = Arrangement.spacedBy(spacing.topBarActionsGap)
+        ) {
             TopBarIconButton(
-            type = TopBarIconType.ANALYTICS,
-            contentDescription = stringResource(R.string.open_analytics),
-            onClick = onAnalyticsClick
-        )
+                type = TopBarIconType.ANALYTICS,
+                contentDescription = stringResource(R.string.open_analytics),
+                onClick = onAnalyticsClick
+            )
             TopBarIconButton(
                 type = TopBarIconType.SETTINGS,
                 contentDescription = stringResource(R.string.settings_open),
                 onClick = onSettingsClick
-            ) }
-
+            )
+        }
     }
 }
 
@@ -104,17 +115,18 @@ fun DetailTopBar(
     modifier: Modifier = Modifier
 ) {
     val spacing = LocalSpacing.current
+    val sizing = LocalSizing.current
     val backDescription = stringResource(R.string.back)
 
     Row(
         modifier = modifier
-            .height(spacing.topBarHeight)
-            .padding(horizontal = spacing.m),
+            .height(sizing.topBarHeight)
+            .padding(horizontal = spacing.md),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .size(spacing.topBarBackSize)
+                .size(sizing.detailBackButton)
                 .clip(CircleShape)
                 .clickable(onClick = onBackClick)
                 .semantics { contentDescription = backDescription },
@@ -141,12 +153,11 @@ private fun TopBarIconButton(
     contentDescription: String,
     onClick: () -> Unit
 ) {
-    val spacing = LocalSpacing.current
+    val sizing = LocalSizing.current
 
     Box(
         modifier = Modifier
-            .padding(start = spacing.s)
-            .size(spacing.NavigationIconCinteinerSize)
+            .size(sizing.topBarActionSize)
             .clip(CircleShape)
             .clickable(onClick = onClick)
             .background(MaterialTheme.colorScheme.background)
@@ -156,11 +167,11 @@ private fun TopBarIconButton(
         when (type) {
             TopBarIconType.ANALYTICS -> FinanceBarChartIcon(
                 color = MaterialTheme.colorScheme.outline,
-                modifier = Modifier.size(spacing.NavigationIconSize)
+                modifier = Modifier.size(sizing.icon)
             )
             TopBarIconType.SETTINGS -> FinanceSlidersIcon(
                 color = MaterialTheme.colorScheme.outline,
-                modifier = Modifier.size(spacing.NavigationIconSize)
+                modifier = Modifier.size(sizing.icon)
             )
         }
     }

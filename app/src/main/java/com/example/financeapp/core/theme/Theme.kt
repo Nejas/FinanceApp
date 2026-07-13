@@ -53,8 +53,8 @@ private val LightColorScheme = lightColorScheme(
     onSurface = FinanceOnBackground,
     surfaceVariant = FinanceNavigationBackground,
     onSurfaceVariant = FinanceOnBackground,
-    outline = FinanceMutedText,
-    outlineVariant = FinanceOutline,
+    outline = FinanceOutline,
+    outlineVariant = FinanceOutlineVariant,
     error = FinanceWarning,
     tertiary = FinancePositive
 )
@@ -81,7 +81,7 @@ fun FinanceAppTheme(
         SideEffect {
             val window = view.context.findActivity()?.window ?: return@SideEffect
             window.statusBarColor = colorScheme.background.toArgb()
-            window.navigationBarColor = colorScheme.background.toArgb()
+            window.navigationBarColor = colorScheme.surfaceVariant.toArgb()
 
             WindowCompat.getInsetsController(window, view).apply {
                 isAppearanceLightStatusBars = !darkTheme
@@ -91,7 +91,8 @@ fun FinanceAppTheme(
     }
 
     CompositionLocalProvider(
-        LocalSpacing provides Spacing()
+        LocalSpacing provides Spacing(),
+        LocalSizing provides Sizing()
     ) {
         MaterialTheme(
             colorScheme = colorScheme,

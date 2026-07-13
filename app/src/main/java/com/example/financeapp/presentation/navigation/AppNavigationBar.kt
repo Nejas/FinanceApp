@@ -2,6 +2,7 @@ package com.example.financeapp.presentation.navigation
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -12,6 +13,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import com.example.financeapp.core.theme.LocalSizing
 import com.example.financeapp.core.theme.LocalSpacing
 import com.example.financeapp.presentation.common.icons.FinancePersonIcon
 import com.example.financeapp.presentation.common.icons.FinanceReceiptIcon
@@ -23,13 +26,18 @@ fun AppNavigationBar(
     onRouteSelected: (AppRoute) -> Unit
 ) {
     val spacing = LocalSpacing.current
+    val sizing = LocalSizing.current
     Column(modifier = Modifier.fillMaxWidth()) {
         HorizontalDivider(
             modifier = Modifier.fillMaxWidth(),
             thickness = spacing.hairline,
             color = MaterialTheme.colorScheme.outlineVariant
         )
-        NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceVariant) {
+        NavigationBar(
+            modifier = Modifier.height(sizing.navigationBarHeight),
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            tonalElevation = 0.dp
+        ) {
             bottomNavItems.forEach { item ->
                 val isSelected = item.route == selectedRoute
                 NavigationBarItem(
@@ -41,7 +49,7 @@ fun AppNavigationBar(
                         } else {
                             MaterialTheme.colorScheme.outline
                         }
-                        val iconModifier = Modifier.size(spacing.NavigationIconSize)
+                        val iconModifier = Modifier.size(sizing.icon)
                         when (item.icon) {
                             BottomNavIcon.EXPENSES -> FinanceReceiptIcon(
                                 color = iconColor,

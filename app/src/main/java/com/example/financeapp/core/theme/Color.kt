@@ -2,14 +2,15 @@ package com.example.financeapp.core.theme
 
 import androidx.compose.ui.graphics.Color
 
-val FinanceBackground = Color(0xFFFFF7FF)
-val FinanceNavigationBackground = Color(0xFFF8F0FA)
-val FinanceSelectedContainer = Color(0xFFEBDDFF)
-val FinancePrimary = Color(0xFF4B2A7B)
+val FinanceBackground = Color(0xFFFEF7FF)
+val FinanceNavigationBackground = Color(0xFFF3EDF7)
+val FinanceSelectedContainer = Color(0xFFE8DEF8)
+val FinancePrimary = Color(0xFF21005D)
 val FinanceOnBackground = Color(0xFF1D1B20)
-val FinanceMutedText = Color(0xFFA19AA5)
-val FinanceOutline = Color(0xFFC8C2C8)
-val FinanceSurfaceVariant = Color(0xFFF1EAF4)
+val FinanceMutedText = Color(0x8049454F)
+val FinanceOutline = Color(0xFF49454F)
+val FinanceOutlineVariant = Color(0xFFC4C7C5)
+val FinanceSurfaceVariant = Color(0xFFF3EDF7)
 val FinancePositive = Color(0xFF2E7D32)
 val FinanceWarning = Color(0xFFF6A609)
 

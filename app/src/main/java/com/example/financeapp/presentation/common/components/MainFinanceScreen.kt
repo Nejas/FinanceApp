@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.financeapp.core.theme.FinanceAppTheme
+import com.example.financeapp.core.theme.LocalSizing
 import com.example.financeapp.core.theme.LocalSpacing
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.presentation.common.model.FinanceListItemUiModel
@@ -30,6 +31,7 @@ fun MainFinanceScreen(
     modifier: Modifier = Modifier
 ) {
     val spacing = LocalSpacing.current
+    val sizing = LocalSizing.current
 
     Column(modifier = modifier.fillMaxSize()) {
         TotalSumSurface(
@@ -48,14 +50,14 @@ fun MainFinanceScreen(
             )
             else -> LazyColumn(
                 modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(bottom = spacing.screenBottomContent),
-                verticalArrangement = Arrangement.spacedBy(spacing.s)
+                contentPadding = PaddingValues(bottom = spacing.listBottomPadding),
+                verticalArrangement = Arrangement.spacedBy(spacing.none)
             ) {
                 items(items = items, key = { it.id }) { item ->
                     FinanceListItem(
                         item = item,
                         onClick = onItemClick,
-                        modifier = Modifier.height(spacing.itemHeight)
+                        modifier = Modifier.height(sizing.listItemHeight)
                     )
                 }
             }

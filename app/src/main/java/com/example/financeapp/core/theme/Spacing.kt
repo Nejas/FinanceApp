@@ -7,44 +7,52 @@ import androidx.compose.ui.unit.dp
 
 @Immutable
 data class Spacing(
-    val default: Dp = 0.dp,
+    val none: Dp = 0.dp,
     val hairline: Dp = 1.dp,
     val xxs: Dp = 4.dp,
     val xs: Dp = 6.dp,
-    val contentGap: Dp = 8.dp,
+    val s: Dp = 8.dp,
     val sm: Dp = 12.dp,
-    val listItemVertical: Dp = 14.dp,
     val md: Dp = 16.dp,
     val lg: Dp = 20.dp,
-    val actionGap: Dp = 24.dp,
-    val topBarDateIcon: Dp = 28.dp,
     val xl: Dp = 32.dp,
-    val screenHeaderTop: Dp = 36.dp,
-    val topBarActionIcon: Dp = 36.dp,
-    val xxl: Dp = 40.dp,
-    val topBarActionSize: Dp = 44.dp,
-    val topBarBackSize: Dp = 48.dp,
-    val totalBottomGap: Dp = 52.dp,
-    val iconContainer: Dp = 56.dp,
-    val topBarHeight: Dp = 56.dp,
-    val totalSurfaceHeight: Dp = 100.dp,
-    val screenBottomContent: Dp = 96.dp,
+    val contentGap: Dp = 8.dp,
+    val actionGap: Dp = 24.dp,
+    val topBarHorizontal: Dp = 12.dp,
+    val topBarActionsGap: Dp = 4.dp,
+    val dateChipHorizontal: Dp = 12.dp,
+    val dateChipVertical: Dp = 6.dp,
+    val dateChipGap: Dp = 4.dp,
+    val heroHorizontal: Dp = 20.dp,
+    val heroTop: Dp = 12.dp,
+    val heroBottom: Dp = 32.dp,
+    val heroGap: Dp = 4.dp,
+    val listItemHorizontal: Dp = 16.dp,
+    val listItemGap: Dp = 16.dp,
+    val listBottomPadding: Dp = 120.dp,
     val contentSwipeEdgeGuard: Dp = 32.dp,
-    val contentSwipeThreshold: Dp = 80.dp,
+    val contentSwipeThreshold: Dp = 80.dp
+)
 
-
-    val itemHeight: Dp = 72.dp,
-
-    val itemIconContainer:Dp = 40.dp,
-    val NavigationIconCinteinerSize:Dp = 48.dp,
-
-    val IconSize:Dp = 20.dp,
-    val NavigationIconSize:Dp = 28.dp,
-    val s: Dp = 8.dp,
-    val xm: Dp = 12.dp,
-    val m: Dp = 16.dp,
-    val mx: Dp = 20.dp,
-    val l: Dp = 24.dp,
+@Immutable
+data class Sizing(
+    val topBarHeight: Dp = 64.dp,
+    val dateChipWidth: Dp = 104.dp,
+    val dateChipHeight: Dp = 32.dp,
+    val dateChipCorner: Dp = 100.dp,
+    val topBarActionSize: Dp = 48.dp,
+    val topBarActionsWidth: Dp = 100.dp,
+    val detailBackButton: Dp = 48.dp,
+    val smallIcon: Dp = 20.dp,
+    val icon: Dp = 24.dp,
+    val heroHeight: Dp = 117.dp,
+    val listItemHeight: Dp = 72.dp,
+    val listItemIcon: Dp = 40.dp,
+    val navigationBarHeight: Dp = 80.dp,
+    val fab: Dp = 56.dp,
+    val fabCorner: Dp = 16.dp,
+    val splashIcon: Dp = 192.dp
 )
 
 val LocalSpacing = staticCompositionLocalOf { Spacing() }
+val LocalSizing = staticCompositionLocalOf { Sizing() }

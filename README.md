@@ -12,18 +12,6 @@
 - mock-источники данных вместо backend/API;
 - unit-тесты для доменных моделей, use case'ов и mock data sources.
 
-## Технологии
-
-- Kotlin;
-- Jetpack Compose;
-- AndroidX Lifecycle / ViewModel;
-- Kotlin Coroutines и Flow;
-- Hilt для Dependency Injection;
-- dotLottie для анимированного splash screen;
-- JUnit и kotlinx-coroutines-test для unit-тестов;
-
-Минимальная версия Android: `minSdk 26`.
-
 ## Архитектура
 
 Проект разделён на несколько основных слоёв:
@@ -42,7 +30,6 @@ presentation -> domain -> data
 ```text
 app/src/main/java/com/example/financeapp/presentation
 ```
-
 Этот слой отвечает за UI и состояние экранов.
 
 Основные элементы:
@@ -55,6 +42,19 @@ app/src/main/java/com/example/financeapp/presentation
 - `presentation/common` — переиспользуемые компоненты, форматтеры и UI-модели.
 
 ViewModel получает use case через Hilt, вызывает его в `viewModelScope`, а результат кладёт в `StateFlow`. Composable подписывается на state и перерисовывается при изменениях.
+
+### Запуск приложения и отображение экранов
+
+При старте `MainActivity` сразу создаёт основной composable `FinanceApp`, а `DotLottieSplashScreen` отображается поверх него как временный overlay. Splash screen не блокирует создание основного UI: пока пользователь видит Lottie-анимацию, экраны уже подключают свои ViewModel, запускают `LaunchedEffect` и начинают асинхронную загрузку данных через корутины.
+
+После завершения задержки splash screen скрывается, а под ним уже находится основной экран приложения. Такой подход уменьшает ощущение промежуточного пустого экрана, потому что подготовка данных идёт параллельно с анимацией.
+
+Переключение между основными разделами доступно двумя способами:
+
+- через нижнюю навигацию `AppNavigationBar`;
+- горизонтальными свайпами по контентной области между экранами расходов, доходов и счетов.
+
+Текущий раздел хранится в `FinanceApp` через `rememberSaveable`, а `AnimatedContent` отвечает за анимированную смену экрана. `AppNavGraph` получает выбранный `AppRoute` и отображает соответствующий route: `ExpensesRoute`, `IncomeRoute` или `AccountsRoute`.
 
 Пример направления зависимости:
 
@@ -152,9 +152,6 @@ TransactionsRepository -> TransactionsDataRepository
 FinancialAccountsRepository -> FinancialAccountsDataRepository
 CategoriesRepository -> CategoriesDataRepository
 ```
-
-Также через DI предоставляется `Clock`. Сейчас он фиксированный, чтобы mock-транзакции и выбранная дата были стабильными и воспроизводимыми. В коде оставлен TODO на замену на `Clock.systemDefaultZone()` при подключении реальных данных.
-
 ## Поток данных
 
 Типичный сценарий для экрана расходов:

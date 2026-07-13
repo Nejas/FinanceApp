@@ -10,7 +10,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.dotlottie.dlplayer.Mode
-import com.example.financeapp.core.theme.LocalSpacing
+import com.example.financeapp.core.theme.LocalSizing
 import com.lottiefiles.dotlottie.core.compose.ui.DotLottieAnimation
 import com.lottiefiles.dotlottie.core.util.DotLottieSource
 import kotlinx.coroutines.delay
@@ -20,7 +20,7 @@ fun DotLottieSplashScreen(
     onFinished: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val spacing = LocalSpacing.current
+    val sizing = LocalSizing.current
 
     LaunchedEffect(Unit) {
         delay(SPLASH_DURATION_MILLIS)
@@ -40,10 +40,10 @@ fun DotLottieSplashScreen(
             speed = 1f,
             useFrameInterpolation = true,
             playMode = Mode.FORWARD,
-            modifier = Modifier.size(spacing.screenBottomContent * 2)
+            modifier = Modifier.size(sizing.splashIcon)
         )
     }
 }
 
 private const val SPLASH_ASSET_NAME = "wallet_animation.lottie"
-private const val SPLASH_DURATION_MILLIS = 1_600L
+private const val SPLASH_DURATION_MILLIS = 1_550L

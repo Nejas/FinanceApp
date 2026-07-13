@@ -15,14 +15,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.financeapp.core.theme.FinanceAppTheme
-import com.example.financeapp.core.theme.LocalSpacing
+import com.example.financeapp.core.theme.LocalSizing
 
 @Composable
 fun EmptyContent(
     message: String,
     modifier: Modifier = Modifier
 ) {
-    val spacing = LocalSpacing.current
+    val sizing = LocalSizing.current
 
     Column(
         modifier = modifier.fillMaxSize(),
@@ -33,7 +33,7 @@ fun EmptyContent(
             imageVector = Icons.Filled.Info,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.outline,
-            modifier = Modifier.size(spacing.itemIconContainer)
+            modifier = Modifier.size(sizing.listItemIcon)
         )
         Text(
             text = message,
