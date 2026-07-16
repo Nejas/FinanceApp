@@ -34,13 +34,14 @@ import com.example.financeapp.presentation.expenses.ExpensesRoute
 import com.example.financeapp.presentation.income.IncomeRoute
 import com.example.financeapp.presentation.main.MainViewModel
 import com.example.financeapp.presentation.navigation.AppNavGraph
-import com.example.financeapp.presentation.navigation.AppNavigationBar
+import com.example.financeapp.presentation.navigation.BottomNavigationBar
 import com.example.financeapp.presentation.navigation.AppRoute
 import kotlin.math.abs
 
 @Composable
 fun FinanceApp(
-    mainViewModel: MainViewModel = hiltViewModel()
+    mainViewModel: MainViewModel = hiltViewModel(),
+    modifier: Modifier = Modifier
 ) {
     val spacing = LocalSpacing.current
     val density = LocalDensity.current
@@ -54,14 +55,14 @@ fun FinanceApp(
     val selectedRoute = selectedRouteName.toAppRoute()
 
     Scaffold(
-        modifier = Modifier
+        modifier = modifier
             .background(MaterialTheme.colorScheme.background),
         containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
             AddButton(onClick = {})
         },
         bottomBar = {
-            AppNavigationBar(
+            BottomNavigationBar(
                 selectedRoute = selectedRoute,
                 onRouteSelected = { route ->
                     selectedRouteName = route.route

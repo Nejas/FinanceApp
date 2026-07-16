@@ -35,15 +35,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             FinanceAppTheme {
                 var showSplash by remember { mutableStateOf(true) }
+                FinanceApp()
 
-                Box(modifier = Modifier.fillMaxSize()) {
-                    FinanceApp()
-
-                    if (showSplash) {
-                        DotLottieSplashScreen(
-                            onFinished = { showSplash = false }
-                        )
-                    }
+                if (showSplash) {
+                    DotLottieSplashScreen(
+                        onFinished = { showSplash = false }
+                    )
                 }
             }
         }

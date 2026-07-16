@@ -1,6 +1,7 @@
 package com.example.financeapp.presentation.navigation
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -19,9 +20,10 @@ import com.example.financeapp.core.theme.LocalSpacing
 import com.example.financeapp.presentation.common.icons.FinancePersonIcon
 import com.example.financeapp.presentation.common.icons.FinanceReceiptIcon
 import com.example.financeapp.presentation.common.icons.FinanceTrendingUpIcon
+import com.lottiefiles.dotlottie.core.util.handleInternalEvent
 
 @Composable
-fun AppNavigationBar(
+fun BottomNavigationBar(
     selectedRoute: AppRoute,
     onRouteSelected: (AppRoute) -> Unit
 ) {
@@ -34,7 +36,7 @@ fun AppNavigationBar(
             color = MaterialTheme.colorScheme.outlineVariant
         )
         NavigationBar(
-            modifier = Modifier.height(sizing.navigationBarHeight),
+            modifier = Modifier.defaultMinSize(minHeight =  sizing.navigationBarHeight),
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
             tonalElevation = 0.dp
         ) {
