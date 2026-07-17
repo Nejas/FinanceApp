@@ -1,13 +1,14 @@
 package com.example.financeapp.domain.model
 
+import com.example.financeapp.domain.model.common.TransactionInfo
 import java.time.Instant
 
 data class Transaction(
-    val id: Long,
+    override val id: Long,
     val title: String,
-    val amount: Money,
-    val categoryId: Long,
-    val accountId: Long,
-    val transactionDate: Instant,
-    val comment: String? = null
-)
+    override val amount: Money,
+    override val categoryId: Long,
+    override val accountId: Long,
+    override val transactionDate: Instant,
+    override val comment: String? = null
+) : TransactionInfo

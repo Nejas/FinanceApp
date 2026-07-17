@@ -1,13 +1,14 @@
 package com.example.financeapp.domain.model
 
+import com.example.financeapp.domain.model.common.MoneyAmount
 import java.math.BigDecimal
 import java.math.RoundingMode
 
 class Money(
     amount: BigDecimal,
-    val currency: Currency = Currency.RUB
-) {
-    val amount: BigDecimal = amount.stripTrailingZeros()
+    override val currency: Currency = Currency.RUB
+) : MoneyAmount {
+    override val amount: BigDecimal = amount.stripTrailingZeros()
 
     constructor(
         amountInMinorUnits: Long,

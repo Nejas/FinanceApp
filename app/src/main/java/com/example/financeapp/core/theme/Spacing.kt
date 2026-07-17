@@ -1,5 +1,6 @@
 package com.example.financeapp.core.theme
 
+import android.inputmethodservice.Keyboard
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.Dp
@@ -36,6 +37,7 @@ data class Spacing(
 
 @Immutable
 data class Sizing(
+    val keyboardButtonHeight:Dp = 48.dp,
     val topBarHeight: Dp = 64.dp,
     val dateChipWidth: Dp = 104.dp,
     val dateChipHeight: Dp = 32.dp,
@@ -51,7 +53,8 @@ data class Sizing(
     val navigationBarHeight: Dp = 80.dp,
     val fab: Dp = 56.dp,
     val fabCorner: Dp = 16.dp,
-    val splashIcon: Dp = 192.dp
+    val splashIcon: Dp = 192.dp,
+    val bottomSpacerHeight:Dp = 20.dp
 )
 
 val LocalSpacing = staticCompositionLocalOf { Spacing() }

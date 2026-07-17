@@ -1,9 +1,11 @@
 package com.example.financeapp.domain.model
 
+import com.example.financeapp.domain.model.common.DisplayEntity
+
 data class Category(
-    val id: Long,
-    val name: String,
-    val emoji: String,
+    override val id: Long,
+    override val name: String,
+    override val emoji: String,
     val type: TransactionType,
-    val kind: TransactionCategory
-)
+    override val description: String? = null
+) : DisplayEntity

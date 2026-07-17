@@ -12,8 +12,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import java.time.Clock
-import java.time.Instant
-import java.time.ZoneId
 import javax.inject.Singleton
 
 @Module
@@ -43,13 +41,7 @@ abstract class RepositoryModule {
         @Provides
         @Singleton
         fun provideClock(): Clock {
-            // TODO Replace this fixed mock date with Clock.systemDefaultZone()
-            //  when mock data sources generate transactions for the actual current date
-            //  or when real backend data is connected.
-            return Clock.fixed(
-                Instant.parse("2026-06-12T12:00:00Z"),
-                ZoneId.systemDefault()
-            )
+            return Clock.systemDefaultZone()
         }
     }
 }

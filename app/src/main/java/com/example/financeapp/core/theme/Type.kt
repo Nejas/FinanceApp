@@ -49,7 +49,7 @@ val Typography = Typography(
     ),
     headlineSmall = TextStyle(
         fontFamily = RobotoFontFamily,
-        fontWeight = FontWeight(500),
+        fontWeight = FontWeight(400),
         fontSize = 24.sp,
         lineHeight = 32.sp,
         letterSpacing = 0.sp

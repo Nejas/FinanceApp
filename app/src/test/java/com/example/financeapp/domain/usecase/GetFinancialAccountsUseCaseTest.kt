@@ -2,6 +2,7 @@ package com.example.financeapp.domain.usecase
 
 import com.example.financeapp.domain.model.FinancialAccount
 import com.example.financeapp.domain.model.Money
+import com.example.financeapp.domain.model.common.FinancialAccountPayload
 import com.example.financeapp.domain.repository.FinancialAccountsRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -63,6 +64,30 @@ class GetFinancialAccountsUseCaseTest {
         override suspend fun getFinancialAccounts(): Result<List<FinancialAccount>> {
             return failure?.let(Result.Companion::failure)
                 ?: Result.success(accounts)
+        }
+
+        override suspend fun createFinancialAccount(
+            payload: FinancialAccountPayload
+        ): Result<FinancialAccount> {
+            return failure?.let(Result.Companion::failure)
+                ?: Result.success(accounts.first())
+        }
+
+        override suspend fun getFinancialAccount(id: Long): Result<FinancialAccount> {
+            return failure?.let(Result.Companion::failure)
+                ?: Result.success(accounts.first { account -> account.id == id })
+        }
+
+        override suspend fun updateFinancialAccount(
+            id: Long,
+            payload: FinancialAccountPayload
+        ): Result<FinancialAccount> {
+            return getFinancialAccount(id)
+        }
+
+        override suspend fun deleteFinancialAccount(id: Long): Result<Unit> {
+            return failure?.let(Result.Companion::failure)
+                ?: Result.success(Unit)
         }
     }
 }

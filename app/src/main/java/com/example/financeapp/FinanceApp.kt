@@ -41,7 +41,6 @@ import kotlin.math.abs
 @Composable
 fun FinanceApp(
     mainViewModel: MainViewModel = hiltViewModel(),
-    modifier: Modifier = Modifier
 ) {
     val spacing = LocalSpacing.current
     val density = LocalDensity.current
@@ -55,8 +54,7 @@ fun FinanceApp(
     val selectedRoute = selectedRouteName.toAppRoute()
 
     Scaffold(
-        modifier = modifier
-            .background(MaterialTheme.colorScheme.background),
+        modifier = Modifier.background(MaterialTheme.colorScheme.background),
         containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
             AddButton(onClick = {})
@@ -70,11 +68,11 @@ fun FinanceApp(
 
             )
         }
-    ) { paddingValues ->
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(innerPadding)
         ) {
             AppTopBar(
                 modifier = Modifier.fillMaxWidth(),

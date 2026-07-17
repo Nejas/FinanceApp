@@ -2,7 +2,9 @@ package com.example.financeapp.domain.usecase
 
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.model.Transaction
+import com.example.financeapp.domain.model.TransactionFilter
 import com.example.financeapp.domain.model.TransactionType
+import com.example.financeapp.domain.model.common.TransactionPayload
 import com.example.financeapp.domain.repository.TransactionsRepository
 import java.time.Instant
 import java.time.LocalDate
@@ -36,7 +38,9 @@ class GetTransactionsForDateUseCaseTest {
 
         assertEquals(listOf(1L, 2L), result.transactions.map { it.id })
         assertEquals(Money(amountInMinorUnits = 1_950L * 100), result.total)
-        assertEquals(TransactionType.EXPENSE, repository.requestedType)
+        assertEquals(TransactionType.EXPENSE, repository.requestedFilter?.type)
+        assertEquals(LocalDate.of(2026, 6, 12), repository.requestedFilter?.startDate)
+        assertEquals(LocalDate.of(2026, 6, 12), repository.requestedFilter?.endDate)
     }
 
     @Test
@@ -76,15 +80,39 @@ class GetTransactionsForDateUseCaseTest {
         private val failure: Throwable? = null
     ) : TransactionsRepository {
 
-        var requestedType: TransactionType? = null
+        var requestedFilter: TransactionFilter? = null
             private set
 
         override suspend fun getTransactions(
-            type: TransactionType
+            filter: TransactionFilter
         ): Result<List<Transaction>> {
-            requestedType = type
+            requestedFilter = filter
             return failure?.let(Result.Companion::failure)
                 ?: Result.success(transactions)
+        }
+
+        override suspend fun createTransaction(
+            payload: TransactionPayload
+        ): Result<Transaction> {
+            return failure?.let(Result.Companion::failure)
+                ?: Result.success(transactions.first())
+        }
+
+        override suspend fun getTransaction(id: Long): Result<Transaction> {
+            return failure?.let(Result.Companion::failure)
+                ?: Result.success(transactions.first { transaction -> transaction.id == id })
+        }
+
+        override suspend fun updateTransaction(
+            id: Long,
+            payload: TransactionPayload
+        ): Result<Transaction> {
+            return getTransaction(id)
+        }
+
+        override suspend fun deleteTransaction(id: Long): Result<Unit> {
+            return failure?.let(Result.Companion::failure)
+                ?: Result.success(Unit)
         }
     }
 }
