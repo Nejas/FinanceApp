@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <group
+        android:name="wallet_scaled"
+        android:scaleX="0.15"
+        android:scaleY="0.15"
+        android:translateX="34"
+        android:translateY="32">
+
+
+        <path
+            android:name="wallet_card"
+            android:fillAlpha="1"
+            android:fillColor="#59D872"
+            android:pathData="M29,87L207,35L230,92L40,128Z" />
+
+        <path
+            android:name="wallet_cutout"
+            android:fillAlpha="1"
+            android:fillColor="#FFFFFF"
+            android:pathData="M120,80C132,71 154,73 163,88L130,94Z" />
+
+        <path
+            android:name="wallet_front"
+            android:fillAlpha="1"
+            android:fillColor="#4285EA"
+            android:pathData="M32,93C47,76 226,70 249,83C263,91 282,223 249,244C217,264 67,271 36,257C13,247 8,119 32,93Z" />
+
+        <path
+            android:name="wallet_pocket_cutout"
+            android:fillAlpha="1"
+            android:fillColor="#FFFFFF"
+            android:pathData="M228,142C232,130 269,128 280,134C287,138 291,180 280,188C269,196 233,197 228,190C220,178 219,154 228,142Z" />
+
+        <path
+            android:name="wallet_button"
+            android:fillAlpha="1"
+            android:fillColor="#4285EA"
+            android:pathData="M234,146C240,139 274,138 282,143C288,147 291,176 283,182C275,188 241,188 235,183C228,177 227,153 234,146Z" />
+    </group>
+</vector>
