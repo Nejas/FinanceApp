@@ -1,10 +1,11 @@
 package com.example.financeapp.data.repository
 
 import android.util.Log
+import com.example.financeapp.core.coroutines.DefaultDispatcher
 import com.example.financeapp.data.mapper.toDomain
 import com.example.financeapp.data.mapper.toRequestDto
-import com.example.financeapp.data.network.result.NetworkResult
 import com.example.financeapp.data.network.provider.FinanceRemoteDataSource
+import com.example.financeapp.data.network.result.NetworkResult
 import com.example.financeapp.domain.model.Transaction
 import com.example.financeapp.domain.model.TransactionFilter
 import com.example.financeapp.domain.model.TransactionType
@@ -12,10 +13,12 @@ import com.example.financeapp.domain.model.common.TransactionPayload
 import com.example.financeapp.domain.repository.TransactionsRepository
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineDispatcher
 
 @Singleton
 class TransactionsDataRepository @Inject constructor(
-    private val networkDataSource: FinanceRemoteDataSource
+    private val networkDataSource: FinanceRemoteDataSource,
+    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : TransactionsRepository {
 
     override suspend fun getTransactions(
@@ -26,7 +29,7 @@ class TransactionsDataRepository @Inject constructor(
             accountId = filter.accountId,
             startDate = filter.startDate?.toString(),
             endDate = filter.endDate?.toString()
-        ).mapToResult { transactions ->
+        ).mapToResult(defaultDispatcher) { transactions ->
             transactions
                 .filter { transaction ->
                     when (filter.type) {
@@ -47,11 +50,11 @@ class TransactionsDataRepository @Inject constructor(
         Log.d(TAG, "Creating transaction")
         return when (val createResult = networkDataSource.createTransaction(payload.toRequestDto())) {
             is NetworkResult.Success -> {
-                networkDataSource.getTransaction(createResult.data.id).mapToResult { transaction ->
+                networkDataSource.getTransaction(createResult.data.id).mapToResult(defaultDispatcher) { transaction ->
                     transaction.toDomain()
                 }
             }
-            else -> createResult.mapToResult { transaction ->
+            else -> createResult.mapToResult(defaultDispatcher) { transaction ->
                 transaction.toDomain(currencyCode = payload.amount.currency.code)
             }
         }.onFailure { error ->
@@ -61,7 +64,7 @@ class TransactionsDataRepository @Inject constructor(
 
     override suspend fun getTransaction(id: Long): Result<Transaction> {
         Log.d(TAG, "Loading transaction: id=$id")
-        return networkDataSource.getTransaction(id).mapToResult { transaction ->
+        return networkDataSource.getTransaction(id).mapToResult(defaultDispatcher) { transaction ->
             transaction.toDomain()
         }.onFailure { error ->
             Log.e(TAG, "Failed to load transaction: id=$id", error)
@@ -76,7 +79,7 @@ class TransactionsDataRepository @Inject constructor(
         return networkDataSource.updateTransaction(
             id = id,
             request = payload.toRequestDto()
-        ).mapToResult { transaction ->
+        ).mapToResult(defaultDispatcher) { transaction ->
             transaction.toDomain()
         }.onFailure { error ->
             Log.e(TAG, "Failed to update transaction: id=$id", error)
@@ -85,7 +88,7 @@ class TransactionsDataRepository @Inject constructor(
 
     override suspend fun deleteTransaction(id: Long): Result<Unit> {
         Log.d(TAG, "Deleting transaction: id=$id")
-        return networkDataSource.deleteTransaction(id).mapToResult { }
+        return networkDataSource.deleteTransaction(id).mapToResult(defaultDispatcher) { }
             .onFailure { error ->
                 Log.e(TAG, "Failed to delete transaction: id=$id", error)
             }

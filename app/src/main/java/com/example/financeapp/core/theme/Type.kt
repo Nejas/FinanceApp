@@ -28,9 +28,9 @@ val Typography = Typography(
     ),
     displaySmall = TextStyle(
         fontFamily = RobotoFontFamily,
-        fontWeight = FontWeight(800),
-        fontSize = 36.sp,
-        lineHeight = 44.sp,
+        fontWeight = FontWeight(700),
+        fontSize = 28.sp,
+        lineHeight = 33.sp,
         letterSpacing = 0.sp
     ),
     headlineLarge = TextStyle(
@@ -50,8 +50,8 @@ val Typography = Typography(
     headlineSmall = TextStyle(
         fontFamily = RobotoFontFamily,
         fontWeight = FontWeight(400),
-        fontSize = 24.sp,
-        lineHeight = 32.sp,
+        fontSize = 28.sp,
+        lineHeight = 33.sp,
         letterSpacing = 0.sp
     ),
     titleLarge = TextStyle(
@@ -122,4 +122,58 @@ val Typography = Typography(
         letterSpacing = 0.sp,
         platformStyle = NoFontPadding
     )
+)
+
+val CustomPeriodTitleTextStyle = TextStyle(
+    fontFamily = RobotoFontFamily,
+    fontWeight = FontWeight(500),
+    fontSize = 20.sp,
+    lineHeight = 23.sp,
+    letterSpacing = 0.sp,
+    platformStyle = NoFontPadding
+)
+
+val CustomPeriodDateTextStyle = TextStyle(
+    fontFamily = RobotoFontFamily,
+    fontWeight = FontWeight(400),
+    fontSize = 14.sp,
+    lineHeight = 16.sp,
+    letterSpacing = 0.sp,
+    platformStyle = NoFontPadding
+)
+
+val CustomPeriodActionTextStyle = TextStyle(
+    fontFamily = RobotoFontFamily,
+    fontWeight = FontWeight(500),
+    fontSize = 14.sp,
+    lineHeight = 16.sp,
+    letterSpacing = 0.sp,
+    platformStyle = NoFontPadding
+)
+
+val AnalyticsDetailTitleTextStyle = TextStyle(
+    fontFamily = RobotoFontFamily,
+    fontWeight = FontWeight(500),
+    fontSize = 24.sp,
+    lineHeight = 28.sp,
+    letterSpacing = 0.sp,
+    platformStyle = NoFontPadding
+)
+
+val AnalyticsDetailTotalTextStyle = TextStyle(
+    fontFamily = RobotoFontFamily,
+    fontWeight = FontWeight(700),
+    fontSize = 32.sp,
+    lineHeight = 38.sp,
+    letterSpacing = 0.sp,
+    platformStyle = NoFontPadding
+)
+
+val AnalyticsDetailPercentTextStyle = TextStyle(
+    fontFamily = RobotoFontFamily,
+    fontWeight = FontWeight(400),
+    fontSize = 14.sp,
+    lineHeight = 16.sp,
+    letterSpacing = 0.sp,
+    platformStyle = NoFontPadding
 )

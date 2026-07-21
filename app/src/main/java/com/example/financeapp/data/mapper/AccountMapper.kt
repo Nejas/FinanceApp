@@ -6,13 +6,15 @@ import com.example.financeapp.data.network.model.response.AccountDetailsResponse
 import com.example.financeapp.data.network.model.response.AccountResponseDto
 import com.example.financeapp.domain.model.FinancialAccount
 import com.example.financeapp.domain.model.common.FinancialAccountPayload
+import java.time.Instant
 
 fun AccountResponseDto.toDomain(): FinancialAccount {
     return FinancialAccount(
         id = id,
         name = name,
         balance = balance.toMoney(currency),
-        emoji = emoji
+        emoji = emoji,
+        createdAt = Instant.parse(createdAt)
     )
 }
 
@@ -21,7 +23,8 @@ fun AccountDetailsResponseDto.toDomain(): FinancialAccount {
         id = id,
         name = name,
         balance = balance.toMoney(currency),
-        emoji = emoji
+        emoji = emoji,
+        createdAt = Instant.parse(createdAt)
     )
 }
 

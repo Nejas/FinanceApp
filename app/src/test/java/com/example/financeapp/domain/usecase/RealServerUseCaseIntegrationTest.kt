@@ -8,6 +8,7 @@ import com.example.financeapp.data.network.provider.FinanceRemoteDataSource
 import com.example.financeapp.data.network.provider.FinanceNetworkDataSource
 import com.example.financeapp.data.network.result.NetworkResult
 import com.example.financeapp.data.network.result.RetryPolicy
+import com.example.financeapp.core.network.NetworkMonitor
 import com.example.financeapp.data.repository.CategoriesDataRepository
 import com.example.financeapp.data.repository.FinancialAccountsDataRepository
 import com.example.financeapp.data.repository.TransactionsDataRepository
@@ -20,7 +21,8 @@ import java.io.File
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.Properties
-import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -58,15 +60,16 @@ class RealServerUseCaseIntegrationTest {
             .create(FinanceApiService::class.java)
 
         val retryPolicy = RetryPolicy(
-            maxAttempts = 1,
+            maxRetries = 0,
             requestTimeoutMillis = 15_000,
-            initialDelayMillis = 0
+            retryDelayMillis = 0
         )
         val networkDataSource = FinanceNetworkDataSource(
             apiService = apiService,
             requestExecutor = NetworkRequestExecutor(
                 retryPolicy = retryPolicy,
-                semaphore = Semaphore(permits = 5)
+                networkMonitor = AlwaysOnlineNetworkMonitor,
+                ioDispatcher = Dispatchers.IO
             )
         )
 
@@ -272,6 +275,10 @@ class RealServerUseCaseIntegrationTest {
         val getTransaction: GetTransactionUseCase,
         val deleteTransaction: DeleteTransactionUseCase
     )
+
+    private object AlwaysOnlineNetworkMonitor : NetworkMonitor {
+        override val isOnline = MutableStateFlow(true)
+    }
 
     private companion object {
         const val BASE_URL = "https://shmr-finance.ru/api/v1/"

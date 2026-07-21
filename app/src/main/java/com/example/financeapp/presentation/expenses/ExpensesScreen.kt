@@ -4,9 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.example.financeapp.R
-import com.example.financeapp.presentation.common.components.MainFinanceScreen
-import com.example.financeapp.presentation.common.model.FinanceListItemUiModel
-import com.example.financeapp.presentation.common.utils.formatWithoutMinorUnits
+import com.example.financeapp.presentation.common.components.RouteScreenContent
+import com.example.financeapp.presentation.common.model.RouteScreenItem
 
 @Composable
 fun ExpensesScreen(
@@ -14,22 +13,23 @@ fun ExpensesScreen(
     onIntent: (ExpensesIntent) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    MainFinanceScreen(
+    RouteScreenContent(
         modifier = modifier,
         totalLabel = stringResource(R.string.expenses_total_label),
         total = state.total,
         items = state.transactions.map { transaction ->
-            FinanceListItemUiModel(
+            RouteScreenItem(
                 id = transaction.id.toString(),
                 title = transaction.title,
                 leadingEmoji = state.categoriesById[transaction.categoryId]?.emoji.orEmpty(),
-                trailingText = transaction.amount.formatWithoutMinorUnits()
+                comment = transaction.comment,
+                money = transaction.amount
             )
         },
         emptyMessage = stringResource(R.string.empty_expenses),
         isLoading = state.isLoading,
         error = state.error,
         onRetryClick = { onIntent(ExpensesIntent.Retry) },
-        onItemClick = { id -> onIntent(ExpensesIntent.TransactionClicked(id.toLong())) }
+        onRefresh = { onIntent(ExpensesIntent.Retry) }
     )
 }

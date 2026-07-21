@@ -1,6 +1,5 @@
 package com.example.financeapp.core.theme
 
-import android.inputmethodservice.Keyboard
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.Dp
@@ -21,6 +20,7 @@ data class Spacing(
     val actionGap: Dp = 24.dp,
     val topBarHorizontal: Dp = 12.dp,
     val topBarActionsGap: Dp = 4.dp,
+    val textOvalFrameHorizontal: Dp = 12.dp,
     val dateChipHorizontal: Dp = 12.dp,
     val dateChipVertical: Dp = 6.dp,
     val dateChipGap: Dp = 4.dp,
@@ -31,31 +31,46 @@ data class Spacing(
     val listItemHorizontal: Dp = 16.dp,
     val listItemGap: Dp = 16.dp,
     val listBottomPadding: Dp = 120.dp,
+    val analyticsContentHorizontal: Dp = 16.dp,
+    val analyticsChartTop: Dp = 32.dp,
+    val analyticsLegendTop: Dp = 24.dp,
+    val analyticsLegendBottom: Dp = 32.dp,
+    val analyticsTransactionsTop: Dp = 45.dp,
+    val analyticsSectionTitleBottom: Dp = 16.dp,
+    val analyticsBottomPadding: Dp = 24.dp,
+    val analyticsDetailTitleTop: Dp = 4.dp,
+    val analyticsDetailChartTop: Dp = 34.dp,
+    val analyticsDetailCategoriesTop: Dp = 28.dp,
+    val analyticsDetailContentGap: Dp = 32.dp,
+    val analyticsDetailCategoryGap: Dp = 24.dp,
+    val analyticsDetailCategoryHorizontal: Dp = 24.dp,
+    val analyticsDetailCategoryVertical: Dp = 14.dp,
+    val analyticsDetailCategoryLabelGap: Dp = 8.dp,
+    val analyticsDetailProgressTop: Dp = 8.dp,
+    val analyticsDetailBottomPadding: Dp = 32.dp,
+    val sheetTitleHorizontal: Dp = 20.dp,
+    val sheetTitleVertical: Dp = 12.dp,
+    val sheetRowHorizontal: Dp = 20.dp,
+    val sheetRowGap: Dp = 16.dp,
+    val sheetButtonHorizontal: Dp = 16.dp,
+    val sheetButtonTop: Dp = 26.dp,
+    val sheetButtonBottom: Dp = 16.dp,
+    val sheetCalendarHorizontal: Dp = 24.dp,
+    val customPeriodTitleHorizontal: Dp = 24.dp,
+    val customPeriodTitleBottom: Dp = 16.dp,
+    val customPeriodDateHorizontal: Dp = 24.dp,
+    val customPeriodDateGap: Dp = 12.dp,
+    val customPeriodCalendarGap: Dp = 24.dp,
+    val customPeriodCalendarHeaderHorizontal: Dp = 16.dp,
+    val customPeriodCalendarHeaderVertical: Dp = 8.dp,
+    val customPeriodCalendarGridHorizontal: Dp = 32.dp,
+    val customPeriodActionsTop: Dp = 32.dp,
+    val customPeriodActionsHorizontal: Dp = 24.dp,
+    val customPeriodActionsGap: Dp = 12.dp,
     val contentSwipeEdgeGuard: Dp = 32.dp,
     val contentSwipeThreshold: Dp = 80.dp
 )
 
-@Immutable
-data class Sizing(
-    val keyboardButtonHeight:Dp = 48.dp,
-    val topBarHeight: Dp = 64.dp,
-    val dateChipWidth: Dp = 104.dp,
-    val dateChipHeight: Dp = 32.dp,
-    val dateChipCorner: Dp = 100.dp,
-    val topBarActionSize: Dp = 48.dp,
-    val topBarActionsWidth: Dp = 100.dp,
-    val detailBackButton: Dp = 48.dp,
-    val smallIcon: Dp = 20.dp,
-    val icon: Dp = 24.dp,
-    val heroHeight: Dp = 117.dp,
-    val listItemHeight: Dp = 72.dp,
-    val listItemIcon: Dp = 40.dp,
-    val navigationBarHeight: Dp = 80.dp,
-    val fab: Dp = 56.dp,
-    val fabCorner: Dp = 16.dp,
-    val splashIcon: Dp = 192.dp,
-    val bottomSpacerHeight:Dp = 20.dp
-)
+
 
 val LocalSpacing = staticCompositionLocalOf { Spacing() }
-val LocalSizing = staticCompositionLocalOf { Sizing() }

@@ -1,27 +1,30 @@
 package com.example.financeapp.data.network.executor
 
+import com.example.financeapp.core.coroutines.IoDispatcher
+import com.example.financeapp.core.network.NetworkMonitor
 import com.example.financeapp.data.network.result.NetworkResult
+import com.example.financeapp.data.network.result.NoInternetConnectionException
 import com.example.financeapp.data.network.result.RetryPolicy
 import com.example.financeapp.data.network.result.isRetryable
 import com.example.financeapp.data.network.result.safeApiCall
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.math.roundToLong
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 
 @Singleton
 class NetworkRequestExecutor @Inject constructor(
     private val retryPolicy: RetryPolicy,
-    private val semaphore: Semaphore
+    private val networkMonitor: NetworkMonitor,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : NetworkCallExecutor {
 
     override suspend fun <T> execute(
         call: suspend () -> T
     ): NetworkResult<T> {
-        return semaphore.withPermit {
+        return withContext(ioDispatcher) {
             executeWithRetry(call)
         }
     }
@@ -29,11 +32,14 @@ class NetworkRequestExecutor @Inject constructor(
     private suspend fun <T> executeWithRetry(
         call: suspend () -> T
     ): NetworkResult<T> {
-        var attempt = 1
-        var delayMillis = retryPolicy.initialDelayMillis
+        var retryCount = 0
         var lastResult: NetworkResult<T>
 
         while (true) {
+            if (!networkMonitor.isOnline.value) {
+                return NetworkResult.NetworkError(NoInternetConnectionException())
+            }
+
             lastResult = safeApiCall {
                 withTimeout(retryPolicy.requestTimeoutMillis) {
                     call()
@@ -44,18 +50,15 @@ class NetworkRequestExecutor @Inject constructor(
                 return lastResult
             }
 
-            if (attempt >= retryPolicy.maxAttempts || !lastResult.isRetryable()) {
+            if (retryCount >= retryPolicy.maxRetries || !lastResult.isRetryable()) {
                 return lastResult
             }
 
-            if (delayMillis > 0) {
-                delay(delayMillis)
-            }
+            retryCount++
 
-            delayMillis = (delayMillis * retryPolicy.backoffMultiplier)
-                .roundToLong()
-                .coerceAtMost(retryPolicy.maxDelayMillis)
-            attempt++
+            if (retryPolicy.retryDelayMillis > 0) {
+                delay(retryPolicy.retryDelayMillis)
+            }
         }
     }
 }

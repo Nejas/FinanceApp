@@ -9,4 +9,5 @@
     <color name="white">#FFFFFFFF</color>
     <color name="splash_background">#FFF7FF</color>
     <color name="splash_icon_background">#FFFFFF</color>
+    <color name="ic_launcher_background">#FFF7FF</color>
 </resources>

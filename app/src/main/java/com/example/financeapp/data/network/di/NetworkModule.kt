@@ -18,7 +18,6 @@ import dagger.hilt.components.SingletonComponent
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 import kotlinx.serialization.json.Json
-import kotlinx.coroutines.sync.Semaphore
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -56,12 +55,6 @@ object NetworkModule {
     @Singleton
     fun provideRetryPolicy(): RetryPolicy {
         return RetryPolicy()
-    }
-
-    @Provides
-    @Singleton
-    fun provideNetworkSemaphore(): Semaphore {
-        return Semaphore(permits = MAX_CONCURRENT_NETWORK_REQUESTS)
     }
 
     @Provides
@@ -117,5 +110,4 @@ object NetworkModule {
 
     private const val BASE_URL = "https://shmr-finance.ru/api/v1/"
     private const val CONTENT_TYPE = "application/json"
-    private const val MAX_CONCURRENT_NETWORK_REQUESTS = 5
 }

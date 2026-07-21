@@ -1,6 +1,7 @@
 package com.example.financeapp.data.repository
 
 import android.util.Log
+import com.example.financeapp.core.coroutines.DefaultDispatcher
 import com.example.financeapp.data.mapper.toDomain
 import com.example.financeapp.data.network.provider.FinanceRemoteDataSource
 import com.example.financeapp.domain.model.Category
@@ -8,10 +9,12 @@ import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.domain.repository.CategoriesRepository
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineDispatcher
 
 @Singleton
 class CategoriesDataRepository @Inject constructor(
-    private val networkDataSource: FinanceRemoteDataSource
+    private val networkDataSource: FinanceRemoteDataSource,
+    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : CategoriesRepository {
 
     override suspend fun getCategories(type: TransactionType?): Result<List<Category>> {
@@ -21,7 +24,7 @@ class CategoriesDataRepository @Inject constructor(
             TransactionType.INCOME -> networkDataSource.getCategoriesByType(isIncome = true)
             null -> networkDataSource.getCategories()
         }
-        return result.mapToResult { categories ->
+        return result.mapToResult(defaultDispatcher) { categories ->
             categories.map { category -> category.toDomain() }
         }.onFailure { error ->
             Log.e(TAG, "Failed to load categories: type=$type", error)

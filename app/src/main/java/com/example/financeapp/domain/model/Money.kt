@@ -10,6 +10,7 @@ class Money(
 ) : MoneyAmount {
     override val amount: BigDecimal = amount.stripTrailingZeros()
 
+
     constructor(
         amountInMinorUnits: Long,
         currency: Currency = Currency.RUB

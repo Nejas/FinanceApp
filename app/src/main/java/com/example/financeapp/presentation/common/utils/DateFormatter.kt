@@ -7,4 +7,3 @@ import java.util.Locale
 fun LocalDate.formatDayMonth(locale: Locale = Locale.getDefault()): String {
     return format(DateTimeFormatter.ofPattern("d MMMM", locale))
 }
-
