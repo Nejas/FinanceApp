@@ -16,9 +16,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonColors
@@ -144,40 +146,60 @@ private fun AnalyticsContent(
     val spacing = LocalSpacing.current
     val sizing = LocalSizing.current
 
-    Column(
+    LazyColumn(
         modifier = modifier
             .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
             .padding(bottom = spacing.analyticsBottomPadding)
     ) {
-        AnalyticsChartSurface(state = state,
-            onChartClick = {onChartClick()})
-        state.filters.forEachIndexed { index, filter ->
+        item {
+            AnalyticsChartSurface(
+                state = state,
+                onChartClick = onChartClick
+            )
+        }
+
+        itemsIndexed(
+            items = state.filters,
+            key = { _, filter -> filter.type }
+        ) { index, filter ->
             AnalyticsFilterRow(
                 filter = filter,
                 onClick = { onFilterClick(filter.type) },
                 showDivider = index != state.filters.lastIndex
             )
         }
-        Text(
-            modifier = Modifier.padding(
-                start = spacing.analyticsContentHorizontal,
-                top = spacing.analyticsLegendTop,
-                bottom = spacing.contentGap),
-            text = stringResource(R.string.analytics_transactions_title),
-            style = MaterialTheme.typography.displaySmall,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        when {
-                state.isEmpty -> EmptyContent(
-                    message = stringResource(R.string.analytics_empty),
-                 modifier = Modifier.fillMaxSize().padding(vertical = spacing.sm)
-                )
 
-            else -> state.transactions.forEach { transaction ->
+        item {
+            Text(
+                modifier = Modifier.padding(
+                    start = spacing.analyticsContentHorizontal,
+                    top = spacing.analyticsLegendTop,
+                    bottom = spacing.contentGap
+                ),
+                text = stringResource(R.string.analytics_transactions_title),
+                style = MaterialTheme.typography.displaySmall,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
+        if (state.isEmpty) {
+            item {
+                EmptyContent(
+                    message = stringResource(R.string.analytics_empty),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = spacing.sm)
+                )
+            }
+        } else {
+            items(
+                items = state.transactions,
+                key = { transaction -> transaction.id }
+            ) { transaction ->
                 ListItemColumn(
                     item = transaction,
-                    modifier = Modifier.height(sizing.listItemHeight))
+                    modifier = Modifier.height(sizing.listItemHeight)
+                )
             }
         }
     }

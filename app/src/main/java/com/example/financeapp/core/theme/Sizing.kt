@@ -41,6 +41,7 @@ data class Sizing(
     val selectionSheetButtonHeight: Dp = 52.dp,
     val selectionSheetButtonCorner: Dp = 28.dp,
     val analyticsCustomPeriodSheetMaxHeightFraction: Float = 0.9f,
+    val analyticsDetailSheetMaxHeightFraction: Float = 0.9f,
     val customPeriodDateRowHeight: Dp = 60.dp,
     val dateRangePillHeight: Dp = 36.dp,
     val dateRangePillCorner: Dp = 8.dp,
