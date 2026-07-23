@@ -1,356 +1,203 @@
 # FinanceApp
 
-## Что есть в приложении
+FinanceApp is an Android pet project for personal finance tracking. The app shows expenses, income, accounts and analytics, loads data from a backend API, handles network states and keeps UI logic separated from business and data layers.
 
-- основные экраны расходов, доходов и счетов;
-- экран аналитики с фильтрами по типу операции, периоду, категориям и счету;
-- donut chart для распределения операций по категориям;
-- прокручиваемая легенда под donut chart, если категорий становится много;
-- детализация аналитики в bottom sheet;
-- нижняя навигация между основными разделами;
-- горизонтальные свайпы между основными экранами;
-- общий top bar с выбранной датой, кнопкой аналитики и кнопкой настроек;
-- floating action button для добавления операции;
-- pull-to-refresh: экран можно обновить свайпом вниз;
-- периодическое silent-обновление активных экранов во время работы приложения;
-- splash screen с Lottie-анимацией;
-- светлая и тёмная тема;
-- загрузка данных с backend через Retrofit;
-- централизованная обработка сетевых ошибок;
-- отслеживание состояния интернета на устройстве;
-- offline-баннер, если на телефоне нет подключения к интернету;
-- экран ошибки с кнопкой "Повторить";
-- общая политика retry для временных сетевых ошибок;
-- unit-тесты для доменных моделей и use case'ов.
+The project is written as a portfolio app: the codebase demonstrates Compose UI, Clean Architecture, dependency injection, Retrofit networking, coroutine-based async work and focused unit tests.
 
-## Архитектура
+## Features
 
-Проект разделён на несколько основных слоёв:
+- Expenses, income and accounts screens.
+- Analytics screen with filters by operation type, period, category and account.
+- Donut chart with category distribution and a scrollable legend.
+- Transaction list and analytics detail bottom sheets.
+- Bottom navigation and horizontal swipes between main sections.
+- Shared top bar with date, analytics and settings actions.
+- Floating action button for adding operations.
+- Pull-to-refresh for manual data reload.
+- Silent lifecycle refresh for active screens.
+- Splash screen with Lottie animation.
+- Light and dark theme.
+- Backend integration through Retrofit.
+- Bearer token authorization.
+- Centralized network error handling.
+- Internet connection monitoring.
+- Offline banner when the device has no connection.
+- Retry policy for temporary network failures.
+- Unit tests for domain and presentation mapping logic.
+
+## Tech Stack
+
+- Kotlin
+- Jetpack Compose
+- Material 3
+- Android Architecture Components
+- ViewModel
+- Kotlin Coroutines and Flow
+- Hilt
+- Retrofit
+- OkHttp
+- Kotlinx Serialization
+- JUnit
+- MockK
+- Lottie
+
+## Architecture
+
+The project follows a layered structure close to Clean Architecture:
 
 ```text
 presentation -> domain -> data -> network
-       ^          ^        ^        ^
-       |          |        |        |
-      UI       use cases repositories Retrofit/API
 ```
 
-Отдельно выделен `core`-слой. В нём находятся общие вещи, которые не относятся к конкретному экрану: тема, размеры, отступы, диспетчеры корутин, helper-функции и мониторинг сети.
+`presentation` contains Compose screens, UI state, ViewModel classes, navigation and reusable UI components.
 
-### Presentation layer
+`domain` contains business models, repository contracts and use cases. This layer does not depend on Android UI or Retrofit implementation details.
 
-Пакет:
+`data` contains repository implementations, DTO mapping and network result mapping.
 
-```text
-app/src/main/java/com/example/financeapp/presentation
-```
+`network` contains Retrofit API contracts, request/response DTOs, authentication, request execution, retry policy and network result types.
 
-Этот слой отвечает за UI, состояние экранов и обработку пользовательских действий.
+`core` contains shared infrastructure: theme tokens, coroutine dispatchers, helper functions and network monitoring.
 
-Основные элементы:
+## UI Layer
 
-- `FinanceApp` — корневой composable приложения;
-- `AppNavGraph`, `BottomNavigationBar`, `AppRoute` — навигация между экранами;
-- `MainViewModel` — общий источник состояния для основных вкладок;
-- `AnalyticsViewModel` — ViewModel экрана аналитики;
-- `ExpensesRoute`, `IncomeRoute`, `AccountsRoute`, `AnalyticsRoute` — entry-point composable'ы экранов;
-- `State`, `Intent`, `Effect` — MVI-подобная организация UI-логики;
-- `presentation/common/components/base` — общие UI-компоненты;
-- `presentation/common/placeholders` — состояния загрузки, пустого списка и ошибки;
-- `presentation/common/network` — lifecycle refresh, offline-баннер и UI-обёртка для состояния сети.
+The UI is built with Jetpack Compose and Material 3. Screens use state objects and intent-style events, while ViewModels expose state through `StateFlow`.
 
-ViewModel получает use case через Hilt, вызывает его в `viewModelScope`, а результат кладёт в `StateFlow`. Composable подписывается на state и перерисовывается при изменениях.
+Important UI areas:
 
-### Основные экраны
+- `presentation/main` - root app state and main screen orchestration.
+- `presentation/navigation` - app routes and navigation graph.
+- `presentation/analytics` - analytics screen, filters, chart and state mapping.
+- `presentation/common/components/base` - shared base components.
+- `presentation/common/placeholders` - loading, empty and error states.
+- `presentation/common/network` - offline banner and lifecycle refresh helpers.
 
-Расходы и доходы на главных вкладках загружаются без обязательного периода. Для этого используется `GetTransactionsUseCase`, который получает список транзакций по счетам, а `MainViewModel` уже на `Default` dispatcher разделяет транзакции на доходы и расходы по типу категории.
+Bottom sheets are based on the shared `FinanceModalBottomSheet` component. This keeps modal behavior consistent across analytics filters and detail views.
 
-Типичный поток:
+## Domain Layer
 
-```text
-FinanceApp
-    -> MainViewModel
-        -> GetAllFinancialAccountsOverviewUseCase
-        -> GetCategoriesUseCase
-        -> GetTransactionsUseCase
-            -> TransactionsRepository
-                -> FinanceRemoteDataSource
-                    -> FinanceApiService
-```
+The domain layer keeps the main business concepts:
 
-После загрузки `MainViewModel` обновляет:
+- `Money`
+- `Currency`
+- `Transaction`
+- `TransactionType`
+- `Category`
+- `FinancialAccount`
+- `TransactionsQuery`
+- `TransactionsOverview`
+- `MainTransactionsOverview`
+- `AnalyticsOverview`
+- `FinancialAccountsOverview`
 
-- `ExpensesState`;
-- `IncomeState`;
-- `AccountsState`.
+Use cases coordinate business scenarios such as loading main screen data, account overview data, analytics overview data and transaction overview data. ViewModels depend on use cases instead of directly calling repositories or network classes.
 
-Пользователь может обновить данные свайпом вниз. Pull-to-refresh вызывает `refreshFromNetwork`, после чего запрос снова проходит через общую сетевую политику.
+## Data And Network
 
-### Analytics
+The app uses Retrofit and OkHttp for backend communication. Requests go through a remote data source and a shared request executor, which keeps networking behavior consistent.
 
-Экран аналитики строится вокруг `GetAnalyticsOverviewUseCase`.
+Network responsibilities include:
 
-Он поддерживает фильтры:
+- adding `Authorization: Bearer ...` through an OkHttp interceptor;
+- checking internet availability before requests;
+- applying request timeout;
+- retrying temporary failures;
+- converting network responses into typed results;
+- mapping DTOs into domain models.
 
-- тип операции: расходы, доходы или всё;
-- период: неделя, месяц, квартал, год или произвольный период;
-- категории;
-- счет.
+Repository implementations hide the network layer from domain use cases. Mapping is explicit and kept in dedicated mapper classes.
 
-Для выбора фильтров используются общие bottom sheet-компоненты на базе `FinanceModalBottomSheet`.
+## Error Handling
 
-На экране аналитики есть:
+Network and data errors are converted into screen-friendly error states. The app can show:
 
-- donut chart с суммой в центре;
-- горизонтально прокручиваемая легенда категорий под графиком;
-- список транзакций;
-- bottom sheet детализации по категориям;
-- pull-to-refresh свайпом вниз.
+- no internet state;
+- server error state;
+- timeout state;
+- generic loading failure.
 
-Donut chart рисуется через Compose `Canvas`, потому что в `androidx.compose.material3` нет готового компонента для donut/pie chart. Углы сегментов считаются по реальным суммам категорий, а не по округлённым процентам, поэтому при нескольких категориях в графике не появляется визуальный разрыв.
+When the device has no valid internet connection, the root UI shows an offline banner. Manual retry is still available on error screens through the "Retry" action.
 
-## Domain layer
+## Retry Policy
 
-Пакет:
+Temporary network failures are retried in one centralized place. The policy is intentionally simple and predictable:
 
-```text
-app/src/main/java/com/example/financeapp/domain
-```
+- request timeout: 15 seconds;
+- up to 3 retry attempts after the first request;
+- fixed delay between retries: 2 seconds;
+- retry for server errors, timeout and network failures;
+- no retry for client errors such as `400`, `401` and `404`.
 
-Domain-слой содержит бизнес-модели, интерфейсы репозиториев и use case'ы. Он не зависит от Android UI и не знает, какая конкретная реализация данных используется.
+This prevents screens and use cases from duplicating retry logic.
 
-Основные модели:
+## Tests
 
-- `Money`;
-- `Currency`;
-- `Transaction`;
-- `TransactionType`;
-- `Category`;
-- `FinancialAccount`;
-- `TransactionsOverview`;
-- `TransactionsOverviewFilter`;
-- `AnalyticsOverview`;
-- `AnalyticsFilter`;
-- `FinancialAccountsOverview`.
+The project includes unit tests for:
 
-Репозитории в domain — это интерфейсы:
+- money model behavior;
+- analytics overview use case;
+- financial accounts overview use case;
+- main overview use case;
+- transactions overview use case;
+- analytics filter UI mapping;
+- analytics period resolving;
+- analytics state mapping;
+- real API smoke/integration scenarios.
 
-- `TransactionsRepository`;
-- `FinancialAccountsRepository`;
-- `CategoriesRepository`.
-
-Use case'ы:
-
-- `GetTransactionsUseCase` — получает транзакции по фильтру репозитория;
-- `GetTransactionsOverviewUseCase` — собирает обзор транзакций для аналитики;
-- `GetAnalyticsOverviewUseCase` — готовит данные аналитики, категории, проценты и список операций;
-- `GetFinancialAccountsUseCase` — получает счета и считает общий баланс;
-- `GetAllFinancialAccountsOverviewUseCase` — собирает общий обзор счетов;
-- `GetCategoriesUseCase` — получает категории;
-- `CalculateMoneyTotalUseCase` — чистая доменная операция для суммирования `Money`.
-
-`CalculateMoneyTotalUseCase` не использует репозиторий, потому что не загружает данные. Он выполняет только расчёт над уже переданным списком. Это делает его переиспользуемым и простым для тестирования.
-
-## Data и Network layer
-
-Пакеты:
-
-```text
-app/src/main/java/com/example/financeapp/data
-app/src/main/java/com/example/financeapp/data/network
-```
-
-Data-слой содержит реализации репозиториев и мапперы между DTO и domain-моделями.
-
-Реализации репозиториев:
-
-- `TransactionsDataRepository`;
-- `FinancialAccountsDataRepository`;
-- `CategoriesDataRepository`.
-
-Сетевой слой содержит:
-
-- `FinanceApiService` — Retrofit API;
-- `FinanceRemoteDataSource` — контракт удалённого источника;
-- `FinanceNetworkDataSource` — реализация удалённого источника;
-- `NetworkRequestExecutor` — единая точка выполнения сетевых запросов;
-- `RetryPolicy` — параметры повторных запросов;
-- `NetworkResult` — типизированный результат сетевого вызова;
-- `NetworkDataException` — ошибки data-слоя после маппинга результата.
-
-Все сетевые запросы выполняются асинхронно на `Dispatchers.IO` через `NetworkRequestExecutor`.
-
-## Политика retry
-
-В приложении есть общая политика retry для сетевых запросов. Она применяется централизованно в `NetworkRequestExecutor`, поэтому экраны и use case'ы не дублируют retry-логику.
-
-Правила:
-
-- перед запросом проверяется `NetworkMonitor`;
-- если интернет на устройстве выключен, запрос не стартует;
-- каждый запрос выполняется с timeout `15 секунд`;
-- при временной ошибке запрос повторяется автоматически;
-- максимум выполняется 3 повторных запроса после первой попытки;
-- интервал между повторами фиксированный: 2 секунды;
-- backoff не используется.
-
-Retry применяется для:
-
-- `HTTP 500`;
-- `NetworkError`;
-- `TimeoutError`.
-
-Retry не применяется для:
-
-- `400`;
-- `401`;
-- `404`;
-- ошибок сериализации;
-- неизвестных ошибок, которые нельзя безопасно считать временными.
-
-Автоматический retry не заменяет ручное действие пользователя. Если данные не удалось загрузить, приложение показывает экран ошибки с кнопкой "Повторить". Нажатие на эту кнопку отправляет `Retry` intent во ViewModel, запускает новый `refreshFromNetwork` и снова проходит через общую сетевую политику.
-
-## Отслеживание сети и ошибки
-
-Состояние подключения отслеживается через `ConnectivityManager` в `ConnectivityNetworkMonitor`.
-
-Если на телефоне нет валидного интернет-соединения:
-
-- в корневом UI появляется offline-баннер;
-- lifecycle refresh не дёргает сеть;
-- сетевой executor сразу возвращает сетевую ошибку;
-- экран может показать ошибку "Нет подключения к интернету".
-
-Ошибки для UI классифицируются через `ScreenErrorMapper`.
-
-Возможные экранные состояния:
-
-- `NO_INTERNET`;
-- `SERVER_ERROR`;
-- `TIMEOUT`;
-- `LOAD_FAILED`.
-
-`ErrorContent` показывает текст под конкретный тип ошибки и кнопку "Повторить".
-
-## Dependency Injection
-
-DI реализован через Hilt.
-
-Точки входа:
-
-- `FinanceApplication` помечен `@HiltAndroidApp`;
-- `MainActivity` помечен `@AndroidEntryPoint`;
-- ViewModel'и помечены `@HiltViewModel`;
-- зависимости передаются через `@Inject constructor`.
-
-Основные DI-модули:
-
-- `RepositoryModule` — связывает domain repository interfaces с data implementations;
-- `NetworkModule` — создаёт Retrofit, OkHttp, JSON, `RetryPolicy` и network data source;
-- `NetworkMonitorModule` — связывает `NetworkMonitor` с `ConnectivityNetworkMonitor`;
-- `DispatchersModule` — предоставляет `IoDispatcher` и `DefaultDispatcher`.
-
-## Как запустить после клонирования
-
-После клонирования проекта из удалённого репозитория нужно настроить локальные параметры окружения.
-
-1. Открыть проект в Android Studio.
-2. Дождаться первичного Gradle Sync или создать файл вручную.
-3. В корне проекта создать файл:
-
-```text
-local.properties
-```
-
-4. Добавить путь к Android SDK, если Android Studio не добавила его автоматически:
-
-```properties
-sdk.dir=C\:\\Users\\User\\AppData\\Local\\Android\\Sdk
-```
-
-5. Добавить API-токен для backend:
-
-```properties
-SHMR_API_TOKEN=your_token_here
-```
-
-Пример полного `local.properties`:
-
-```properties
-sdk.dir=C\:\\Users\\User\\AppData\\Local\\Android\\Sdk
-SHMR_API_TOKEN=your_token_here
-```
-
-`local.properties` хранит локальные настройки разработчика и секреты, поэтому он не должен попадать в git. Файл уже добавлен в `.gitignore`.
-
-Токен читается в `app/build.gradle.kts` и попадает в `BuildConfig.SHMR_API_TOKEN`. Затем `BuildConfigAuthTokenProvider` передаёт его в `BearerAuthInterceptor`, который добавляет `Authorization: Bearer ...` к запросам.
-
-Если `SHMR_API_TOKEN` не указан или указан неверно, реальные backend-запросы будут получать `401 Unauthorized`.
-
-После настройки:
-
-1. выполнить Gradle Sync;
-2. выбрать устройство или эмулятор;
-3. запустить приложение из Android Studio.
-
-## Поток данных
-
-Главные экраны:
-
-```text
-Пользователь открывает расходы / доходы / счета
-    -> FinanceApp отображает нужный Route
-    -> MainViewModel запускает загрузку
-    -> UseCase обращается к repository
-    -> Repository обращается к network data source
-    -> NetworkRequestExecutor выполняет запрос на IO
-    -> MainViewModel готовит UI state на Default
-    -> Compose перерисовывает экран
-```
-
-Аналитика:
-
-```text
-Пользователь открывает аналитику или меняет фильтр
-    -> AnalyticsViewModel обновляет AnalyticsFilter
-    -> GetAnalyticsOverviewUseCase загружает транзакции и категории
-    -> UseCase группирует операции по категориям
-    -> ViewModel готовит цвета и UI state
-    -> AnalyticsScreen отображает chart, легенду, фильтры и транзакции
-```
-
-Ошибки:
-
-```text
-NetworkRequestExecutor
-    -> NetworkResult
-        -> NetworkDataException
-            -> ScreenError
-                -> ErrorContent / offline banner
-```
-
-## Тесты
-
-В проекте есть unit-тесты для:
-
-- `Money`;
-- `CalculateMoneyTotalUseCase`;
-- `GetFinancialAccountsUseCase`;
-- `GetAllFinancialAccountsOverviewUseCase`;
-- `GetTransactionsOverviewUseCase`;
-- сетевого integration/smoke-сценария для реального API.
-
-Запуск:
+Run tests:
 
 ```bash
 ./gradlew test
 ```
 
-## Дополнительные архитектурные правила
+## How To Run
 
-В проекте есть отдельный документ:
+1. Clone the repository.
+2. Open the project in Android Studio.
+3. Create or update `local.properties` in the project root.
+4. Add Android SDK path if Android Studio did not create it automatically:
 
-```text
-docs/architecture-rules.md
+```properties
+sdk.dir=C\:\\Users\\User\\AppData\\Local\\Android\\Sdk
 ```
 
-Там описано правило единого источника правды для справочных данных: валюты, языки, категории и счета не должны дублироваться списками внутри экранов. UI может делать только маппинг доменных данных в UI-модели.
+5. Add backend API token:
+
+```properties
+SHMR_API_TOKEN=your_token_here
+```
+
+Example:
+
+```properties
+sdk.dir=C\:\\Users\\User\\AppData\\Local\\Android\\Sdk
+SHMR_API_TOKEN=your_token_here
+```
+
+`local.properties` is ignored by Git because it contains local machine settings and secrets.
+
+After that, sync Gradle, choose an emulator or device and run the app from Android Studio.
+
+## Project Highlights
+
+- Clean separation between UI, domain logic and data access.
+- ViewModels use domain use cases instead of accessing repositories directly.
+- Shared Compose components reduce duplicated UI behavior.
+- Theme values are centralized in the project theme layer.
+- Network requests are executed through a common executor.
+- Backend errors are mapped before reaching UI state.
+- Analytics logic is isolated from composables through reducers and mappers.
+- Tests cover business and presentation mapping logic.
+
+## Roadmap
+
+- Add transaction create and edit flows.
+- Add account create and edit flows.
+- Add local cache for offline read mode.
+- Add UI tests for core user flows.
+- Add GitHub Actions for automated checks.
+- Add screenshots and demo video to the README.
+
+## Repository Notes
+
+The repository intentionally ignores local configuration, secrets and private working notes. Files such as `local.properties`, `secrets.properties`, `AGENTS.md` and `docs/` are not part of the public portfolio source.
