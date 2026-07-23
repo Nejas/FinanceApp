@@ -4,6 +4,20 @@ FinanceApp is an Android pet project for personal finance tracking. The app show
 
 The project is written as a portfolio app: the codebase demonstrates Compose UI, Clean Architecture, dependency injection, Retrofit networking, coroutine-based async work and focused unit tests.
 
+## Screenshots
+
+| Expenses | Income | Accounts |
+| --- | --- | --- |
+| <img src="assets/screenshots/expenses.jpg" width="220" alt="Expenses screen"> | <img src="assets/screenshots/income.jpg" width="220" alt="Income screen"> | <img src="assets/screenshots/accounts.jpg" width="220" alt="Accounts screen"> |
+
+| Analytics | Period Filter | Custom Period |
+| --- | --- | --- |
+| <img src="assets/screenshots/analytics.jpg" width="220" alt="Analytics screen"> | <img src="assets/screenshots/analytics-period-sheet.jpg" width="220" alt="Analytics period filter bottom sheet"> | <img src="assets/screenshots/analytics-custom-period.jpg" width="220" alt="Analytics custom period bottom sheet"> |
+
+| Analytics Details |
+| --- |
+| <img src="assets/screenshots/analytics-detail.jpg" width="220" alt="Analytics detail bottom sheet"> |
+
 ## Features
 
 - Expenses, income and accounts screens.
