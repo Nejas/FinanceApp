@@ -11,6 +11,8 @@
 *.jks
 *.keystore
 secrets.properties
+AGENTS.md
+docs/
 
 # Logs
 *.log

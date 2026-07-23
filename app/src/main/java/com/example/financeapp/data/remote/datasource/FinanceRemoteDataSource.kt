@@ -1,4 +1,4 @@
-package com.example.financeapp.data.network.provider
+package com.example.financeapp.data.remote.datasource
 
 import com.example.financeapp.data.network.model.request.AccountCreateRequestDto
 import com.example.financeapp.data.network.model.request.AccountUpdateRequestDto

@@ -82,7 +82,7 @@ fun ListItemColumn(
 
 @Preview(showBackground = true)
 @Composable
-private fun FinanceListItemPreview() {
+private fun RouteScreenItemPreview() {
     FinanceAppTheme(dynamicColor = false) {
         ListItemColumn(
             item = RouteScreenItem(

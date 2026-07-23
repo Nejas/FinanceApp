@@ -7,8 +7,8 @@ import com.example.financeapp.data.network.auth.BearerAuthInterceptor
 import com.example.financeapp.data.network.auth.BuildConfigAuthTokenProvider
 import com.example.financeapp.data.network.executor.NetworkCallExecutor
 import com.example.financeapp.data.network.executor.NetworkRequestExecutor
-import com.example.financeapp.data.network.provider.FinanceNetworkDataSource
-import com.example.financeapp.data.network.provider.FinanceRemoteDataSource
+import com.example.financeapp.data.remote.datasource.FinanceRemoteDataSource
+import com.example.financeapp.data.remote.datasource.RetrofitFinanceRemoteDataSource
 import com.example.financeapp.data.network.result.RetryPolicy
 import dagger.Binds
 import dagger.Module
@@ -43,7 +43,7 @@ abstract class NetworkBindingsModule {
     @Binds
     @Singleton
     abstract fun bindFinanceRemoteDataSource(
-        dataSource: FinanceNetworkDataSource
+        dataSource: RetrofitFinanceRemoteDataSource
     ): FinanceRemoteDataSource
 }
 

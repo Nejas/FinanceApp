@@ -6,8 +6,6 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,9 +20,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonColors
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.material3.Text
@@ -39,7 +34,6 @@ import com.example.financeapp.R
 import com.example.financeapp.core.theme.FinanceAppTheme
 import com.example.financeapp.core.theme.LocalSizing
 import com.example.financeapp.core.theme.LocalSpacing
-import com.example.financeapp.domain.model.AnalyticsCategorySummary
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.presentation.analytics.bottomsheets.AnalyticsBottomSheet
 import com.example.financeapp.presentation.analytics.bottomsheets.AnalyticsFilterType
@@ -50,7 +44,6 @@ import com.example.financeapp.presentation.common.components.base.ListItemColumn
 import com.example.financeapp.presentation.common.components.base.RoundFrame
 import com.example.financeapp.presentation.common.components.base.TextOvalFrame
 import com.example.financeapp.presentation.common.components.icons.FinanceAccountCardIcon
-import com.example.financeapp.presentation.common.components.icons.FinanceBackIcon
 import com.example.financeapp.presentation.common.components.icons.FinanceCalendarIcon
 import com.example.financeapp.presentation.common.components.icons.FinanceListTypeIcon
 import com.example.financeapp.presentation.common.components.icons.FinanceTagIcon
@@ -72,10 +65,8 @@ fun AnalyticsScreen(
             .background(MaterialTheme.colorScheme.background)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            AnalyticsTopBar(onBackClick = { onIntent(AnalyticsIntent.BackClicked) })
-
             FinancePullToRefreshBox(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.fillMaxSize(),
                 isRefreshing = state.isLoading,
                 onRefresh = { onIntent(AnalyticsIntent.Retry) }
             ) {
@@ -206,43 +197,8 @@ private fun AnalyticsContent(
 }
 
 @Composable
-private fun AnalyticsTopBar(
-    onBackClick: () -> Unit
-) {
-    val spacing = LocalSpacing.current
-    val sizing = LocalSizing.current
-
-    Row(
-        modifier = Modifier
-            .height(sizing.topBarHeight)
-            .fillMaxWidth()
-            .padding(horizontal = spacing.sm),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(
-            onClick = onBackClick,
-            colors = IconButtonDefaults.iconButtonColors(MaterialTheme.colorScheme.background),
-            modifier = Modifier
-                .size(sizing.detailBackButton)
-                .clip(CircleShape)){
-            FinanceBackIcon(
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(sizing.icon)
-            )
-        }
-        Spacer(modifier = Modifier.width(spacing.s))
-        Text(
-            text = stringResource(R.string.analytics_title),
-            style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.onSurface,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-    }
-}
-@Composable
 private fun AnalyticsLegend(
-    categories: List<AnalyticsCategorySummary>,
+    categories: List<AnalyticsCategoryUi>,
     categoryColors: Map<Long, Color>,
     modifier: Modifier = Modifier
 ) {
@@ -357,9 +313,9 @@ private fun AnalyticsScreenPreview() {
             .copy(selectedType = AnalyticsPeriodType.Month)
         val previewFilter = defaultAnalyticsFilter(periodFilter = previewPeriodFilter)
         val categories = listOf(
-            AnalyticsCategorySummary(1, "Ремонт", "🔧", Money(amountInMinorUnits = 80_200L * 100), 61),
-            AnalyticsCategorySummary(2, "Авто", "🚗", Money(amountInMinorUnits = 31_500L * 100), 24),
-            AnalyticsCategorySummary(3, "Другое", "📦", Money(amountInMinorUnits = 20_544L * 100), 15)
+            AnalyticsCategoryUi(1, "Ремонт", "🔧", Money(amountInMinorUnits = 80_200L * 100), 61),
+            AnalyticsCategoryUi(2, "Авто", "🚗", Money(amountInMinorUnits = 31_500L * 100), 24),
+            AnalyticsCategoryUi(3, "Другое", "📦", Money(amountInMinorUnits = 20_544L * 100), 15)
         )
         AnalyticsScreen(
             state = AnalyticsState(

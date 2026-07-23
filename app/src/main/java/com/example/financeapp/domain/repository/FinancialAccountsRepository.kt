@@ -1,7 +1,7 @@
 package com.example.financeapp.domain.repository
 
 import com.example.financeapp.domain.model.FinancialAccount
-import com.example.financeapp.domain.model.common.FinancialAccountPayload
+import com.example.financeapp.domain.model.FinancialAccountPayload
 
 interface FinancialAccountsRepository {
 

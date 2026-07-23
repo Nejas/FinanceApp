@@ -1,12 +1,12 @@
 package com.example.financeapp.domain.repository
 
 import com.example.financeapp.domain.model.Transaction
-import com.example.financeapp.domain.model.TransactionFilter
-import com.example.financeapp.domain.model.common.TransactionPayload
+import com.example.financeapp.domain.model.TransactionsQuery
+import com.example.financeapp.domain.model.TransactionPayload
 
 interface TransactionsRepository {
 
-    suspend fun getTransactions(filter: TransactionFilter): Result<List<Transaction>>
+    suspend fun getTransactions(query: TransactionsQuery): Result<List<Transaction>>
 
     suspend fun createTransaction(payload: TransactionPayload): Result<Transaction>
 

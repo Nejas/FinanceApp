@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.example.financeapp.R
 import com.example.financeapp.core.theme.LocalSizing
 import com.example.financeapp.core.theme.LocalSpacing
 import com.example.financeapp.presentation.common.components.icons.FinancePersonIcon
@@ -22,7 +21,7 @@ import com.example.financeapp.presentation.common.components.icons.FinanceReceip
 import com.example.financeapp.presentation.common.components.icons.FinanceTrendingUpIcon
 import com.example.financeapp.presentation.navigation.AppRoute
 import com.example.financeapp.presentation.navigation.BottomNavIcon
-import com.example.financeapp.presentation.navigation.BottomNavItem
+import com.example.financeapp.presentation.navigation.bottomNavItems
 
 @Composable
 fun BottomNavigationBar(
@@ -87,21 +86,3 @@ fun BottomNavigationBar(
         }
     }
 }
-
-private val bottomNavItems = listOf(
-    BottomNavItem(
-        route = AppRoute.Expenses,
-        icon = BottomNavIcon.EXPENSES,
-        labelResId = R.string.nav_expenses
-    ),
-    BottomNavItem(
-        route = AppRoute.Income,
-        icon = BottomNavIcon.INCOME,
-        labelResId = R.string.nav_income
-    ),
-    BottomNavItem(
-        route = AppRoute.Accounts,
-        icon = BottomNavIcon.ACCOUNTS,
-        labelResId = R.string.nav_accounts
-    )
-)

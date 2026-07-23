@@ -1,4 +1,4 @@
-package com.example.financeapp.data.network.provider
+package com.example.financeapp.data.remote.datasource
 
 import com.example.financeapp.data.network.api.FinanceApiService
 import com.example.financeapp.data.network.executor.NetworkCallExecutor
@@ -17,7 +17,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class FinanceNetworkDataSource @Inject constructor(
+class RetrofitFinanceRemoteDataSource @Inject constructor(
     private val apiService: FinanceApiService,
     private val requestExecutor: NetworkCallExecutor
 ) : FinanceRemoteDataSource {

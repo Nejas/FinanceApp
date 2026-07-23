@@ -2,10 +2,10 @@ package com.example.financeapp.domain.usecase
 
 import com.example.financeapp.core.coroutines.DefaultDispatcher
 import com.example.financeapp.core.coroutines.suspendRunCatching
-import com.example.financeapp.domain.model.AnalyticsCategorySummary
+import com.example.financeapp.domain.model.AnalyticsCategoryBreakdown
 import com.example.financeapp.domain.model.AnalyticsFilter
 import com.example.financeapp.domain.model.AnalyticsOverview
-import com.example.financeapp.domain.model.AnalyticsTransactionSummary
+import com.example.financeapp.domain.model.AnalyticsTransactionEntry
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.FinancialAccount
@@ -22,7 +22,6 @@ import kotlinx.coroutines.withContext
 class GetAnalyticsOverviewUseCase @Inject constructor(
     private val getTransactionsOverview: GetTransactionsOverviewUseCase,
     private val categoriesRepository: CategoriesRepository,
-    private val calculateMoneyTotal: CalculateMoneyTotalUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
@@ -39,14 +38,14 @@ class GetAnalyticsOverviewUseCase @Inject constructor(
                 val categoriesById = categories.associateBy { category -> category.id }
                 val accountsById = transactionsOverview.accounts.associateBy { account -> account.id }
                 val filteredTransactions = transactionsOverview.transactions.filterByCategories(filter.categoryIds)
-                val total = calculateMoneyTotal(
+                val total = Money.sum(
                     amounts = filteredTransactions.map { transaction -> transaction.amount },
                     fallbackCurrency = filter.currency
                 )
 
                 AnalyticsOverview(
                     total = total,
-                    categories = filteredTransactions.toCategorySummaries(
+                    categories = filteredTransactions.toCategoryBreakdowns(
                         categoriesById = categoriesById,
                         total = total,
                         fallbackCurrency = filter.currency
@@ -56,7 +55,7 @@ class GetAnalyticsOverviewUseCase @Inject constructor(
                         fallbackCurrency = filter.currency
                     ),
                     transactions = filteredTransactions.map { transaction ->
-                        transaction.toAnalyticsTransactionSummary(
+                        transaction.toAnalyticsTransactionEntry(
                             category = categoriesById[transaction.categoryId],
                             account = accountsById[transaction.accountId]
                         )
@@ -81,7 +80,7 @@ class GetAnalyticsOverviewUseCase @Inject constructor(
         return groupBy { transaction -> transaction.categoryId }
             .mapNotNull { (categoryId, transactions) ->
                 categoriesById[categoryId]?.let { category ->
-                    val amount = calculateMoneyTotal(
+                    val amount = Money.sum(
                         amounts = transactions.map { transaction -> transaction.amount },
                         fallbackCurrency = fallbackCurrency
                     )
@@ -104,39 +103,36 @@ class GetAnalyticsOverviewUseCase @Inject constructor(
         )
     }
 
-    private fun List<Transaction>.toCategorySummaries(
+    private fun List<Transaction>.toCategoryBreakdowns(
         categoriesById: Map<Long, Category>,
         total: Money,
         fallbackCurrency: Currency
-    ): List<AnalyticsCategorySummary> {
+    ): List<AnalyticsCategoryBreakdown> {
         return groupBy { transaction -> transaction.categoryId }
             .map { (categoryId, transactions) ->
                 val category = categoriesById[categoryId]
-                val amount = calculateMoneyTotal(
+                val amount = Money.sum(
                     amounts = transactions.map { transaction -> transaction.amount },
                     fallbackCurrency = fallbackCurrency
                 )
-                AnalyticsCategorySummary(
+                AnalyticsCategoryBreakdown(
                     categoryId = categoryId,
-                    title = category?.name ?: transactions.first().title,
-                    emoji = category?.emoji.orEmpty(),
+                    category = category,
                     amount = amount,
-                    percent = amount.percentOf(total)
+                    sharePercent = amount.percentOf(total)
                 )
             }
             .sortedByDescending { category -> category.amount.amount }
     }
 
-    private fun Transaction.toAnalyticsTransactionSummary(
+    private fun Transaction.toAnalyticsTransactionEntry(
         category: Category?,
         account: FinancialAccount?
-    ): AnalyticsTransactionSummary {
-        return AnalyticsTransactionSummary(
-            id = id,
-            title = category?.name ?: title,
-            leadingEmoji = category?.emoji.orEmpty(),
-            accountName = account?.name.orEmpty(),
-            amount = amount
+    ): AnalyticsTransactionEntry {
+        return AnalyticsTransactionEntry(
+            transaction = this,
+            category = category,
+            account = account
         )
     }
 

@@ -1,31 +1,19 @@
 package com.example.financeapp.presentation.analytics
 
 import android.util.Log
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.financeapp.R
 import com.example.financeapp.core.coroutines.DefaultDispatcher
 import com.example.financeapp.core.network.NetworkMonitor
 import com.example.financeapp.domain.model.AnalyticsFilter
-import com.example.financeapp.domain.model.AnalyticsOverview
-import com.example.financeapp.domain.model.Category
-import com.example.financeapp.domain.model.FinancialAccount
-import com.example.financeapp.domain.model.TransactionType
+import com.example.financeapp.domain.model.FinancialAccountsFilter
 import com.example.financeapp.domain.usecase.GetAnalyticsOverviewUseCase
-import com.example.financeapp.domain.usecase.GetFinancialAccountsUseCase
-import com.example.financeapp.presentation.analytics.bottomsheets.AnalyticsFilterType
+import com.example.financeapp.domain.usecase.GetFinancialAccountsOverviewUseCase
 import com.example.financeapp.presentation.analytics.bottomsheets.period.AnalyticsPeriodFilterState
-import com.example.financeapp.presentation.analytics.bottomsheets.period.AnalyticsPeriodType
-import com.example.financeapp.presentation.analytics.bottomsheets.period.defaultAnalyticsPeriodFilterState
-import com.example.financeapp.presentation.common.model.RouteScreenItem
 import com.example.financeapp.presentation.common.network.NetworkRefreshable
 import com.example.financeapp.presentation.common.placeholders.ScreenError
 import com.example.financeapp.presentation.common.placeholders.toScreenError
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.time.Clock
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
@@ -45,14 +33,17 @@ import kotlinx.coroutines.withTimeoutOrNull
 @HiltViewModel
 class AnalyticsViewModel @Inject constructor(
     private val getAnalyticsOverview: GetAnalyticsOverviewUseCase,
-    private val getFinancialAccounts: GetFinancialAccountsUseCase,
+    private val getFinancialAccountsOverview: GetFinancialAccountsOverviewUseCase,
     private val categoryColorMapper: AnalyticsCategoryColorMapper,
-    private val clock: Clock,
+    private val periodResolver: AnalyticsPeriodResolver,
+    private val filterUiMapper: AnalyticsFilterUiMapper,
+    private val stateMapper: AnalyticsStateMapper,
+    private val filterReducer: AnalyticsFilterReducer,
     private val networkMonitor: NetworkMonitor,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : ViewModel(), NetworkRefreshable {
 
-    private val initialPeriodFilter = defaultAnalyticsPeriodFilterState(today = LocalDate.now(clock))
+    private val initialPeriodFilter = periodResolver.defaultPeriodFilter()
     private val initialFilter = defaultAnalyticsFilter(periodFilter = initialPeriodFilter)
     private val _state = MutableStateFlow(
         AnalyticsState(
@@ -83,85 +74,79 @@ class AnalyticsViewModel @Inject constructor(
                 refreshFromNetwork()
             }
             AnalyticsIntent.ChartClicked -> {
-                _state.update { state ->
-                    state.copy(
-                        isDetailVisible = true,
-                        activeFilterSheet = null
-                    )
-                }
+                _state.update { state -> filterReducer.showDetail(state) }
             }
             AnalyticsIntent.DetailDismissed -> {
-                _state.update { state ->
-                    state.copy(isDetailVisible = false)
-                }
+                _state.update { state -> filterReducer.hideDetail(state) }
             }
             is AnalyticsIntent.FilterClicked -> {
-                _state.update { state ->
-                    state.copy(
-                        activeFilterSheet = intent.type.toFilterSheet(),
-                        isDetailVisible = false
-                    )
-                }
+                _state.update { state -> filterReducer.openFilterSheet(state, intent.type) }
             }
             AnalyticsIntent.FilterDismissed -> {
-                _state.update { state -> state.copy(activeFilterSheet = null) }
+                _state.update { state -> filterReducer.dismissFilterSheet(state) }
             }
             is AnalyticsIntent.TypeApplied -> {
-                applyFilter(
-                    currentFilter.copy(
-                        type = intent.type,
-                        categoryIds = emptySet()
+                applyFilterChange(
+                    filterReducer.applyType(
+                        state = _state.value,
+                        currentFilter = currentFilter,
+                        currentPeriodFilter = currentPeriodFilter,
+                        type = intent.type
                     )
                 )
             }
             is AnalyticsIntent.PeriodSelected -> {
-                if (intent.periodType == AnalyticsPeriodType.Custom) {
-                    _state.update { state ->
-                        state.copy(activeFilterSheet = AnalyticsFilterSheet.CustomPeriod)
-                    }
-                } else {
-                    val range = intent.periodType.rangeEndingAt(LocalDate.now(clock))
-                    val periodFilter = AnalyticsPeriodFilterState(
-                        selectedType = intent.periodType,
-                        startDate = range.startDate,
-                        endDate = range.endDate
+                applyFilterChange(
+                    filterReducer.selectPeriod(
+                        state = _state.value,
+                        currentFilter = currentFilter,
+                        currentPeriodFilter = currentPeriodFilter,
+                        periodType = intent.periodType
                     )
-                    applyFilter(
-                        filter = currentFilter.copy(
-                            startDate = range.startDate,
-                            endDate = range.endDate
-                        ),
-                        periodFilter = periodFilter
-                    )
-                }
+                )
             }
             is AnalyticsIntent.CustomPeriodApplied -> {
-                val startDate = minOf(intent.startDate, intent.endDate)
-                val endDate = maxOf(intent.startDate, intent.endDate)
-                val periodFilter = AnalyticsPeriodFilterState(
-                    selectedType = AnalyticsPeriodType.Custom,
-                    startDate = startDate,
-                    endDate = endDate
-                )
-                applyFilter(
-                    filter = currentFilter.copy(
-                        startDate = startDate,
-                        endDate = endDate
-                    ),
-                    periodFilter = periodFilter
+                applyFilterChange(
+                    filterReducer.applyCustomPeriod(
+                        state = _state.value,
+                        currentFilter = currentFilter,
+                        startDate = intent.startDate,
+                        endDate = intent.endDate
+                    )
                 )
             }
             AnalyticsIntent.CustomPeriodCancelClicked -> {
-                _state.update { state ->
-                    state.copy(activeFilterSheet = AnalyticsFilterSheet.Period)
-                }
+                _state.update { state -> filterReducer.returnToPeriodSheet(state) }
             }
             is AnalyticsIntent.CategorySelectionApplied -> {
-                applyFilter(currentFilter.copy(categoryIds = intent.categoryIds))
+                applyFilterChange(
+                    filterReducer.applyCategories(
+                        state = _state.value,
+                        currentFilter = currentFilter,
+                        currentPeriodFilter = currentPeriodFilter,
+                        categoryIds = intent.categoryIds
+                    )
+                )
             }
             is AnalyticsIntent.AccountSelected -> {
-                applyFilter(currentFilter.copy(accountId = intent.accountId))
+                applyFilterChange(
+                    filterReducer.applyAccount(
+                        state = _state.value,
+                        currentFilter = currentFilter,
+                        currentPeriodFilter = currentPeriodFilter,
+                        accountId = intent.accountId
+                    )
+                )
             }
+        }
+    }
+
+    private fun applyFilterChange(change: AnalyticsFilterChange) {
+        currentFilter = change.filter
+        currentPeriodFilter = change.periodFilter
+        _state.value = change.state
+        if (change.shouldReload) {
+            loadAnalytics()
         }
     }
 
@@ -203,27 +188,6 @@ class AnalyticsViewModel @Inject constructor(
         }
     }
 
-    private fun applyFilter(
-        filter: AnalyticsFilter,
-        periodFilter: AnalyticsPeriodFilterState = currentPeriodFilter
-    ) {
-        currentFilter = filter
-        currentPeriodFilter = periodFilter
-        _state.update { state ->
-            state.copy(
-                filter = filter,
-                periodFilter = periodFilter,
-                activeFilterSheet = null,
-                filters = filter.analyticsFilters(
-                    periodFilter = periodFilter,
-                    categories = state.availableCategories,
-                    accounts = state.availableAccounts
-                )
-            )
-        }
-        loadAnalytics()
-    }
-
     private fun loadReferenceData(
         isSilent: Boolean = false
     ) {
@@ -247,12 +211,16 @@ class AnalyticsViewModel @Inject constructor(
     }
 
     private suspend fun loadReferenceDataInternal(isSilent: Boolean = false) {
-        getFinancialAccounts(currentFilter.currency)
+        getFinancialAccountsOverview(
+            filter = FinancialAccountsFilter(currency = currentFilter.currency),
+            totalCurrency = currentFilter.currency
+        )
             .onSuccess { overview ->
                 _state.update { state ->
                     state.copy(
                         availableAccounts = overview.accounts,
-                        filters = currentFilter.analyticsFilters(
+                        filters = filterUiMapper.map(
+                            filter = currentFilter,
                             periodFilter = currentPeriodFilter,
                             categories = state.availableCategories,
                             accounts = overview.accounts
@@ -290,12 +258,15 @@ class AnalyticsViewModel @Inject constructor(
         getAnalyticsOverview(requestedFilter).fold(
             onSuccess = { overview ->
                 Log.d(TAG, "Loaded ${overview.transactions.size} analytics transactions")
+                val categoryItems = stateMapper.mapCategories(overview.categories)
                 val categoryColors = withContext(defaultDispatcher) {
-                    categoryColorMapper.map(overview.categories)
+                    categoryColorMapper.map(categoryItems)
                 }
                 _state.update { state ->
-                    overview.toState(
+                    stateMapper.mapOverview(
                         currentState = state,
+                        overview = overview,
+                        categoryItems = categoryItems,
                         categoryColors = categoryColors,
                         periodFilter = requestedPeriodFilter
                     )
@@ -313,38 +284,6 @@ class AnalyticsViewModel @Inject constructor(
                     }
                 }
             }
-        )
-    }
-
-    private fun AnalyticsOverview.toState(
-        currentState: AnalyticsState,
-        categoryColors: Map<Long, Color>,
-        periodFilter: AnalyticsPeriodFilterState
-    ): AnalyticsState {
-        return currentState.copy(
-            filter = filter,
-            periodFilter = periodFilter,
-            total = total,
-            categories = categories,
-            availableCategories = availableCategories,
-            categoryColors = categoryColors,
-            filters = filter.analyticsFilters(
-                periodFilter = periodFilter,
-                categories = availableCategories,
-                accounts = currentState.availableAccounts
-            ),
-            transactions = transactions.map { transaction ->
-                RouteScreenItem(
-                    id = transaction.id.toString(),
-                    title = transaction.title,
-                    leadingEmoji = transaction.leadingEmoji,
-                    comment = transaction.accountName,
-                    money = transaction.amount
-                )
-            },
-            isLoading = false,
-            isEmpty = categories.isEmpty() && transactions.isEmpty(),
-            error = null
         )
     }
 
@@ -372,100 +311,14 @@ class AnalyticsViewModel @Inject constructor(
         }
     }
 
-    private fun AnalyticsFilter.analyticsFilters(
-        periodFilter: AnalyticsPeriodFilterState,
-        categories: List<Category>,
-        accounts: List<FinancialAccount>
-    ): List<AnalyticsFilterUi> {
-        return listOf(
-            AnalyticsFilterUi(
-                type = AnalyticsFilterType.Type,
-                titleResId = R.string.analytics_filter_type,
-                valueResId = type.analyticsTitleResId()
-            ),
-            AnalyticsFilterUi(
-                type = AnalyticsFilterType.Period,
-                titleResId = R.string.analytics_filter_period,
-                valueResId = periodFilter.selectedType
-                    .takeUnless { periodType -> periodType == AnalyticsPeriodType.Custom }
-                    ?.titleResId,
-                value = if (periodFilter.selectedType == AnalyticsPeriodType.Custom) {
-                    formattedPeriod()
-                } else {
-                    ""
-                }
-            ),
-            AnalyticsFilterUi(
-                type = AnalyticsFilterType.Category,
-                titleResId = R.string.analytics_filter_articles,
-                valueResId = if (categoryIds.isEmpty()) {
-                    R.string.analytics_filter_all_categories
-                } else {
-                    null
-                },
-                value = categories
-                    .filter { category -> category.id in categoryIds }
-                    .joinToString(separator = ", ") { category -> category.name }
-            ),
-            AnalyticsFilterUi(
-                type = AnalyticsFilterType.Account,
-                titleResId = R.string.analytics_filter_account,
-                valueResId = if (accountId == null) {
-                    R.string.analytics_filter_all_accounts
-                } else {
-                    null
-                },
-                value = accounts.firstOrNull { account -> account.id == accountId }?.name.orEmpty()
-            )
-        )
-    }
-
-    private fun AnalyticsFilter.formattedPeriod(): String {
-        return "${startDate.format(FilterDateFormatter)} – ${endDate.format(FilterDateFormatter)}"
-    }
-
-    private fun TransactionType?.analyticsTitleResId(): Int {
-        return when (this) {
-            TransactionType.EXPENSE -> R.string.analytics_filter_expenses
-            TransactionType.INCOME -> R.string.analytics_filter_income
-            null -> R.string.analytics_filter_all
-        }
-    }
-
-    private fun AnalyticsFilterType.toFilterSheet(): AnalyticsFilterSheet {
-        return when (this) {
-            AnalyticsFilterType.Type -> AnalyticsFilterSheet.Type
-            AnalyticsFilterType.Period -> AnalyticsFilterSheet.Period
-            AnalyticsFilterType.Category -> AnalyticsFilterSheet.Category
-            AnalyticsFilterType.Account -> AnalyticsFilterSheet.Account
-        }
-    }
-
-    private fun AnalyticsPeriodType.rangeEndingAt(endDate: LocalDate): DateRange {
-        val startDate = when (this) {
-            AnalyticsPeriodType.Custom -> currentPeriodFilter.startDate
-            AnalyticsPeriodType.Week -> endDate.minusDays(6)
-            AnalyticsPeriodType.Month -> endDate.minusMonths(1).plusDays(1)
-            AnalyticsPeriodType.Quarter -> endDate.minusMonths(3).plusDays(1)
-            AnalyticsPeriodType.Year -> endDate.minusYears(1).plusDays(1)
-        }
-        return DateRange(startDate = startDate, endDate = endDate)
-    }
-
     private fun sendEffect(effect: AnalyticsEffect) {
         viewModelScope.launch {
             effectChannel.send(effect)
         }
     }
 
-    private data class DateRange(
-        val startDate: LocalDate,
-        val endDate: LocalDate
-    )
-
     private companion object {
         const val TAG = "AnalyticsViewModel"
         const val RefreshTimeoutMillis = 30_000L
-        val FilterDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
     }
 }

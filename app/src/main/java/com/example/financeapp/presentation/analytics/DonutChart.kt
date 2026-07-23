@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -25,9 +24,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.financeapp.R
-import com.example.financeapp.core.theme.FinanceDonuteLabelText
+import com.example.financeapp.core.theme.FinanceDonutLabelText
 import com.example.financeapp.core.theme.LocalSizing
-import com.example.financeapp.domain.model.AnalyticsCategorySummary
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.presentation.common.utils.formatWithoutMinorUnits
 import java.math.BigDecimal
@@ -37,7 +35,7 @@ private const val FullCircleSweep = 360f
 
 @Composable
 fun AnalyticsDonutChart(
-    categories: List<AnalyticsCategorySummary>,
+    categories: List<AnalyticsCategoryUi>,
     total: Money,
     categoryColors: Map<Long, Color>,
     modifier: Modifier = Modifier,
@@ -64,7 +62,7 @@ fun AnalyticsDonutChart(
             Text(
                 text = stringResource(R.string.analytics_total_for_period),
                 style = centerLabelStyle ?: MaterialTheme.typography.bodyMedium,
-                color = FinanceDonuteLabelText,
+                color = FinanceDonutLabelText,
                 textAlign = TextAlign.Center
             )
             Text(
@@ -81,7 +79,7 @@ fun AnalyticsDonutChart(
 
 @Composable
 private fun DonutChart(
-    categories: List<AnalyticsCategorySummary>,
+    categories: List<AnalyticsCategoryUi>,
     categoryColors: Map<Long, Color>,
     modifier: Modifier = Modifier,
     strokeWidth: Dp = LocalSizing.current.analyticsChartStroke

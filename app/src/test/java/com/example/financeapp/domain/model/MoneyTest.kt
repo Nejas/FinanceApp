@@ -47,4 +47,42 @@ class MoneyTest {
     fun currencyFromCode_ignoresCase() {
         assertEquals(Currency.USD, Currency.fromCode("usd"))
     }
+
+    @Test
+    fun sum_addsAmountsWithSameCurrency() {
+        val result = Money.sum(
+            amounts = listOf(
+                Money(amountInMinorUnits = 1_200L * 100),
+                Money(amountInMinorUnits = 750L * 100),
+                Money(amountInMinorUnits = 2_300L * 100)
+            )
+        )
+
+        assertEquals(Money(amountInMinorUnits = 4_250L * 100), result)
+    }
+
+    @Test
+    fun sum_returnsZeroInFallbackCurrencyForEmptyList() {
+        val result = Money.sum(
+            amounts = emptyList(),
+            fallbackCurrency = Currency.EUR
+        )
+
+        assertEquals(
+            Money(amountInMinorUnits = 0, currency = Currency.EUR),
+            result
+        )
+    }
+
+    @Test
+    fun sum_rejectsAmountsWithDifferentCurrencies() {
+        assertThrows(IllegalArgumentException::class.java) {
+            Money.sum(
+                amounts = listOf(
+                    Money(amountInMinorUnits = 100, currency = Currency.RUB),
+                    Money(amountInMinorUnits = 100, currency = Currency.USD)
+                )
+            )
+        }
+    }
 }

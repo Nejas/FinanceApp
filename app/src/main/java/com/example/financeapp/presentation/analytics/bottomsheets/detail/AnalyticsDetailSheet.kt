@@ -36,8 +36,8 @@ import com.example.financeapp.core.theme.AnalyticsDetailTotalTextStyle
 import com.example.financeapp.core.theme.FinanceAppTheme
 import com.example.financeapp.core.theme.LocalSizing
 import com.example.financeapp.core.theme.LocalSpacing
-import com.example.financeapp.domain.model.AnalyticsCategorySummary
 import com.example.financeapp.domain.model.Money
+import com.example.financeapp.presentation.analytics.AnalyticsCategoryUi
 import com.example.financeapp.presentation.analytics.AnalyticsCategoryColorMapper
 import com.example.financeapp.presentation.analytics.AnalyticsDonutChart
 import com.example.financeapp.presentation.common.utils.formatWithoutMinorUnits
@@ -45,7 +45,7 @@ import com.example.financeapp.presentation.common.utils.formatWithoutMinorUnits
 @Composable
 fun AnalyticsDetailSheet(
     total: Money,
-    categories: List<AnalyticsCategorySummary>,
+    categories: List<AnalyticsCategoryUi>,
     categoryColors: Map<Long, Color>,
     modifier: Modifier = Modifier
 ) {
@@ -102,7 +102,7 @@ fun AnalyticsDetailSheet(
 
 @Composable
 private fun AnalyticsDetailCategoryRow(
-    category: AnalyticsCategorySummary,
+    category: AnalyticsCategoryUi,
     color: Color,
     modifier: Modifier = Modifier
 ) {
@@ -176,9 +176,9 @@ private fun AnalyticsDetailCategoryRow(
 private fun AnalyticsDetailSheetPreview() {
     FinanceAppTheme(dynamicColor = false) {
         val categories = listOf(
-            AnalyticsCategorySummary(1, "Ремонт", "🔧", Money(amountInMinorUnits = 80_200L * 100), 61),
-            AnalyticsCategorySummary(2, "Авто", "🚗", Money(amountInMinorUnits = 31_500L * 100), 24),
-            AnalyticsCategorySummary(3, "Другое", "📦", Money(amountInMinorUnits = 20_544L * 100), 15)
+            AnalyticsCategoryUi(1, "Ремонт", "🔧", Money(amountInMinorUnits = 80_200L * 100), 61),
+            AnalyticsCategoryUi(2, "Авто", "🚗", Money(amountInMinorUnits = 31_500L * 100), 24),
+            AnalyticsCategoryUi(3, "Другое", "📦", Money(amountInMinorUnits = 20_544L * 100), 15)
         )
 
         AnalyticsDetailSheet(

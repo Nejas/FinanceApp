@@ -2,18 +2,22 @@ package com.example.financeapp.data.repository
 
 import android.util.Log
 import com.example.financeapp.core.coroutines.DefaultDispatcher
+import com.example.financeapp.core.coroutines.suspendRunCatching
 import com.example.financeapp.data.mapper.toDomain
 import com.example.financeapp.data.mapper.toRequestDto
-import com.example.financeapp.data.network.provider.FinanceRemoteDataSource
+import com.example.financeapp.data.remote.datasource.FinanceRemoteDataSource
 import com.example.financeapp.data.network.result.NetworkResult
 import com.example.financeapp.domain.model.Transaction
-import com.example.financeapp.domain.model.TransactionFilter
+import com.example.financeapp.domain.model.TransactionsQuery
 import com.example.financeapp.domain.model.TransactionType
-import com.example.financeapp.domain.model.common.TransactionPayload
+import com.example.financeapp.domain.model.TransactionPayload
 import com.example.financeapp.domain.repository.TransactionsRepository
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 
 @Singleton
 class TransactionsDataRepository @Inject constructor(
@@ -22,25 +26,33 @@ class TransactionsDataRepository @Inject constructor(
 ) : TransactionsRepository {
 
     override suspend fun getTransactions(
-        filter: TransactionFilter
+        query: TransactionsQuery
     ): Result<List<Transaction>> {
-        Log.d(TAG, "Loading transactions: filter=$filter")
-        return networkDataSource.getTransactionsByPeriod(
-            accountId = filter.accountId,
-            startDate = filter.startDate?.toString(),
-            endDate = filter.endDate?.toString()
-        ).mapToResult(defaultDispatcher) { transactions ->
-            transactions
-                .filter { transaction ->
-                    when (filter.type) {
-                        TransactionType.EXPENSE -> !transaction.category.isIncome
-                        TransactionType.INCOME -> transaction.category.isIncome
-                        null -> true
+        Log.d(TAG, "Loading transactions: query=$query")
+        return suspendRunCatching {
+            coroutineScope {
+                query.accountIds.map { accountId ->
+                    async {
+                        networkDataSource.getTransactionsByPeriod(
+                            accountId = accountId,
+                            startDate = query.startDate?.toString(),
+                            endDate = query.endDate?.toString()
+                        ).mapToResult(defaultDispatcher) { transactions ->
+                            transactions
+                                .filter { transaction ->
+                                    when (query.type) {
+                                        TransactionType.EXPENSE -> !transaction.category.isIncome
+                                        TransactionType.INCOME -> transaction.category.isIncome
+                                        null -> true
+                                    }
+                                }
+                                .map { transaction -> transaction.toDomain() }
+                        }.getOrThrow()
                     }
-                }
-                .map { transaction -> transaction.toDomain() }
+                }.awaitAll().flatten()
+            }
         }.onFailure { error ->
-            Log.e(TAG, "Failed to load transactions: filter=$filter", error)
+            Log.e(TAG, "Failed to load transactions: query=$query", error)
         }
     }
 

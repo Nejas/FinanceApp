@@ -3,7 +3,6 @@ package com.example.financeapp.presentation.analytics
 import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.Color
 import com.example.financeapp.R
-import com.example.financeapp.domain.model.AnalyticsCategorySummary
 import com.example.financeapp.domain.model.AnalyticsFilter
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Currency
@@ -19,7 +18,7 @@ data class AnalyticsState(
     val filter: AnalyticsFilter,
     val periodFilter: AnalyticsPeriodFilterState,
     val total: Money = Money(amountInMinorUnits = 0),
-    val categories: List<AnalyticsCategorySummary> = emptyList(),
+    val categories: List<AnalyticsCategoryUi> = emptyList(),
     val categoryColors: Map<Long, Color> = emptyMap(),
     val filters: List<AnalyticsFilterUi> = defaultAnalyticsFilters(),
     val availableCategories: List<Category> = emptyList(),
@@ -30,6 +29,14 @@ data class AnalyticsState(
     val isLoading: Boolean = false,
     val isEmpty: Boolean = false,
     val error: ScreenError? = null
+)
+
+data class AnalyticsCategoryUi(
+    val categoryId: Long,
+    val title: String,
+    val emoji: String,
+    val amount: Money,
+    val percent: Int
 )
 
 data class AnalyticsFilterUi(

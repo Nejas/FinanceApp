@@ -2,24 +2,21 @@ package com.example.financeapp.domain.model
 
 data class AnalyticsOverview(
     val total: Money,
-    val categories: List<AnalyticsCategorySummary>,
+    val categories: List<AnalyticsCategoryBreakdown>,
     val availableCategories: List<Category>,
-    val transactions: List<AnalyticsTransactionSummary>,
+    val transactions: List<AnalyticsTransactionEntry>,
     val filter: AnalyticsFilter
 )
 
-data class AnalyticsCategorySummary(
+data class AnalyticsCategoryBreakdown(
     val categoryId: Long,
-    val title: String,
-    val emoji: String,
+    val category: Category?,
     val amount: Money,
-    val percent: Int
+    val sharePercent: Int
 )
 
-data class AnalyticsTransactionSummary(
-    val id: Long,
-    val title: String,
-    val leadingEmoji: String,
-    val accountName: String,
-    val amount: Money
+data class AnalyticsTransactionEntry(
+    val transaction: Transaction,
+    val category: Category?,
+    val account: FinancialAccount?
 )

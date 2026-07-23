@@ -3,12 +3,11 @@ package com.example.financeapp.presentation.analytics
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import com.example.financeapp.core.theme.AnalyticsChartPalette
-import com.example.financeapp.domain.model.AnalyticsCategorySummary
 import javax.inject.Inject
 
 class AnalyticsCategoryColorMapper @Inject constructor() {
 
-    fun map(categories: List<AnalyticsCategorySummary>): Map<Long, Color> {
+    fun map(categories: List<AnalyticsCategoryUi>): Map<Long, Color> {
         return categories.associate { category ->
             category.categoryId to colorFor(category.categoryId)
         }

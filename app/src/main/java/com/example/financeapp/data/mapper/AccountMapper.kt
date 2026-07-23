@@ -5,7 +5,7 @@ import com.example.financeapp.data.network.model.request.AccountUpdateRequestDto
 import com.example.financeapp.data.network.model.response.AccountDetailsResponseDto
 import com.example.financeapp.data.network.model.response.AccountResponseDto
 import com.example.financeapp.domain.model.FinancialAccount
-import com.example.financeapp.domain.model.common.FinancialAccountPayload
+import com.example.financeapp.domain.model.FinancialAccountPayload
 import java.time.Instant
 
 fun AccountResponseDto.toDomain(): FinancialAccount {
@@ -33,7 +33,7 @@ fun FinancialAccountPayload.toCreateRequestDto(): AccountCreateRequestDto {
         name = name,
         emoji = emoji,
         balance = balance.amount.toPlainString(),
-        currency = currency.code
+        currency = balance.currency.code
     )
 }
 
@@ -42,6 +42,6 @@ fun FinancialAccountPayload.toUpdateRequestDto(): AccountUpdateRequestDto {
         name = name,
         emoji = emoji,
         balance = balance.amount.toPlainString(),
-        currency = currency.code
+        currency = balance.currency.code
     )
 }

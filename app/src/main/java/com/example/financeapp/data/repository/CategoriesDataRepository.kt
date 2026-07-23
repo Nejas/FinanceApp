@@ -3,7 +3,7 @@ package com.example.financeapp.data.repository
 import android.util.Log
 import com.example.financeapp.core.coroutines.DefaultDispatcher
 import com.example.financeapp.data.mapper.toDomain
-import com.example.financeapp.data.network.provider.FinanceRemoteDataSource
+import com.example.financeapp.data.remote.datasource.FinanceRemoteDataSource
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.domain.repository.CategoriesRepository

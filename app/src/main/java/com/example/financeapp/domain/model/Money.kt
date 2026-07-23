@@ -1,15 +1,13 @@
 package com.example.financeapp.domain.model
 
-import com.example.financeapp.domain.model.common.MoneyAmount
 import java.math.BigDecimal
 import java.math.RoundingMode
 
 class Money(
     amount: BigDecimal,
-    override val currency: Currency = Currency.RUB
-) : MoneyAmount {
-    override val amount: BigDecimal = amount.stripTrailingZeros()
-
+    val currency: Currency = Currency.RUB
+) {
+    val amount: BigDecimal = amount.stripTrailingZeros()
 
     constructor(
         amountInMinorUnits: Long,
@@ -52,7 +50,26 @@ class Money(
         return "Money(amount=$amount, currency=$currency)"
     }
 
-    private companion object {
-        const val MINOR_UNITS_SCALE = 2
+    companion object {
+        fun sum(
+            amounts: Iterable<Money>,
+            fallbackCurrency: Currency = Currency.RUB
+        ): Money {
+            val iterator = amounts.iterator()
+            if (!iterator.hasNext()) {
+                return Money(
+                    amount = BigDecimal.ZERO,
+                    currency = fallbackCurrency
+                )
+            }
+
+            var total = iterator.next()
+            while (iterator.hasNext()) {
+                total += iterator.next()
+            }
+            return total
+        }
+
+        private const val MINOR_UNITS_SCALE = 2
     }
 }

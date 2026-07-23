@@ -3,19 +3,21 @@ package com.example.financeapp.domain.usecase
 import com.example.financeapp.core.coroutines.DefaultDispatcher
 import com.example.financeapp.core.coroutines.suspendRunCatching
 import com.example.financeapp.domain.model.Currency
+import com.example.financeapp.domain.model.FinancialAccountsFilter
 import com.example.financeapp.domain.model.FinancialAccountsOverview
+import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.repository.FinancialAccountsRepository
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
-class GetAllFinancialAccountsOverviewUseCase @Inject constructor(
+class GetFinancialAccountsOverviewUseCase @Inject constructor(
     private val repository: FinancialAccountsRepository,
-    private val calculateMoneyTotal: CalculateMoneyTotalUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
     suspend operator fun invoke(
+        filter: FinancialAccountsFilter,
         totalCurrency: Currency
     ): Result<FinancialAccountsOverview> {
         val accounts = repository.getFinancialAccounts()
@@ -23,10 +25,14 @@ class GetAllFinancialAccountsOverviewUseCase @Inject constructor(
 
         return suspendRunCatching {
             withContext(defaultDispatcher) {
+                val filteredAccounts = filter.currency?.let { currency ->
+                    accounts.filter { account -> account.balance.currency == currency }
+                } ?: accounts
+
                 FinancialAccountsOverview(
-                    accounts = accounts,
-                    totalBalance = calculateMoneyTotal(
-                        amounts = accounts
+                    accounts = filteredAccounts,
+                    totalBalance = Money.sum(
+                        amounts = filteredAccounts
                             .filter { account -> account.balance.currency == totalCurrency }
                             .map { account -> account.balance },
                         fallbackCurrency = totalCurrency

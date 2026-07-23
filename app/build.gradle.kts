@@ -84,6 +84,7 @@ dependencies {
 
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.dotlottie.android)
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.kotlinx.serialization)

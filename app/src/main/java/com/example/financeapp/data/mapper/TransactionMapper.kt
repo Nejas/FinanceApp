@@ -4,13 +4,12 @@ import com.example.financeapp.data.network.model.request.TransactionRequestDto
 import com.example.financeapp.data.network.model.response.TransactionPlainResponseDto
 import com.example.financeapp.data.network.model.response.TransactionResponseDto
 import com.example.financeapp.domain.model.Transaction
-import com.example.financeapp.domain.model.common.TransactionPayload
+import com.example.financeapp.domain.model.TransactionPayload
 import java.time.Instant
 
 fun TransactionResponseDto.toDomain(): Transaction {
     return Transaction(
         id = id,
-        title = category.name,
         amount = amount.toMoney(account.currency),
         categoryId = category.id,
         accountId = account.id,
@@ -20,12 +19,10 @@ fun TransactionResponseDto.toDomain(): Transaction {
 }
 
 fun TransactionPlainResponseDto.toDomain(
-    title: String = "",
     currencyCode: String
 ): Transaction {
     return Transaction(
         id = id,
-        title = title,
         amount = amount.toMoney(currencyCode),
         categoryId = categoryId,
         accountId = accountId,

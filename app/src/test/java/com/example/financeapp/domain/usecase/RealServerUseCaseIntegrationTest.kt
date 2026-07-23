@@ -4,8 +4,8 @@ import com.example.financeapp.data.network.api.FinanceApiService
 import com.example.financeapp.data.network.auth.AuthTokenProvider
 import com.example.financeapp.data.network.auth.BearerAuthInterceptor
 import com.example.financeapp.data.network.executor.NetworkRequestExecutor
-import com.example.financeapp.data.network.provider.FinanceRemoteDataSource
-import com.example.financeapp.data.network.provider.FinanceNetworkDataSource
+import com.example.financeapp.data.remote.datasource.FinanceRemoteDataSource
+import com.example.financeapp.data.remote.datasource.RetrofitFinanceRemoteDataSource
 import com.example.financeapp.data.network.result.NetworkResult
 import com.example.financeapp.data.network.result.RetryPolicy
 import com.example.financeapp.core.network.NetworkMonitor
@@ -13,9 +13,9 @@ import com.example.financeapp.data.repository.CategoriesDataRepository
 import com.example.financeapp.data.repository.FinancialAccountsDataRepository
 import com.example.financeapp.data.repository.TransactionsDataRepository
 import com.example.financeapp.domain.model.Currency
-import com.example.financeapp.domain.model.FinancialAccountPayloadData
+import com.example.financeapp.domain.model.FinancialAccountPayload
 import com.example.financeapp.domain.model.Money
-import com.example.financeapp.domain.model.TransactionPayloadData
+import com.example.financeapp.domain.model.TransactionPayload
 import com.example.financeapp.domain.model.TransactionType
 import java.io.File
 import java.math.BigDecimal
@@ -64,7 +64,7 @@ class RealServerUseCaseIntegrationTest {
             requestTimeoutMillis = 15_000,
             retryDelayMillis = 0
         )
-        val networkDataSource = FinanceNetworkDataSource(
+        val networkDataSource = RetrofitFinanceRemoteDataSource(
             apiService = apiService,
             requestExecutor = NetworkRequestExecutor(
                 retryPolicy = retryPolicy,
@@ -73,9 +73,18 @@ class RealServerUseCaseIntegrationTest {
             )
         )
 
-        val accountsRepository = FinancialAccountsDataRepository(networkDataSource)
-        val categoriesRepository = CategoriesDataRepository(networkDataSource)
-        val transactionsRepository = TransactionsDataRepository(networkDataSource)
+        val accountsRepository = FinancialAccountsDataRepository(
+            networkDataSource = networkDataSource,
+            defaultDispatcher = Dispatchers.Default
+        )
+        val categoriesRepository = CategoriesDataRepository(
+            networkDataSource = networkDataSource,
+            defaultDispatcher = Dispatchers.Default
+        )
+        val transactionsRepository = TransactionsDataRepository(
+            networkDataSource = networkDataSource,
+            defaultDispatcher = Dispatchers.Default
+        )
 
         return TestDependencies(
             remoteDataSource = networkDataSource,
@@ -113,14 +122,13 @@ class RealServerUseCaseIntegrationTest {
             }
 
             printlnHeader("Create account request")
-            val accountPayload = FinancialAccountPayloadData(
+            val accountPayload = FinancialAccountPayload(
                 name = "Яндекс Банк",
                 emoji = null,
                 balance = Money(
                     amount = BigDecimal("1000.00"),
                     currency = Currency.RUB
-                ),
-                currency = Currency.RUB
+                )
             )
             println(accountPayload)
 
@@ -149,7 +157,7 @@ class RealServerUseCaseIntegrationTest {
 
             printlnHeader("Create income transaction")
             val incomeTransaction = dependencies.createTransaction(
-                TransactionPayloadData(
+                TransactionPayload(
                     accountId = account.id,
                     categoryId = incomeCategory.id,
                     amount = Money(
@@ -165,7 +173,7 @@ class RealServerUseCaseIntegrationTest {
 
             printlnHeader("Create expense transaction")
             val expenseTransaction = dependencies.createTransaction(
-                TransactionPayloadData(
+                TransactionPayload(
                     accountId = account.id,
                     categoryId = expenseCategory.id,
                     amount = Money(

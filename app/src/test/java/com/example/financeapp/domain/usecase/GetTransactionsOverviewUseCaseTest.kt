@@ -2,13 +2,13 @@ package com.example.financeapp.domain.usecase
 
 import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.FinancialAccount
+import com.example.financeapp.domain.model.FinancialAccountPayload
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.model.Transaction
-import com.example.financeapp.domain.model.TransactionFilter
+import com.example.financeapp.domain.model.TransactionPayload
+import com.example.financeapp.domain.model.TransactionsQuery
 import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.domain.model.TransactionsOverviewFilter
-import com.example.financeapp.domain.model.common.FinancialAccountPayload
-import com.example.financeapp.domain.model.common.TransactionPayload
 import com.example.financeapp.domain.repository.FinancialAccountsRepository
 import com.example.financeapp.domain.repository.TransactionsRepository
 import java.time.Instant
@@ -58,12 +58,10 @@ class GetTransactionsOverviewUseCaseTest {
         )
         val useCase = GetTransactionsOverviewUseCase(
             transactionsRepository = transactionsRepository,
-            getFinancialAccounts = GetFinancialAccountsUseCase(
+            getFinancialAccountsOverview = GetFinancialAccountsOverviewUseCase(
                 repository = FakeFinancialAccountsRepository(accounts),
-                calculateMoneyTotal = CalculateMoneyTotalUseCase(),
                 defaultDispatcher = Dispatchers.Unconfined
             ),
-            calculateMoneyTotal = CalculateMoneyTotalUseCase(),
             defaultDispatcher = Dispatchers.Unconfined
         )
 
@@ -81,20 +79,14 @@ class GetTransactionsOverviewUseCaseTest {
         assertEquals(Money(amountInMinorUnits = 1_200L * 100, currency = Currency.RUB), result.total)
         assertEquals(
             listOf(
-                TransactionFilter(
-                    accountId = 1,
-                    startDate = null,
-                    endDate = LocalDate.of(2026, 7, 20),
-                    type = TransactionType.EXPENSE
-                ),
-                TransactionFilter(
-                    accountId = 3,
+                TransactionsQuery(
+                    accountIds = setOf(1L, 3L),
                     startDate = null,
                     endDate = LocalDate.of(2026, 7, 20),
                     type = TransactionType.EXPENSE
                 )
             ),
-            transactionsRepository.requestedFilters
+            transactionsRepository.requestedQueries
         )
     }
 
@@ -118,7 +110,6 @@ class GetTransactionsOverviewUseCaseTest {
         date: String
     ) = Transaction(
         id = id,
-        title = "Transaction $id",
         amount = Money(amountInMinorUnits = amount * 100, currency = Currency.RUB),
         categoryId = categoryId,
         accountId = accountId,
@@ -159,13 +150,17 @@ class GetTransactionsOverviewUseCaseTest {
         private val transactionsByAccountId: Map<Long, List<Transaction>>
     ) : TransactionsRepository {
 
-        val requestedFilters = mutableListOf<TransactionFilter>()
+        val requestedQueries = mutableListOf<TransactionsQuery>()
 
         override suspend fun getTransactions(
-            filter: TransactionFilter
+            query: TransactionsQuery
         ): Result<List<Transaction>> {
-            requestedFilters += filter
-            return Result.success(transactionsByAccountId[filter.accountId].orEmpty())
+            requestedQueries += query
+            return Result.success(
+                query.accountIds.flatMap { accountId ->
+                    transactionsByAccountId[accountId].orEmpty()
+                }
+            )
         }
 
         override suspend fun createTransaction(

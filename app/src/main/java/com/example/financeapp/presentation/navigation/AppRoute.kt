@@ -8,5 +8,5 @@ sealed class AppRoute(val route: String) {
 }
 
 fun AppRoute.isMainRoute(): Boolean {
-    return this == AppRoute.Expenses || this == AppRoute.Income || this == AppRoute.Accounts
+    return bottomNavItems.any { item -> item.route == this }
 }

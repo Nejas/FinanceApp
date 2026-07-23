@@ -5,9 +5,9 @@ import com.example.financeapp.core.coroutines.DefaultDispatcher
 import com.example.financeapp.data.mapper.toCreateRequestDto
 import com.example.financeapp.data.mapper.toDomain
 import com.example.financeapp.data.mapper.toUpdateRequestDto
-import com.example.financeapp.data.network.provider.FinanceRemoteDataSource
+import com.example.financeapp.data.remote.datasource.FinanceRemoteDataSource
 import com.example.financeapp.domain.model.FinancialAccount
-import com.example.financeapp.domain.model.common.FinancialAccountPayload
+import com.example.financeapp.domain.model.FinancialAccountPayload
 import com.example.financeapp.domain.repository.FinancialAccountsRepository
 import javax.inject.Inject
 import javax.inject.Singleton

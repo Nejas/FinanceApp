@@ -1,7 +1,7 @@
 package com.example.financeapp.domain.usecase
 
 import com.example.financeapp.domain.model.Transaction
-import com.example.financeapp.domain.model.common.TransactionPayload
+import com.example.financeapp.domain.model.TransactionPayload
 import com.example.financeapp.domain.repository.TransactionsRepository
 import javax.inject.Inject
 
