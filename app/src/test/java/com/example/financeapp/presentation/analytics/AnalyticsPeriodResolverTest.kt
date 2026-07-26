@@ -1,6 +1,7 @@
 package com.example.financeapp.presentation.analytics
 
-import com.example.financeapp.presentation.analytics.bottomsheets.period.AnalyticsPeriodType
+import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodResolver
+import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodType
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate

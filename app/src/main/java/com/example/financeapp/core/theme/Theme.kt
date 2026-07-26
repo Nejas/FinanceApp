@@ -36,9 +36,9 @@ private val DarkColorScheme = darkColorScheme(
     onSurfaceVariant = ColorDarkOnBackground,
     outline = ColorDarkOutline,
     outlineVariant = ColorDarkOutline,
-    error = FinanceWarning,
+    error = FinanceWarningContainer,
     onError = FinancePrimary,
-    errorContainer = ColorDarkWarningContainer,
+    errorContainer = FinanceWarning,
     onErrorContainer = ColorDarkOnWarningContainer
 )
 
@@ -48,12 +48,12 @@ private val LightColorScheme = lightColorScheme(
     primaryContainer = FinanceSelectedContainer,
     onPrimaryContainer = FinancePrimary,
     secondary = FinanceSelectedContainer,
-    onSecondary = FinancePrimary,
+    onSecondary = FinanceOnSecondary,
     secondaryContainer = FinanceSelectedContainer,
     onSecondaryContainer = FinancePrimary,
     background = FinanceBackground,
     onBackground = FinanceOnBackground,
-    surface = FinanceBackground,
+    surface = FinanceSurface,
     onSurface = FinanceOnBackground,
     surfaceVariant = FinanceNavigationBackground,
     onSurfaceVariant = FinanceOnBackground,

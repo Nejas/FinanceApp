@@ -2,16 +2,15 @@ package com.example.financeapp.presentation.analytics
 
 import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.Color
-import com.example.financeapp.R
 import com.example.financeapp.domain.model.AnalyticsFilter
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.FinancialAccount
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.model.TransactionType
-import com.example.financeapp.presentation.analytics.bottomsheets.AnalyticsFilterType
-import com.example.financeapp.presentation.analytics.bottomsheets.period.AnalyticsPeriodFilterState
-import com.example.financeapp.presentation.common.model.RouteScreenItem
+import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodFilterState
+import com.example.financeapp.presentation.common.model.FinanceFieldType
+import com.example.financeapp.presentation.common.model.FinanceListItemUiModel
 import com.example.financeapp.presentation.common.placeholders.ScreenError
 
 data class AnalyticsState(
@@ -25,7 +24,7 @@ data class AnalyticsState(
     val availableAccounts: List<FinancialAccount> = emptyList(),
     val activeFilterSheet: AnalyticsFilterSheet? = null,
     val isDetailVisible: Boolean = false,
-    val transactions: List<RouteScreenItem> = emptyList(),
+    val transactions: List<FinanceListItemUiModel> = emptyList(),
     val isLoading: Boolean = false,
     val isEmpty: Boolean = false,
     val error: ScreenError? = null
@@ -40,8 +39,7 @@ data class AnalyticsCategoryUi(
 )
 
 data class AnalyticsFilterUi(
-    val type: AnalyticsFilterType,
-    @StringRes val titleResId: Int,
+    val type: FinanceFieldType,
     @StringRes val valueResId: Int? = null,
     val value: String = ""
 )
@@ -65,22 +63,14 @@ fun defaultAnalyticsFilter(periodFilter: AnalyticsPeriodFilterState): AnalyticsF
 }
 
 fun defaultAnalyticsFilters(): List<AnalyticsFilterUi> {
-    return listOf(
-        AnalyticsFilterUi(
-            type = AnalyticsFilterType.Type,
-            titleResId = R.string.analytics_filter_type
-        ),
-        AnalyticsFilterUi(
-            type = AnalyticsFilterType.Period,
-            titleResId = R.string.analytics_filter_period
-        ),
-        AnalyticsFilterUi(
-            type = AnalyticsFilterType.Category,
-            titleResId = R.string.analytics_filter_articles
-        ),
-        AnalyticsFilterUi(
-            type = AnalyticsFilterType.Account,
-            titleResId = R.string.analytics_filter_account
-        )
-    )
+    return AnalyticsFieldTypes.map { type ->
+        AnalyticsFilterUi(type = type)
+    }
 }
+
+val AnalyticsFieldTypes: List<FinanceFieldType> = listOf(
+    FinanceFieldType.TransactionType,
+    FinanceFieldType.Period,
+    FinanceFieldType.Category,
+    FinanceFieldType.Account
+)

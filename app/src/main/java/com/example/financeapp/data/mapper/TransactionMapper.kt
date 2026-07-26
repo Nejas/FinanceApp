@@ -35,8 +35,8 @@ fun TransactionPayload.toRequestDto(): TransactionRequestDto {
     return TransactionRequestDto(
         accountId = accountId,
         categoryId = categoryId,
-        amount = amount.amount.toPlainString(),
+        amount = amount.toApiAmountString(),
         transactionDate = transactionDate.toString(),
-        comment = comment
+        comment = comment.orEmpty()
     )
 }

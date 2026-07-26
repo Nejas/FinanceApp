@@ -1,5 +1,6 @@
 package com.example.financeapp.presentation.common.components.base
 
+import android.text.style.LineBackgroundSpan
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
@@ -12,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -23,6 +25,7 @@ import com.example.financeapp.core.theme.LocalSpacing
 fun TextOvalFrame(
     text: String,
     modifier: Modifier = Modifier,
+    backgroundColor: Color = MaterialTheme.colorScheme.surface,
     minWidth: Dp? = null,
     maxWidth: Dp? = null
 ) {
@@ -44,7 +47,7 @@ fun TextOvalFrame(
                 }
             ),
         shape = RoundedCornerShape(sizing.textOvalFrameCorner),
-        color = MaterialTheme.colorScheme.background,
+        color = backgroundColor,
         border = BorderStroke(spacing.hairline, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Box(

@@ -17,6 +17,12 @@ fun ExpensesScreen(
         state = state,
         totalLabel = stringResource(R.string.expenses_total_label),
         emptyMessage = stringResource(R.string.empty_expenses),
-        onRetry = { onIntent(ExpensesIntent.Retry) }
+        onRetry = { onIntent(ExpensesIntent.Retry) },
+        onTransactionClick = { transactionId ->
+            onIntent(ExpensesIntent.TransactionClicked(transactionId))
+        },
+        onTransactionDeleteRequest = { transactionId ->
+            onIntent(ExpensesIntent.TransactionDeleteRequested(transactionId))
+        }
     )
 }

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Backspace
 import androidx.compose.material.icons.automirrored.outlined.FormatListBulleted
-import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.automirrored.outlined.TrendingUp
 import androidx.compose.material.icons.outlined.ArrowBackIosNew
 import androidx.compose.material.icons.outlined.Add
@@ -17,11 +16,16 @@ import androidx.compose.material.icons.outlined.Bedtime
 import androidx.compose.material.icons.outlined.CreditCard
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.DesktopWindows
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Fingerprint
 import androidx.compose.material.icons.outlined.JoinInner
+import androidx.compose.material.icons.outlined.Label
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Receipt
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Sell
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material.icons.outlined.WbSunny
@@ -143,6 +147,19 @@ fun FinanceBackIcon(
 }
 
 @Composable
+fun FinanceCloseIcon(
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Icon(
+        imageVector = Icons.Outlined.Close,
+        contentDescription = null,
+        tint = color,
+        modifier = modifier
+    )
+}
+
+@Composable
 fun FinanceReceiptIcon(
     color: Color,
     modifier: Modifier = Modifier
@@ -230,12 +247,51 @@ fun FinanceBackspaceIcon(
 }
 
 @Composable
+fun FinanceDeleteIcon(
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Icon(
+        imageVector = Icons.Outlined.Delete,
+        contentDescription = null,
+        tint = color,
+        modifier = modifier
+    )
+}
+
+@Composable
+fun FinanceClockIcon(
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Icon(
+        imageVector = Icons.Outlined.Schedule,
+        contentDescription = null,
+        tint = color,
+        modifier = modifier
+    )
+}
+
+@Composable
+fun FinanceSearchIcon(
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Icon(
+        imageVector = Icons.Outlined.Search,
+        contentDescription = null,
+        tint = color,
+        modifier = modifier
+    )
+}
+
+@Composable
 fun FinanceArticleIcon(
     color: Color,
     modifier: Modifier = Modifier
 ) {
     Icon(
-        imageVector = Icons.AutoMirrored.Outlined.Label,
+        imageVector = Icons.Outlined.Sell,
         contentDescription = null,
         tint = color,
         modifier = modifier
@@ -248,7 +304,7 @@ fun FinanceTagIcon(
     modifier: Modifier = Modifier
 ) {
     Icon(
-        imageVector = Icons.Outlined.Sell,
+        imageVector = Icons.Outlined.Label,
         contentDescription = null,
         tint = color,
         modifier = modifier
@@ -497,6 +553,7 @@ private fun FinanceIconsPreview() {
                 FinanceSlidersIcon(color = color, modifier = Modifier.size(spacing.xl))
                 FinanceListTypeIcon(color = color, modifier = Modifier.size(spacing.xl))
                 FinanceBackIcon(color = color, modifier = Modifier.size(spacing.xl))
+                FinanceCloseIcon(color = color, modifier = Modifier.size(spacing.xl))
             }
             Row(horizontalArrangement = Arrangement.spacedBy(spacing.md)) {
                 FinanceReceiptIcon(color = color, modifier = Modifier.size(spacing.xl))
@@ -507,6 +564,8 @@ private fun FinanceIconsPreview() {
             }
             Row(horizontalArrangement = Arrangement.spacedBy(spacing.md)) {
                 FinanceBackspaceIcon(color = color, modifier = Modifier.size(spacing.xl))
+                FinanceClockIcon(color = color, modifier = Modifier.size(spacing.xl))
+                FinanceSearchIcon(color = color, modifier = Modifier.size(spacing.xl))
                 FinanceArticleIcon(color = color, modifier = Modifier.size(spacing.xl))
                 FinanceTagIcon(color = color, modifier = Modifier.size(spacing.xl))
                 FinanceAccountCardIcon(color = color, modifier = Modifier.size(spacing.xl))
@@ -559,15 +618,6 @@ private const val ExpensesNavIconPath =
 
 private const val AccountsNavIconPath =
     "M15.0016 19V17C15.0016 15.9391 14.5801 14.9217 13.8299 14.1716C13.0796 13.4214 12.0621 13 11.0011 13H5.0004C3.9395 13 2.9219 13.4214 2.1717 14.1716C1.4215 14.9217 1 15.9391 1 17V19M12.0012 5C12.0012 7.2091 10.2102 9 8.0008 9C5.7914 9 4.0003 7.2091 4.0003 5C4.0003 2.7909 5.7914 1 8.0008 1C10.2102 1 12.0012 2.7909 12.0012 5Z"
-
-private const val ArticleIconPath =
-    "M11.75 0.75H0.75V16.75H11.75L16.75 8.75L11.75 0.75Z"
-
-private const val TagIconPath =
-    "M7.87957 1C8.2774 1.00008 8.6589 1.15819 8.94016 1.43954L15.4687 7.96808C15.8075 8.30899 15.9976 8.77008 15.9976 9.25069C15.9976 9.73129 15.8075 10.1924 15.4687 10.5333L10.5333 15.4687C10.1924 15.8075 9.73129 15.9976 9.25069 15.9976C8.77008 15.9976 8.30899 15.8075 7.96808 15.4687L1.43954 8.94016C1.15819 8.6589 1.00008 8.2774 1 7.87957V2.50012C1 2.10227 1.15805 1.7207 1.43938 1.43938C1.7207 1.15805 2.10227 1 2.50012 1H7.87957Z"
-
-private const val AccountCardIconPath =
-    "M0.75 4.75H16.75M2.75 8.75H5.75M7.75 8.75H9.75M0.75 0.75H16.75V11.75H0.75V0.75Z"
 
 private const val CurrencyIconPath =
     "M0.75 2.75H16.75M0.75 0.75H16.75V11.75H0.75V0.75ZM10.75 7.25C10.75 8.078 11.422 8.75 12.25 8.75C13.078 8.75 13.75 8.078 13.75 7.25C13.75 6.422 13.078 5.75 12.25 5.75C11.422 5.75 10.75 6.422 10.75 7.25Z"

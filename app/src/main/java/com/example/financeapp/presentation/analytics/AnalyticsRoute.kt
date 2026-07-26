@@ -1,12 +1,12 @@
 package com.example.financeapp.presentation.analytics
 
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.financeapp.presentation.analytics.ui.AnalyticsScreen
 import com.example.financeapp.presentation.common.network.LifecycleNetworkRefreshEffect
 import com.example.financeapp.presentation.common.network.NetworkStatusViewModel
 @Composable

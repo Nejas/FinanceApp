@@ -31,7 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import com.example.financeapp.core.theme.LocalSizing
 import com.example.financeapp.core.theme.LocalSpacing
 import com.example.financeapp.presentation.common.components.icons.FinanceCheckIcon
@@ -46,15 +46,17 @@ enum class FinanceSelectionIndicatorType {
 fun FinanceSelectionSheetScaffold(
     title: String,
     modifier: Modifier = Modifier,
+    bottomPadding: Dp? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val spacing = LocalSpacing.current
+    val resolvedBottomPadding = bottomPadding ?: spacing.sheetButtonTop
 
     Column(
         modifier = modifier
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
-            .padding(bottom = 26.dp)
+            .padding(bottom = resolvedBottomPadding)
     ) {
         Text(
             modifier = Modifier.padding(start = spacing.sheetTitleHorizontal, top = spacing.sheetTitleVertical, bottom = spacing.sheetTitleVertical),
@@ -76,11 +78,18 @@ fun FinanceSelectionRow(
     modifier: Modifier = Modifier,
     subtitle: String? = null,
     showDivider: Boolean = true,
-    leadingContent: (@Composable () -> Unit)? = null
+    rowHeight: Dp? = null,
+    leadingContent: (@Composable () -> Unit)? = null,
+    trailingContent: @Composable (() -> Unit) = {
+        FinanceSelectionIndicator(
+            isSelected = isSelected,
+            type = indicatorType
+        )
+    }
 ) {
     val spacing = LocalSpacing.current
     val sizing = LocalSizing.current
-    val rowHeight = if (subtitle == null) {
+    val resolvedRowHeight = rowHeight ?: if (subtitle == null) {
         sizing.selectionSheetRowHeight
     } else {
         sizing.selectionSheetTallRowHeight
@@ -89,7 +98,7 @@ fun FinanceSelectionRow(
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
-                .height(rowHeight)
+                .height(resolvedRowHeight)
                 .fillMaxWidth()
                 .clickable(onClick = onClick)
                 .padding(horizontal = spacing.sheetRowHorizontal),
@@ -119,10 +128,7 @@ fun FinanceSelectionRow(
                     )
                 }
             }
-            FinanceSelectionIndicator(
-                isSelected = isSelected,
-                type = indicatorType
-            )
+            trailingContent()
         }
         if (showDivider) {
             HorizontalDivider(

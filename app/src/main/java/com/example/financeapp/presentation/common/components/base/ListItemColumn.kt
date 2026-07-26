@@ -1,5 +1,6 @@
 package com.example.financeapp.presentation.common.components.base
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,18 +18,27 @@ import androidx.compose.ui.unit.dp
 import com.example.financeapp.core.theme.FinanceAppTheme
 import com.example.financeapp.core.theme.LocalSpacing
 import com.example.financeapp.domain.model.Money
-import com.example.financeapp.presentation.common.model.RouteScreenItem
+import com.example.financeapp.presentation.common.model.FinanceListItemUiModel
 import com.example.financeapp.presentation.common.utils.formatWithoutMinorUnits
 
 @Composable
 fun ListItemColumn(
-    item: RouteScreenItem,
-    modifier: Modifier = Modifier
+    item: FinanceListItemUiModel,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
 ) {
     val spacing = LocalSpacing.current
 
     Column(
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth()
+            .then(
+                if (onClick != null) {
+                    Modifier.clickable(onClick = onClick)
+                } else {
+                    Modifier
+                }
+            )
     ) {
         Row(
             modifier = Modifier
@@ -82,10 +92,10 @@ fun ListItemColumn(
 
 @Preview(showBackground = true)
 @Composable
-private fun RouteScreenItemPreview() {
+private fun FinanceListItemUiModelPreview() {
     FinanceAppTheme(dynamicColor = false) {
         ListItemColumn(
-            item = RouteScreenItem(
+            item = FinanceListItemUiModel(
                 id = "preview",
                 title = "Продукты",
                 leadingEmoji = "🛒",

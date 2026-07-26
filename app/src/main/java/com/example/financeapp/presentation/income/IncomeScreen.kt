@@ -17,6 +17,12 @@ fun IncomeScreen(
         state = state,
         totalLabel = stringResource(R.string.income_total_label),
         emptyMessage = stringResource(R.string.empty_income),
-        onRetry = { onIntent(IncomeIntent.Retry) }
+        onRetry = { onIntent(IncomeIntent.Retry) },
+        onTransactionClick = { transactionId ->
+            onIntent(IncomeIntent.TransactionClicked(transactionId))
+        },
+        onTransactionDeleteRequest = { transactionId ->
+            onIntent(IncomeIntent.TransactionDeleteRequested(transactionId))
+        }
     )
 }

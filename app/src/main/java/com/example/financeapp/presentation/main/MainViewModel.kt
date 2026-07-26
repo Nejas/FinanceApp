@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.financeapp.core.network.NetworkMonitor
 import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.MainOverviewFilter
+import com.example.financeapp.domain.usecase.DeleteFinancialAccountUseCase
+import com.example.financeapp.domain.usecase.DeleteTransactionUseCase
 import com.example.financeapp.domain.usecase.GetMainOverviewUseCase
 import com.example.financeapp.presentation.accounts.AccountsState
 import com.example.financeapp.presentation.common.model.TransactionsSectionState
@@ -17,9 +19,11 @@ import java.time.Clock
 import java.time.LocalDate
 import javax.inject.Inject
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -28,6 +32,8 @@ import kotlinx.coroutines.withTimeoutOrNull
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val getMainOverview: GetMainOverviewUseCase,
+    private val deleteTransaction: DeleteTransactionUseCase,
+    private val deleteFinancialAccount: DeleteFinancialAccountUseCase,
     private val networkMonitor: NetworkMonitor,
     private val clock: Clock
 ) : ViewModel(), NetworkRefreshable {
@@ -37,7 +43,11 @@ class MainViewModel @Inject constructor(
     )
     val state: StateFlow<MainState> = _state.asStateFlow()
 
+    private val effectChannel = Channel<MainEffect>(Channel.BUFFERED)
+    val effects = effectChannel.receiveAsFlow()
+
     private var loadJob: Job? = null
+    private var deleteJob: Job? = null
     private val refreshMutex = Mutex()
 
     init {
@@ -51,6 +61,21 @@ class MainViewModel @Inject constructor(
             }
             MainIntent.Retry -> {
                 refreshFromNetwork()
+            }
+            MainIntent.DataChanged -> {
+                refreshFromNetwork(isSilent = true)
+            }
+            is MainIntent.DeleteTransaction -> {
+                deleteMainItem(
+                    logMessage = "Failed to delete transaction: id=${intent.transactionId}",
+                    delete = { deleteTransaction(intent.transactionId) }
+                )
+            }
+            is MainIntent.DeleteFinancialAccount -> {
+                deleteMainItem(
+                    logMessage = "Failed to delete financial account: id=${intent.accountId}",
+                    delete = { deleteFinancialAccount(intent.accountId) }
+                )
             }
         }
     }
@@ -173,6 +198,24 @@ class MainViewModel @Inject constructor(
                     isSilent = isSilent,
                     error = ScreenError.TIMEOUT
                 )
+            )
+        }
+    }
+
+    private fun deleteMainItem(
+        logMessage: String,
+        delete: suspend () -> Result<Unit>
+    ) {
+        deleteJob?.cancel()
+        deleteJob = viewModelScope.launch {
+            delete().fold(
+                onSuccess = {
+                    refreshFromNetwork(isSilent = true)
+                },
+                onFailure = { error ->
+                    Log.e(TAG, logMessage, error)
+                    effectChannel.send(MainEffect.DeleteFailed)
+                }
             )
         }
     }

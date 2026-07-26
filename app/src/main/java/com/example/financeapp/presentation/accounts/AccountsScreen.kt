@@ -5,7 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.example.financeapp.R
 import com.example.financeapp.presentation.common.components.RouteScreenContent
-import com.example.financeapp.presentation.common.model.RouteScreenItem
+import com.example.financeapp.presentation.common.model.FinanceListItemUiModel
 
 @Composable
 fun AccountsScreen(
@@ -18,7 +18,7 @@ fun AccountsScreen(
         totalLabel = stringResource(R.string.balance_total_label),
         total = state.totalBalance,
         items = state.accounts.map { account ->
-            RouteScreenItem(
+            FinanceListItemUiModel(
                 id = account.id.toString(),
                 title = account.name,
                 leadingEmoji = account.emoji,
@@ -30,6 +30,16 @@ fun AccountsScreen(
         isLoading = state.isLoading,
         error = state.error,
         onRetryClick = { onIntent(AccountsIntent.Retry) },
-        onRefresh = { onIntent(AccountsIntent.Retry) }
+        onRefresh = { onIntent(AccountsIntent.Retry) },
+        onItemClick = { item ->
+            item.id.toLongOrNull()?.let { accountId ->
+                onIntent(AccountsIntent.AccountClick(accountId))
+            }
+        },
+        onItemDeleteRequest = { item ->
+            item.id.toLongOrNull()?.let { accountId ->
+                onIntent(AccountsIntent.AccountDeleteRequested(accountId))
+            }
+        }
     )
 }

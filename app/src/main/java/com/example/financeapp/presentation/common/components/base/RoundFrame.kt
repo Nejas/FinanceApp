@@ -1,5 +1,6 @@
 package com.example.financeapp.presentation.common.components.base
 
+import android.text.style.LineBackgroundSpan
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -9,6 +10,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import com.example.financeapp.core.theme.LocalSizing
 import com.example.financeapp.core.theme.LocalSpacing
@@ -17,8 +19,9 @@ import com.example.financeapp.core.theme.LocalSpacing
 fun RoundFrame(
     content: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    size: Dp? = null
-) {
+    size: Dp? = null,
+    backgroundColor: Color = MaterialTheme.colorScheme.background,
+    ) {
     val spacing = LocalSpacing.current
     val sizing = LocalSizing.current
     val frameSize = size ?: sizing.listItemIcon
@@ -26,7 +29,7 @@ fun RoundFrame(
     Surface(
         modifier = modifier.size(frameSize),
         shape = CircleShape,
-        color = MaterialTheme.colorScheme.background,
+        color = backgroundColor,
         border = BorderStroke(spacing.hairline, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Box(contentAlignment = Alignment.Center) {

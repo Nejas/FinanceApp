@@ -36,7 +36,7 @@ fun FinanceModalBottomSheet(
         onDismissRequest = onDismissRequest,
         modifier = modifier,
         sheetState = sheetState,
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(
             topStart = BottomSheetCorner,
             topEnd = BottomSheetCorner

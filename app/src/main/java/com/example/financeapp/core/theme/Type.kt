@@ -151,6 +151,15 @@ val CustomPeriodActionTextStyle = TextStyle(
     platformStyle = NoFontPadding
 )
 
+val TransactionTimePickerTitleTextStyle = TextStyle(
+    fontFamily = RobotoFontFamily,
+    fontWeight = FontWeight(500),
+    fontSize = 12.sp,
+    lineHeight = 16.sp,
+    letterSpacing = 0.5.sp,
+    platformStyle = NoFontPadding
+)
+
 val AnalyticsDetailTitleTextStyle = TextStyle(
     fontFamily = RobotoFontFamily,
     fontWeight = FontWeight(500),
@@ -175,5 +184,14 @@ val AnalyticsDetailPercentTextStyle = TextStyle(
     fontSize = 14.sp,
     lineHeight = 16.sp,
     letterSpacing = 0.sp,
+    platformStyle = NoFontPadding
+)
+
+val CurrencyCodeTextStyle = TextStyle(
+    fontFamily = RobotoFontFamily,
+    fontWeight = FontWeight(400),
+    fontSize = 12.sp,
+    lineHeight = 16.sp,
+    letterSpacing = 0.5.sp,
     platformStyle = NoFontPadding
 )

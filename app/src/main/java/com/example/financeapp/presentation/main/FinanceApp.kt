@@ -8,15 +8,26 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -27,13 +38,27 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.financeapp.R
+import com.example.financeapp.core.theme.ColorDarkDanger
+import com.example.financeapp.core.theme.LocalSizing
 import com.example.financeapp.core.theme.LocalSpacing
+import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.presentation.accounts.AccountsRoute
 import com.example.financeapp.presentation.analytics.AnalyticsRoute
-import com.example.financeapp.presentation.common.components.base.AddButton
+import com.example.financeapp.presentation.bottomSheets.accountEditor.AccountEditorBottomSheet
+import com.example.financeapp.presentation.bottomSheets.accountEditor.AccountEditorEffect
+import com.example.financeapp.presentation.bottomSheets.accountEditor.AccountEditorIntent
+import com.example.financeapp.presentation.bottomSheets.accountEditor.AccountEditorMode
+import com.example.financeapp.presentation.bottomSheets.accountEditor.AccountEditorViewModel
+import com.example.financeapp.presentation.bottomSheets.transactionEditor.TransactionEditorBottomSheet
+import com.example.financeapp.presentation.bottomSheets.transactionEditor.TransactionEditorEffect
+import com.example.financeapp.presentation.bottomSheets.transactionEditor.TransactionEditorIntent
+import com.example.financeapp.presentation.bottomSheets.transactionEditor.TransactionEditorMode
+import com.example.financeapp.presentation.bottomSheets.transactionEditor.TransactionEditorViewModel
+import com.example.financeapp.presentation.common.components.base.FinanceActionButton
 import com.example.financeapp.presentation.common.components.base.AppTopBar
 import com.example.financeapp.presentation.common.components.base.BottomNavigationBar
 import com.example.financeapp.presentation.common.components.base.DetailTopBar
+import com.example.financeapp.presentation.common.components.icons.FinancePlusIcon
 import com.example.financeapp.presentation.common.network.LifecycleNetworkRefreshEffect
 import com.example.financeapp.presentation.common.network.NetworkStatusBanner
 import com.example.financeapp.presentation.common.network.NetworkStatusViewModel
@@ -48,17 +73,58 @@ import kotlin.math.abs
 @Composable
 fun FinanceApp(
     mainViewModel: MainViewModel = hiltViewModel(),
-    networkStatusViewModel: NetworkStatusViewModel = hiltViewModel()
+    networkStatusViewModel: NetworkStatusViewModel = hiltViewModel(),
+    transactionEditorViewModel: TransactionEditorViewModel = hiltViewModel(),
+    accountEditorViewModel: AccountEditorViewModel = hiltViewModel()
 ) {
     val spacing = LocalSpacing.current
     val density = LocalDensity.current
+    val sizing = LocalSizing.current
     val edgeGuardPx = with(density) { spacing.contentSwipeEdgeGuard.toPx() }
     val swipeThresholdPx = with(density) { spacing.contentSwipeThreshold.toPx() }
     val mainState by mainViewModel.state.collectAsState()
+    val transactionEditorState by transactionEditorViewModel.state.collectAsState()
+    val accountEditorState by accountEditorViewModel.state.collectAsState()
     val isOnline by networkStatusViewModel.isOnline.collectAsState()
     val navController = rememberNavController()
+    val snackbarHostState = remember { SnackbarHostState() }
+    var pendingDeleteTarget by remember { mutableStateOf<DeleteTarget?>(null) }
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val selectedRoute = navBackStackEntry?.destination?.route.toAppRoute()
+    val selectedTransactionType = selectedRoute.toTransactionTypeOrNull()
+    val deleteFailedMessage = stringResource(R.string.delete_failed)
+
+    LaunchedEffect(mainViewModel, snackbarHostState, deleteFailedMessage) {
+        mainViewModel.effects.collect { effect ->
+            when (effect) {
+                MainEffect.DeleteFailed -> {
+                    snackbarHostState.showSnackbar(deleteFailedMessage)
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(transactionEditorViewModel, mainViewModel) {
+        transactionEditorViewModel.effects.collect { effect ->
+            when (effect) {
+                is TransactionEditorEffect.Saved -> {
+                    mainViewModel.onIntent(MainIntent.DataChanged)
+                }
+                TransactionEditorEffect.Close -> Unit
+            }
+        }
+    }
+
+    LaunchedEffect(accountEditorViewModel, mainViewModel) {
+        accountEditorViewModel.effects.collect { effect ->
+            when (effect) {
+                is AccountEditorEffect.Saved -> {
+                    mainViewModel.onIntent(MainIntent.DataChanged)
+                }
+                AccountEditorEffect.Close -> Unit
+            }
+        }
+    }
 
     LifecycleNetworkRefreshEffect(
         refreshable = mainViewModel,
@@ -69,6 +135,9 @@ fun FinanceApp(
     Scaffold(
         modifier = Modifier.background(MaterialTheme.colorScheme.background),
         containerColor = MaterialTheme.colorScheme.background,
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
         topBar = {
             AppShellTopBar(
                 mode = selectedRoute.toTopBarMode(),
@@ -84,11 +153,33 @@ fun FinanceApp(
         },
         floatingActionButton = {
             AnimatedVisibility(
-                visible = selectedRoute.isMainRoute(),
+                visible = selectedRoute != AppRoute.Analytics,
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
-                AddButton(onClick = {})
+                FinanceActionButton(
+                    onClick = {
+                        if (selectedRoute == AppRoute.Accounts) {
+                            accountEditorViewModel.onIntent(
+                                AccountEditorIntent.Open(AccountEditorMode.Create)
+                            )
+                        } else {
+                            selectedTransactionType?.let { transactionType ->
+                                transactionEditorViewModel.onIntent(
+                                    TransactionEditorIntent.Open(
+                                        TransactionEditorMode.Create(transactionType)
+                                    )
+                                )
+                            }
+                        }
+                    },
+                    icon = {
+                        FinancePlusIcon(
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(sizing.icon)
+                        )
+                    }
+                )
             }
         },
         bottomBar = {
@@ -161,6 +252,19 @@ fun FinanceApp(
                         state = mainState.expensesState,
                         onRetry = {
                             mainViewModel.onIntent(MainIntent.Retry)
+                        },
+                        onTransactionClick = { transactionId ->
+                            transactionEditorViewModel.onIntent(
+                                TransactionEditorIntent.Open(
+                                    TransactionEditorMode.Edit(
+                                        transactionId = transactionId,
+                                        transactionType = TransactionType.EXPENSE
+                                    )
+                                )
+                            )
+                        },
+                        onTransactionDeleteRequest = { transactionId ->
+                            pendingDeleteTarget = DeleteTarget.Transaction(transactionId)
                         }
                     )
                 },
@@ -170,6 +274,19 @@ fun FinanceApp(
                         state = mainState.incomeState,
                         onRetry = {
                             mainViewModel.onIntent(MainIntent.Retry)
+                        },
+                        onTransactionClick = { transactionId ->
+                            transactionEditorViewModel.onIntent(
+                                TransactionEditorIntent.Open(
+                                    TransactionEditorMode.Edit(
+                                        transactionId = transactionId,
+                                        transactionType = TransactionType.INCOME
+                                    )
+                                )
+                            )
+                        },
+                        onTransactionDeleteRequest = { transactionId ->
+                            pendingDeleteTarget = DeleteTarget.Transaction(transactionId)
                         }
                     )
                 },
@@ -179,6 +296,16 @@ fun FinanceApp(
                         state = mainState.accountsState,
                         onRetry = {
                             mainViewModel.onIntent(MainIntent.Retry)
+                        },
+                        onAccountClick = { accountId ->
+                            accountEditorViewModel.onIntent(
+                                AccountEditorIntent.Open(
+                                    AccountEditorMode.Edit(accountId)
+                                )
+                            )
+                        },
+                        onAccountDeleteRequest = { accountId ->
+                            pendingDeleteTarget = DeleteTarget.Account(accountId)
                         }
                     )
                 },
@@ -193,6 +320,79 @@ fun FinanceApp(
             )
         }
     }
+
+    transactionEditorState.form?.let { formState ->
+        TransactionEditorBottomSheet(
+            state = formState,
+            onIntent = transactionEditorViewModel::onIntent
+        )
+    }
+
+    accountEditorState.form?.let { formState ->
+        AccountEditorBottomSheet(
+            state = formState,
+            onIntent = accountEditorViewModel::onIntent
+        )
+    }
+
+    pendingDeleteTarget?.let { target ->
+        DeleteConfirmationDialog(
+            onConfirmClick = {
+                when (target) {
+                    is DeleteTarget.Transaction -> {
+                        mainViewModel.onIntent(MainIntent.DeleteTransaction(target.id))
+                    }
+                    is DeleteTarget.Account -> {
+                        mainViewModel.onIntent(MainIntent.DeleteFinancialAccount(target.id))
+                    }
+                }
+                pendingDeleteTarget = null
+            },
+            onDismissRequest = {
+                pendingDeleteTarget = null
+            }
+        )
+    }
+}
+
+@Composable
+private fun DeleteConfirmationDialog(
+    onConfirmClick: () -> Unit,
+    onDismissRequest: () -> Unit
+) {
+
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = {
+            Text(
+                text = stringResource(R.string.action_confirmation_title),
+                style = MaterialTheme.typography.titleMedium
+            )
+        },
+        text = {
+            Text(
+                text = stringResource(R.string.delete_confirmation_message),
+                style = MaterialTheme.typography.bodyMedium
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirmClick) {
+                Text(
+                    text = stringResource(R.string.action_delete),
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text(
+                    text = stringResource(R.string.action_cancel),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
+    )
 }
 
 @Composable
@@ -235,6 +435,15 @@ private fun AppRoute.toTopBarMode(): TopBarMode {
     }
 }
 
+private fun AppRoute.toTransactionTypeOrNull(): TransactionType? {
+    return when (this) {
+        AppRoute.Expenses -> TransactionType.EXPENSE
+        AppRoute.Income -> TransactionType.INCOME
+        AppRoute.Accounts,
+        AppRoute.Analytics -> null
+    }
+}
+
 private fun String?.toAppRoute(): AppRoute {
     return when (this) {
         AppRoute.Income.route -> AppRoute.Income
@@ -247,6 +456,11 @@ private fun String?.toAppRoute(): AppRoute {
 private enum class TopBarMode {
     Main,
     Analytics
+}
+
+private sealed interface DeleteTarget {
+    data class Transaction(val id: Long) : DeleteTarget
+    data class Account(val id: Long) : DeleteTarget
 }
 
 private fun NavHostController.navigateBackToMain() {

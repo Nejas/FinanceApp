@@ -1,8 +1,8 @@
 package com.example.financeapp.presentation.analytics
 
 import com.example.financeapp.domain.model.TransactionType
-import com.example.financeapp.presentation.analytics.bottomsheets.AnalyticsFilterType
-import com.example.financeapp.presentation.analytics.bottomsheets.period.AnalyticsPeriodType
+import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodType
+import com.example.financeapp.presentation.common.model.FinanceFieldType
 import java.time.LocalDate
 
 sealed interface AnalyticsIntent {
@@ -10,7 +10,7 @@ sealed interface AnalyticsIntent {
     data object Retry : AnalyticsIntent
     data object ChartClicked : AnalyticsIntent
     data object DetailDismissed : AnalyticsIntent
-    data class FilterClicked(val type: AnalyticsFilterType) : AnalyticsIntent
+    data class FilterClicked(val type: FinanceFieldType) : AnalyticsIntent
     data object FilterDismissed : AnalyticsIntent
     data class TypeApplied(val type: TransactionType?) : AnalyticsIntent
     data class PeriodSelected(val periodType: AnalyticsPeriodType) : AnalyticsIntent

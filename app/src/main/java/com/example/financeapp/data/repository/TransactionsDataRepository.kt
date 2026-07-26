@@ -59,9 +59,11 @@ class TransactionsDataRepository @Inject constructor(
     override suspend fun createTransaction(
         payload: TransactionPayload
     ): Result<Transaction> {
-        Log.d(TAG, "Creating transaction")
-        return when (val createResult = networkDataSource.createTransaction(payload.toRequestDto())) {
+        val request = payload.toRequestDto()
+        Log.d(TAG, "Creating transaction: payload=${payload.logSummary()}, request=$request")
+        return when (val createResult = networkDataSource.createTransaction(request)) {
             is NetworkResult.Success -> {
+                Log.d(TAG, "Created transaction response: id=${createResult.data.id}")
                 networkDataSource.getTransaction(createResult.data.id).mapToResult(defaultDispatcher) { transaction ->
                     transaction.toDomain()
                 }
@@ -70,7 +72,11 @@ class TransactionsDataRepository @Inject constructor(
                 transaction.toDomain(currencyCode = payload.amount.currency.code)
             }
         }.onFailure { error ->
-            Log.e(TAG, "Failed to create transaction", error)
+            Log.e(
+                TAG,
+                "Failed to create transaction: payload=${payload.logSummary()}, request=$request",
+                error
+            )
         }
     }
 
@@ -87,14 +93,19 @@ class TransactionsDataRepository @Inject constructor(
         id: Long,
         payload: TransactionPayload
     ): Result<Transaction> {
-        Log.d(TAG, "Updating transaction: id=$id")
+        val request = payload.toRequestDto()
+        Log.d(TAG, "Updating transaction: id=$id, payload=${payload.logSummary()}, request=$request")
         return networkDataSource.updateTransaction(
             id = id,
-            request = payload.toRequestDto()
+            request = request
         ).mapToResult(defaultDispatcher) { transaction ->
             transaction.toDomain()
         }.onFailure { error ->
-            Log.e(TAG, "Failed to update transaction: id=$id", error)
+            Log.e(
+                TAG,
+                "Failed to update transaction: id=$id, payload=${payload.logSummary()}, request=$request",
+                error
+            )
         }
     }
 
@@ -108,5 +119,24 @@ class TransactionsDataRepository @Inject constructor(
 
     private companion object {
         const val TAG = "TransactionsRepository"
+    }
+}
+
+private fun TransactionPayload.logSummary(): String {
+    return "TransactionPayload(" +
+        "accountId=$accountId, " +
+        "categoryId=$categoryId, " +
+        "amount=${amount.amount.toPlainString()} ${amount.currency.code}, " +
+        "transactionDate=$transactionDate, " +
+        "comment=${comment.logValue()}" +
+        ")"
+}
+
+private fun String?.logValue(): String {
+    return when {
+        this == null -> "null"
+        isEmpty() -> "empty"
+        isBlank() -> "blank(length=$length)"
+        else -> "value(length=$length)"
     }
 }

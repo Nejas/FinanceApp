@@ -25,6 +25,7 @@ fun TotalSumSurface(
     val spacing = LocalSpacing.current
     val sizing = LocalSizing.current
     Surface(
+        color = MaterialTheme.colorScheme.background,
         modifier = modifier
             .fillMaxWidth()
             .height(sizing.heroHeight)

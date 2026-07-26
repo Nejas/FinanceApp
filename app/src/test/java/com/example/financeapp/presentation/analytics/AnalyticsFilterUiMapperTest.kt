@@ -7,9 +7,10 @@ import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.FinancialAccount
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.model.TransactionType
-import com.example.financeapp.presentation.analytics.bottomsheets.AnalyticsFilterType
-import com.example.financeapp.presentation.analytics.bottomsheets.period.AnalyticsPeriodFilterState
-import com.example.financeapp.presentation.analytics.bottomsheets.period.AnalyticsPeriodType
+import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodFilterState
+import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodType
+import com.example.financeapp.presentation.analytics.mappers.AnalyticsFilterUiMapper
+import com.example.financeapp.presentation.common.model.FinanceFieldType
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.Assert.assertEquals
@@ -49,17 +50,17 @@ class AnalyticsFilterUiMapperTest {
 
         assertEquals(
             R.string.analytics_filter_income,
-            filters.first { item -> item.type == AnalyticsFilterType.Type }.valueResId
+            filters.first { item -> item.type == FinanceFieldType.TransactionType }.valueResId
         )
-        filters.first { item -> item.type == AnalyticsFilterType.Period }.let { item ->
+        filters.first { item -> item.type == FinanceFieldType.Period }.let { item ->
             assertNull(item.valueResId)
             assertEquals("10.07.2026 – 12.07.2026", item.value)
         }
-        filters.first { item -> item.type == AnalyticsFilterType.Category }.let { item ->
+        filters.first { item -> item.type == FinanceFieldType.Category }.let { item ->
             assertNull(item.valueResId)
             assertEquals("Salary, Bonus", item.value)
         }
-        filters.first { item -> item.type == AnalyticsFilterType.Account }.let { item ->
+        filters.first { item -> item.type == FinanceFieldType.Account }.let { item ->
             assertNull(item.valueResId)
             assertEquals("Main account", item.value)
         }
@@ -90,19 +91,19 @@ class AnalyticsFilterUiMapperTest {
 
         assertEquals(
             R.string.analytics_filter_all,
-            filters.first { item -> item.type == AnalyticsFilterType.Type }.valueResId
+            filters.first { item -> item.type == FinanceFieldType.TransactionType }.valueResId
         )
         assertEquals(
             R.string.analytics_period_month,
-            filters.first { item -> item.type == AnalyticsFilterType.Period }.valueResId
+            filters.first { item -> item.type == FinanceFieldType.Period }.valueResId
         )
         assertEquals(
             R.string.analytics_filter_all_categories,
-            filters.first { item -> item.type == AnalyticsFilterType.Category }.valueResId
+            filters.first { item -> item.type == FinanceFieldType.Category }.valueResId
         )
         assertEquals(
             R.string.analytics_filter_all_accounts,
-            filters.first { item -> item.type == AnalyticsFilterType.Account }.valueResId
+            filters.first { item -> item.type == FinanceFieldType.Account }.valueResId
         )
     }
 

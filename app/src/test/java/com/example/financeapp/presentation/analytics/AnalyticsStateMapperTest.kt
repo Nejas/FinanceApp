@@ -11,8 +11,10 @@ import com.example.financeapp.domain.model.FinancialAccount
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.model.Transaction
 import com.example.financeapp.domain.model.TransactionType
-import com.example.financeapp.presentation.analytics.bottomsheets.period.AnalyticsPeriodFilterState
-import com.example.financeapp.presentation.analytics.bottomsheets.period.AnalyticsPeriodType
+import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodFilterState
+import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodType
+import com.example.financeapp.presentation.analytics.mappers.AnalyticsFilterUiMapper
+import com.example.financeapp.presentation.analytics.mappers.AnalyticsStateMapper
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.Assert.assertEquals

@@ -7,6 +7,8 @@ import androidx.compose.ui.Modifier
 fun IncomeRoute(
     state: IncomeState,
     onRetry: () -> Unit,
+    onTransactionClick: (Long) -> Unit,
+    onTransactionDeleteRequest: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     IncomeScreen(
@@ -14,6 +16,12 @@ fun IncomeRoute(
         state = state,
         onIntent = { intent ->
             when (intent) {
+                is IncomeIntent.TransactionClicked -> {
+                    onTransactionClick(intent.transactionId)
+                }
+                is IncomeIntent.TransactionDeleteRequested -> {
+                    onTransactionDeleteRequest(intent.transactionId)
+                }
                 IncomeIntent.Retry -> onRetry()
             }
         }

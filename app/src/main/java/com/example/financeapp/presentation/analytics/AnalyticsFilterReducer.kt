@@ -2,9 +2,11 @@ package com.example.financeapp.presentation.analytics
 
 import com.example.financeapp.domain.model.AnalyticsFilter
 import com.example.financeapp.domain.model.TransactionType
-import com.example.financeapp.presentation.analytics.bottomsheets.AnalyticsFilterType
-import com.example.financeapp.presentation.analytics.bottomsheets.period.AnalyticsPeriodFilterState
-import com.example.financeapp.presentation.analytics.bottomsheets.period.AnalyticsPeriodType
+import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodFilterState
+import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodResolver
+import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodType
+import com.example.financeapp.presentation.analytics.mappers.AnalyticsFilterUiMapper
+import com.example.financeapp.presentation.common.model.FinanceFieldType
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -26,7 +28,7 @@ class AnalyticsFilterReducer @Inject constructor(
 
     fun openFilterSheet(
         state: AnalyticsState,
-        type: AnalyticsFilterType
+        type: FinanceFieldType
     ): AnalyticsState {
         return state.copy(
             activeFilterSheet = type.toFilterSheet(),
@@ -156,12 +158,18 @@ class AnalyticsFilterReducer @Inject constructor(
         )
     }
 
-    private fun AnalyticsFilterType.toFilterSheet(): AnalyticsFilterSheet {
+    private fun FinanceFieldType.toFilterSheet(): AnalyticsFilterSheet? {
         return when (this) {
-            AnalyticsFilterType.Type -> AnalyticsFilterSheet.Type
-            AnalyticsFilterType.Period -> AnalyticsFilterSheet.Period
-            AnalyticsFilterType.Category -> AnalyticsFilterSheet.Category
-            AnalyticsFilterType.Account -> AnalyticsFilterSheet.Account
+            FinanceFieldType.TransactionType -> AnalyticsFilterSheet.Type
+            FinanceFieldType.Period -> AnalyticsFilterSheet.Period
+            FinanceFieldType.Category -> AnalyticsFilterSheet.Category
+            FinanceFieldType.Account -> AnalyticsFilterSheet.Account
+            FinanceFieldType.Date,
+            FinanceFieldType.Time,
+            FinanceFieldType.Currency,
+            FinanceFieldType.Name,
+            FinanceFieldType.Emoji,
+            FinanceFieldType.Description -> null
         }
     }
 }

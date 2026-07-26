@@ -8,7 +8,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.financeapp.core.theme.FinanceAppTheme
@@ -17,8 +21,9 @@ import com.example.financeapp.core.theme.LocalSpacing
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.presentation.common.components.base.FinancePullToRefreshBox
 import com.example.financeapp.presentation.common.components.base.ListItemColumn
+import com.example.financeapp.presentation.common.components.base.SwipeToDeleteListItem
 import com.example.financeapp.presentation.common.components.base.TotalSumSurface
-import com.example.financeapp.presentation.common.model.RouteScreenItem
+import com.example.financeapp.presentation.common.model.FinanceListItemUiModel
 import com.example.financeapp.presentation.common.placeholders.EmptyContent
 import com.example.financeapp.presentation.common.placeholders.ErrorContent
 import com.example.financeapp.presentation.common.placeholders.LoadingContent
@@ -29,16 +34,30 @@ import com.example.financeapp.presentation.common.utils.formatWithoutMinorUnits
 fun RouteScreenContent(
     totalLabel: String,
     total: Money,
-    items: List<RouteScreenItem>,
+    items: List<FinanceListItemUiModel>,
     emptyMessage: String,
     isLoading: Boolean,
     error: ScreenError?,
     onRetryClick: () -> Unit,
     onRefresh: () -> Unit,
+    onItemClick: ((FinanceListItemUiModel) -> Unit)? = null,
+    onItemDeleteRequest: ((FinanceListItemUiModel) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val spacing = LocalSpacing.current
     val sizing = LocalSizing.current
+    val listState = rememberLazyListState()
+    val firstItemId = items.firstOrNull()?.id
+    val previousFirstItemId = remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(firstItemId) {
+        val previousId = previousFirstItemId.value
+        previousFirstItemId.value = firstItemId
+
+        if (previousId != null && firstItemId != null && previousId != firstItemId) {
+            listState.animateScrollToItem(0)
+        }
+    }
 
     FinancePullToRefreshBox(
         modifier = modifier.fillMaxSize(),
@@ -62,15 +81,33 @@ fun RouteScreenContent(
                     modifier = Modifier.weight(1f)
                 )
                 else -> LazyColumn(
+                    state = listState,
                     modifier = Modifier.weight(1f),
                     contentPadding = PaddingValues(bottom = spacing.listBottomPadding),
                     verticalArrangement = Arrangement.spacedBy(spacing.none)
                 ) {
                     items(items = items, key = { it.id }) { item ->
-                        ListItemColumn(
-                            item = item,
-                            modifier = Modifier.height(sizing.listItemHeight)
-                        )
+                        val itemContent: @Composable () -> Unit = {
+                            ListItemColumn(
+                                item = item,
+                                modifier = Modifier.height(sizing.listItemHeight),
+                                onClick = onItemClick?.let { click ->
+                                    { click(item) }
+                                }
+                            )
+                        }
+
+                        val deleteRequest = onItemDeleteRequest
+                        if (deleteRequest != null) {
+                            SwipeToDeleteListItem(
+                                onDeleteRequest = {
+                                    deleteRequest(item)
+                                },
+                                content = itemContent
+                            )
+                        } else {
+                            itemContent()
+                        }
                     }
                 }
             }
@@ -130,21 +167,21 @@ private fun MainFinanceScreenErrorPreview() {
 }
 
 private val previewFinanceItems = listOf(
-    RouteScreenItem(
+    FinanceListItemUiModel(
         id = "food",
         title = "Продукты",
         leadingEmoji = "🛒",
         comment = "Сбербанк",
         money = Money(amountInMinorUnits = 125000)
     ),
-    RouteScreenItem(
+    FinanceListItemUiModel(
         id = "transport",
         title = "Транспорт",
         leadingEmoji = "🚇",
         comment = "Наличные",
         money = Money(amountInMinorUnits = 6400)
     ),
-    RouteScreenItem(
+    FinanceListItemUiModel(
         id = "salary",
         title = "Зарплата",
         leadingEmoji = "💼",
