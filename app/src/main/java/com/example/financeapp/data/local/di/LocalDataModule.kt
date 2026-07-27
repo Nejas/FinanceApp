@@ -9,6 +9,7 @@ import com.example.financeapp.data.local.NegativeLocalTransactionIdGenerator
 import com.example.financeapp.data.local.db.FinanceDatabase
 import com.example.financeapp.data.local.db.MIGRATION_2_3
 import com.example.financeapp.data.local.db.MIGRATION_3_4
+import com.example.financeapp.data.local.db.MIGRATION_4_5
 import com.example.financeapp.data.local.db.dao.AccountDao
 import com.example.financeapp.data.local.db.dao.CategoryDao
 import com.example.financeapp.data.local.db.dao.SyncOperationDao
@@ -52,7 +53,7 @@ object LocalDataModule {
             FinanceDatabase::class.java,
             DATABASE_NAME
         )
-            .addMigrations(MIGRATION_2_3, MIGRATION_3_4)
+            .addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
             .build()
     }
 

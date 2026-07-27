@@ -62,6 +62,7 @@ import com.example.financeapp.presentation.common.components.icons.FinancePlusIc
 import com.example.financeapp.presentation.common.network.NetworkStatusBanner
 import com.example.financeapp.presentation.common.network.PendingSyncStatusBanner
 import com.example.financeapp.presentation.common.network.NetworkStatusViewModel
+import com.example.financeapp.presentation.common.placeholders.ScreenError
 import com.example.financeapp.presentation.expenses.ExpensesRoute
 import com.example.financeapp.presentation.income.IncomeRoute
 import com.example.financeapp.presentation.navigation.AppNavGraph
@@ -94,13 +95,24 @@ fun FinanceApp(
     val selectedRoute = navBackStackEntry?.destination?.route.toAppRoute()
     val selectedTransactionType = selectedRoute.toTransactionTypeOrNull()
     val deleteFailedMessage = stringResource(R.string.delete_failed)
+    val deleteFailedNoInternetMessage = stringResource(R.string.delete_failed_no_internet)
     val transactionSavedLocallyMessage = stringResource(R.string.transaction_saved_locally)
 
-    LaunchedEffect(mainViewModel, snackbarHostState, deleteFailedMessage) {
+    LaunchedEffect(
+        mainViewModel,
+        snackbarHostState,
+        deleteFailedMessage,
+        deleteFailedNoInternetMessage
+    ) {
         mainViewModel.effects.collect { effect ->
             when (effect) {
-                MainEffect.DeleteFailed -> {
-                    snackbarHostState.showSnackbar(deleteFailedMessage)
+                is MainEffect.DeleteFailed -> {
+                    val message = if (effect.error == ScreenError.NO_INTERNET) {
+                        deleteFailedNoInternetMessage
+                    } else {
+                        deleteFailedMessage
+                    }
+                    snackbarHostState.showSnackbar(message)
                 }
                 is MainEffect.SyncFailed -> {
                     failedSyncOperationsCount = effect.count

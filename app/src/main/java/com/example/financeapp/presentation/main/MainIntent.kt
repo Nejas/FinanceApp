@@ -1,5 +1,6 @@
 package com.example.financeapp.presentation.main
 
+import com.example.financeapp.presentation.common.placeholders.ScreenError
 import java.time.LocalDate
 
 sealed interface MainIntent {
@@ -13,6 +14,6 @@ sealed interface MainIntent {
 }
 
 sealed interface MainEffect {
-    data object DeleteFailed : MainEffect
+    data class DeleteFailed(val error: ScreenError) : MainEffect
     data class SyncFailed(val count: Int) : MainEffect
 }

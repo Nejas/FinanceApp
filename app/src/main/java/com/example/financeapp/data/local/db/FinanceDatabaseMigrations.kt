@@ -35,6 +35,70 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
     }
 }
 
+val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS transactions_new (
+                id INTEGER NOT NULL,
+                accountId INTEGER NOT NULL,
+                categoryId INTEGER NOT NULL,
+                amount TEXT NOT NULL,
+                currencyCode TEXT NOT NULL,
+                transactionDate TEXT NOT NULL,
+                transactionDateEpochMillis INTEGER NOT NULL,
+                comment TEXT,
+                syncState TEXT NOT NULL,
+                isDeletedPendingSync INTEGER NOT NULL,
+                updatedAtEpochMillis INTEGER NOT NULL,
+                PRIMARY KEY(id),
+                FOREIGN KEY(accountId) REFERENCES accounts(id) ON UPDATE NO ACTION ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+        database.execSQL(
+            """
+            INSERT INTO transactions_new (
+                id,
+                accountId,
+                categoryId,
+                amount,
+                currencyCode,
+                transactionDate,
+                transactionDateEpochMillis,
+                comment,
+                syncState,
+                isDeletedPendingSync,
+                updatedAtEpochMillis
+            )
+            SELECT
+                transactions.id,
+                transactions.accountId,
+                transactions.categoryId,
+                transactions.amount,
+                transactions.currencyCode,
+                transactions.transactionDate,
+                transactions.transactionDateEpochMillis,
+                transactions.comment,
+                transactions.syncState,
+                transactions.isDeletedPendingSync,
+                transactions.updatedAtEpochMillis
+            FROM transactions
+            INNER JOIN accounts ON accounts.id = transactions.accountId
+            """.trimIndent()
+        )
+        database.execSQL("DROP TABLE transactions")
+        database.execSQL("ALTER TABLE transactions_new RENAME TO transactions")
+        database.execSQL(
+            "CREATE INDEX IF NOT EXISTS index_transactions_accountId_transactionDateEpochMillis " +
+                "ON transactions(accountId, transactionDateEpochMillis)"
+        )
+        database.execSQL(
+            "CREATE INDEX IF NOT EXISTS index_transactions_categoryId ON transactions(categoryId)"
+        )
+    }
+}
+
 private const val CURRENCY_CODE_NORMALIZATION_SQL = """
     UPDATE %1${'$'}s
     SET %2${'$'}s = CASE %2${'$'}s

@@ -247,7 +247,11 @@ class MainViewModel @Inject constructor(
                 },
                 onFailure = { error ->
                     Log.e(TAG, logMessage, error)
-                    effectChannel.send(MainEffect.DeleteFailed)
+                    effectChannel.send(
+                        MainEffect.DeleteFailed(
+                            error = error.toScreenError(networkMonitor.isOnline.value)
+                        )
+                    )
                 }
             )
         }

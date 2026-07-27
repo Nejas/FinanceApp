@@ -18,7 +18,7 @@ import com.example.financeapp.data.local.db.entity.TransactionEntity
         TransactionEntity::class,
         SyncOperationEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class FinanceDatabase : RoomDatabase() {

@@ -17,6 +17,7 @@
     <string name="action_cancel">Cancelar</string>
     <string name="delete_confirmation_message">¿Seguro que quieres eliminar este elemento?</string>
     <string name="delete_failed">No se pudo eliminar el elemento. Inténtalo de nuevo</string>
+    <string name="delete_failed_no_internet">Sin conexión a internet. La eliminación no está disponible ahora</string>
     <string name="retry">Reintentar</string>
     <string name="loading">Cargando…</string>
     <string name="empty_expenses">Aún no hay gastos</string>

@@ -16,6 +16,7 @@
     <string name="action_cancel">Отмена</string>
     <string name="delete_confirmation_message">Вы уверены, что хотите удалить элемент?</string>
     <string name="delete_failed">Не удалось удалить элемент. Попробуйте снова</string>
+    <string name="delete_failed_no_internet">Нет подключения к интернету. Удаление сейчас недоступно</string>
     <string name="retry">Повторить</string>
     <string name="loading">Загрузка…</string>
     <string name="empty_expenses">Расходов пока нет</string>

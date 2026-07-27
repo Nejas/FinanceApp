@@ -27,11 +27,19 @@ interface AccountDao {
     @Query("DELETE FROM accounts WHERE syncState = 'SYNCED'")
     suspend fun deleteSyncedAccounts()
 
+    @Query("DELETE FROM accounts WHERE syncState = 'SYNCED' AND id NOT IN (:accountIds)")
+    suspend fun deleteSyncedAccountsExcept(accountIds: Set<Long>)
+
     @Transaction
     suspend fun replaceSyncedAccounts(accounts: List<AccountEntity>) {
         val pendingAccountIds = getPendingAccountIds().toSet()
-        deleteSyncedAccounts()
+        val syncedAccountIds = accounts.mapTo(mutableSetOf()) { account -> account.id }
         upsertAccounts(accounts.filterNot { account -> account.id in pendingAccountIds })
+        if (syncedAccountIds.isEmpty()) {
+            deleteSyncedAccounts()
+        } else {
+            deleteSyncedAccountsExcept(syncedAccountIds)
+        }
     }
 
     @Query("DELETE FROM accounts WHERE id = :id")
