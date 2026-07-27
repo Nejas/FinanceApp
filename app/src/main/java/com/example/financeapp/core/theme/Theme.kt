@@ -39,7 +39,9 @@ private val DarkColorScheme = darkColorScheme(
     error = FinanceWarningContainer,
     onError = FinancePrimary,
     errorContainer = FinanceWarning,
-    onErrorContainer = ColorDarkOnWarningContainer
+    onErrorContainer = ColorDarkOnWarningContainer,
+    tertiaryContainer = ColorDarkPendingSyncContainer,
+    onTertiaryContainer = ColorDarkOnPendingSyncContainer
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -63,7 +65,9 @@ private val LightColorScheme = lightColorScheme(
     onError = FinancePrimary,
     errorContainer = FinanceWarningContainer,
     onErrorContainer = FinanceOnWarningContainer,
-    tertiary = FinancePositive
+    tertiary = FinancePositive,
+    tertiaryContainer = FinancePendingSyncContainer,
+    onTertiaryContainer = FinanceOnPendingSyncContainer
 )
 
 @Composable

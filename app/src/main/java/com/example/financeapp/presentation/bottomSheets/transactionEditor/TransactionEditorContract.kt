@@ -4,7 +4,7 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Currency
-import com.example.financeapp.domain.model.FinancialAccount
+import com.example.financeapp.domain.model.Account
 import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.presentation.common.model.FinanceFieldType
 import com.example.financeapp.presentation.common.placeholders.ScreenError
@@ -21,11 +21,11 @@ data class TransactionEditorState(
     val mode: TransactionEditorMode,
     val amount: String = "",
     val selectedCategory: Category? = null,
-    val selectedAccount: FinancialAccount? = null,
+    val selectedAccount: Account? = null,
     val date: LocalDate = LocalDate.now(),
     val time: LocalTime = LocalTime.now().withSecond(0).withNano(0),
     val availableCategories: List<Category> = emptyList(),
-    val availableAccounts: List<FinancialAccount> = emptyList(),
+    val availableAccounts: List<Account> = emptyList(),
     val activeField: FinanceFieldType? = null,
     val comment: String? = null,
     @StringRes val formMessageResId: Int? = null,
@@ -36,7 +36,7 @@ data class TransactionEditorState(
     val transactionType: TransactionType
         get() = mode.transactionType
 
-    val effectiveAccount: FinancialAccount?
+    val effectiveAccount: Account?
         get() = selectedAccount ?: if (mode is TransactionEditorMode.Create) {
             availableAccounts.firstOrNull()
         } else {

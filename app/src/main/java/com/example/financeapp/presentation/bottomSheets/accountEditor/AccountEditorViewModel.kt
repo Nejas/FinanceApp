@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financeapp.R
 import com.example.financeapp.core.network.NetworkMonitor
-import com.example.financeapp.domain.model.FinancialAccount
+import com.example.financeapp.domain.model.Account
 import com.example.financeapp.domain.model.FinancialAccountPayload
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.usecase.CreateFinancialAccountUseCase
@@ -92,7 +92,7 @@ class AccountEditorViewModel @Inject constructor(
         )
     }
 
-    private fun AccountEditorState.withAccount(account: FinancialAccount): AccountEditorState {
+    private fun AccountEditorState.withAccount(account: Account): AccountEditorState {
         return copy(
             name = account.name,
             emoji = account.emoji,

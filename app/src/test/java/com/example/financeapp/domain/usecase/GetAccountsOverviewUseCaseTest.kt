@@ -1,7 +1,7 @@
 package com.example.financeapp.domain.usecase
 
 import com.example.financeapp.domain.model.Currency
-import com.example.financeapp.domain.model.FinancialAccount
+import com.example.financeapp.domain.model.Account
 import com.example.financeapp.domain.model.FinancialAccountsFilter
 import com.example.financeapp.domain.model.FinancialAccountPayload
 import com.example.financeapp.domain.model.Money
@@ -13,7 +13,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class GetFinancialAccountsOverviewUseCaseTest {
+class GetAccountsOverviewUseCaseTest {
 
     @Test
     fun invoke_withoutCurrencyFilter_returnsAllAccountsAndRequestedCurrencyTotal() = runTest {
@@ -75,7 +75,7 @@ class GetFinancialAccountsOverviewUseCaseTest {
     }
 
     private fun createUseCase(
-        accounts: List<FinancialAccount>
+        accounts: List<Account>
     ): GetFinancialAccountsOverviewUseCase {
         return GetFinancialAccountsOverviewUseCase(
             repository = FakeFinancialAccountsRepository(accounts),
@@ -87,7 +87,7 @@ class GetFinancialAccountsOverviewUseCaseTest {
         id: Long,
         balance: Long,
         currency: Currency = Currency.RUB
-    ) = FinancialAccount(
+    ) = Account(
         id = id,
         name = "Account $id",
         balance = Money(amountInMinorUnits = balance * 100, currency = currency),
@@ -96,23 +96,23 @@ class GetFinancialAccountsOverviewUseCaseTest {
     )
 
     private class FakeFinancialAccountsRepository(
-        private val accounts: List<FinancialAccount> = emptyList(),
+        private val accounts: List<Account> = emptyList(),
         private val failure: Throwable? = null
     ) : FinancialAccountsRepository {
 
-        override suspend fun getFinancialAccounts(): Result<List<FinancialAccount>> {
+        override suspend fun getFinancialAccounts(): Result<List<Account>> {
             return failure?.let(Result.Companion::failure)
                 ?: Result.success(accounts)
         }
 
         override suspend fun createFinancialAccount(
             payload: FinancialAccountPayload
-        ): Result<FinancialAccount> {
+        ): Result<Account> {
             return failure?.let(Result.Companion::failure)
                 ?: Result.success(accounts.first())
         }
 
-        override suspend fun getFinancialAccount(id: Long): Result<FinancialAccount> {
+        override suspend fun getFinancialAccount(id: Long): Result<Account> {
             return failure?.let(Result.Companion::failure)
                 ?: Result.success(accounts.first { account -> account.id == id })
         }
@@ -120,7 +120,7 @@ class GetFinancialAccountsOverviewUseCaseTest {
         override suspend fun updateFinancialAccount(
             id: Long,
             payload: FinancialAccountPayload
-        ): Result<FinancialAccount> {
+        ): Result<Account> {
             return getFinancialAccount(id)
         }
 

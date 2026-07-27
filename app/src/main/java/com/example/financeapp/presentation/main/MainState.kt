@@ -9,5 +9,6 @@ data class MainState(
     val selectedDate: LocalDate = LocalDate.now(),
     val expensesState: ExpensesState = ExpensesState(),
     val incomeState: IncomeState = IncomeState(),
-    val accountsState: AccountsState = AccountsState()
+    val accountsState: AccountsState = AccountsState(),
+    val hasPendingSync: Boolean = false
 )

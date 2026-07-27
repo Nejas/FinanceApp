@@ -4,7 +4,7 @@ import com.example.financeapp.R
 import com.example.financeapp.domain.model.AnalyticsFilter
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Currency
-import com.example.financeapp.domain.model.FinancialAccount
+import com.example.financeapp.domain.model.Account
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodFilterState
@@ -122,8 +122,8 @@ class AnalyticsFilterUiMapperTest {
     private fun account(
         id: Long,
         name: String
-    ): FinancialAccount {
-        return FinancialAccount(
+    ): Account {
+        return Account(
             id = id,
             name = name,
             balance = Money(amountInMinorUnits = 0, currency = Currency.RUB),

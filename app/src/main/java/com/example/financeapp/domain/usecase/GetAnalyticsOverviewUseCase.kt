@@ -8,7 +8,7 @@ import com.example.financeapp.domain.model.AnalyticsOverview
 import com.example.financeapp.domain.model.AnalyticsTransactionEntry
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Currency
-import com.example.financeapp.domain.model.FinancialAccount
+import com.example.financeapp.domain.model.Account
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.model.Transaction
 import com.example.financeapp.domain.model.TransactionsOverviewFilter
@@ -127,7 +127,7 @@ class GetAnalyticsOverviewUseCase @Inject constructor(
 
     private fun Transaction.toAnalyticsTransactionEntry(
         category: Category?,
-        account: FinancialAccount?
+        account: Account?
     ): AnalyticsTransactionEntry {
         return AnalyticsTransactionEntry(
             transaction = this,

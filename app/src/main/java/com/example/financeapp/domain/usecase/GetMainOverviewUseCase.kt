@@ -5,7 +5,7 @@ import com.example.financeapp.core.coroutines.suspendRunCatching
 import com.example.financeapp.domain.model.CategorizedTransactionsOverview
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Currency
-import com.example.financeapp.domain.model.FinancialAccount
+import com.example.financeapp.domain.model.Account
 import com.example.financeapp.domain.model.FinancialAccountsFilter
 import com.example.financeapp.domain.model.FinancialAccountsOverview
 import com.example.financeapp.domain.model.MainOverviewFilter
@@ -94,7 +94,7 @@ class GetMainOverviewUseCase @Inject constructor(
     private fun buildOverview(
         type: TransactionType,
         currency: Currency,
-        accounts: List<FinancialAccount>,
+        accounts: List<Account>,
         categories: List<Category>,
         transactions: List<Transaction>
     ): CategorizedTransactionsOverview {

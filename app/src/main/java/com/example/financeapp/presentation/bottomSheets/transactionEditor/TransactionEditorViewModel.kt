@@ -7,7 +7,7 @@ import com.example.financeapp.R
 import com.example.financeapp.core.network.NetworkMonitor
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Currency
-import com.example.financeapp.domain.model.FinancialAccount
+import com.example.financeapp.domain.model.Account
 import com.example.financeapp.domain.model.FinancialAccountsFilter
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.model.Transaction
@@ -136,7 +136,7 @@ class TransactionEditorViewModel @Inject constructor(
 
     private fun TransactionEditorState.withLoadedData(
         categories: List<Category>,
-        accounts: List<FinancialAccount>,
+        accounts: List<Account>,
         transaction: Transaction?
     ): TransactionEditorState {
         if (transaction == null) {

@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.Color
 import com.example.financeapp.domain.model.AnalyticsFilter
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Currency
-import com.example.financeapp.domain.model.FinancialAccount
+import com.example.financeapp.domain.model.Account
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodFilterState
@@ -21,7 +21,7 @@ data class AnalyticsState(
     val categoryColors: Map<Long, Color> = emptyMap(),
     val filters: List<AnalyticsFilterUi> = defaultAnalyticsFilters(),
     val availableCategories: List<Category> = emptyList(),
-    val availableAccounts: List<FinancialAccount> = emptyList(),
+    val availableAccounts: List<Account> = emptyList(),
     val activeFilterSheet: AnalyticsFilterSheet? = null,
     val isDetailVisible: Boolean = false,
     val transactions: List<FinanceListItemUiModel> = emptyList(),

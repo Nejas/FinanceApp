@@ -59,8 +59,8 @@ import com.example.financeapp.presentation.common.components.base.AppTopBar
 import com.example.financeapp.presentation.common.components.base.BottomNavigationBar
 import com.example.financeapp.presentation.common.components.base.DetailTopBar
 import com.example.financeapp.presentation.common.components.icons.FinancePlusIcon
-import com.example.financeapp.presentation.common.network.LifecycleNetworkRefreshEffect
 import com.example.financeapp.presentation.common.network.NetworkStatusBanner
+import com.example.financeapp.presentation.common.network.PendingSyncStatusBanner
 import com.example.financeapp.presentation.common.network.NetworkStatusViewModel
 import com.example.financeapp.presentation.expenses.ExpensesRoute
 import com.example.financeapp.presentation.income.IncomeRoute
@@ -89,10 +89,12 @@ fun FinanceApp(
     val navController = rememberNavController()
     val snackbarHostState = remember { SnackbarHostState() }
     var pendingDeleteTarget by remember { mutableStateOf<DeleteTarget?>(null) }
+    var failedSyncOperationsCount by remember { mutableStateOf<Int?>(null) }
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val selectedRoute = navBackStackEntry?.destination?.route.toAppRoute()
     val selectedTransactionType = selectedRoute.toTransactionTypeOrNull()
     val deleteFailedMessage = stringResource(R.string.delete_failed)
+    val transactionSavedLocallyMessage = stringResource(R.string.transaction_saved_locally)
 
     LaunchedEffect(mainViewModel, snackbarHostState, deleteFailedMessage) {
         mainViewModel.effects.collect { effect ->
@@ -100,15 +102,21 @@ fun FinanceApp(
                 MainEffect.DeleteFailed -> {
                     snackbarHostState.showSnackbar(deleteFailedMessage)
                 }
+                is MainEffect.SyncFailed -> {
+                    failedSyncOperationsCount = effect.count
+                }
             }
         }
     }
 
-    LaunchedEffect(transactionEditorViewModel, mainViewModel) {
+    LaunchedEffect(transactionEditorViewModel, mainViewModel, snackbarHostState, transactionSavedLocallyMessage) {
         transactionEditorViewModel.effects.collect { effect ->
             when (effect) {
                 is TransactionEditorEffect.Saved -> {
                     mainViewModel.onIntent(MainIntent.DataChanged)
+                    if (effect.transactionId < 0) {
+                        snackbarHostState.showSnackbar(transactionSavedLocallyMessage)
+                    }
                 }
                 TransactionEditorEffect.Close -> Unit
             }
@@ -125,12 +133,6 @@ fun FinanceApp(
             }
         }
     }
-
-    LifecycleNetworkRefreshEffect(
-        refreshable = mainViewModel,
-        isOnline = isOnline,
-        refreshImmediately = false
-    )
 
     Scaffold(
         modifier = Modifier.background(MaterialTheme.colorScheme.background),
@@ -204,6 +206,9 @@ fun FinanceApp(
         ) {
             if (!isOnline) {
                 NetworkStatusBanner(modifier = Modifier.fillMaxWidth())
+            }
+            if (mainState.hasPendingSync) {
+                PendingSyncStatusBanner(modifier = Modifier.fillMaxWidth())
             }
 
             AppNavGraph(
@@ -353,6 +358,60 @@ fun FinanceApp(
             }
         )
     }
+
+    failedSyncOperationsCount?.let { count ->
+        SyncFailureDialog(
+            failedOperationsCount = count,
+            onRetryClick = {
+                mainViewModel.onIntent(MainIntent.RetryFailedSyncOperations)
+                failedSyncOperationsCount = null
+            },
+            onDiscardClick = {
+                mainViewModel.onIntent(MainIntent.DiscardFailedSyncOperations)
+                failedSyncOperationsCount = null
+            },
+            onDismissRequest = {
+                failedSyncOperationsCount = null
+            }
+        )
+    }
+}
+
+@Composable
+private fun SyncFailureDialog(
+    failedOperationsCount: Int,
+    onRetryClick: () -> Unit,
+    onDiscardClick: () -> Unit,
+    onDismissRequest: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = {
+            Text(
+                text = stringResource(R.string.sync_failed_title),
+                style = MaterialTheme.typography.titleMedium
+            )
+        },
+        text = {
+            Text(
+                text = stringResource(R.string.sync_failed_message, failedOperationsCount),
+                style = MaterialTheme.typography.bodyMedium
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onRetryClick) {
+                Text(text = stringResource(R.string.retry))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDiscardClick) {
+                Text(
+                    text = stringResource(R.string.sync_discard_changes),
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        }
+    )
 }
 
 @Composable

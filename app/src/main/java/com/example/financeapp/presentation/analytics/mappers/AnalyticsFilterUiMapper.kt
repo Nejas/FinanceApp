@@ -3,7 +3,7 @@ package com.example.financeapp.presentation.analytics.mappers
 import com.example.financeapp.R
 import com.example.financeapp.domain.model.AnalyticsFilter
 import com.example.financeapp.domain.model.Category
-import com.example.financeapp.domain.model.FinancialAccount
+import com.example.financeapp.domain.model.Account
 import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.presentation.analytics.AnalyticsFilterUi
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodFilterState
@@ -17,7 +17,7 @@ class AnalyticsFilterUiMapper @Inject constructor() {
         filter: AnalyticsFilter,
         periodFilter: AnalyticsPeriodFilterState,
         categories: List<Category>,
-        accounts: List<FinancialAccount>
+        accounts: List<Account>
     ): List<AnalyticsFilterUi> {
         return listOf(
             AnalyticsFilterUi(

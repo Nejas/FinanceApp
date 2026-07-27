@@ -6,12 +6,16 @@ import androidx.lifecycle.viewModelScope
 import com.example.financeapp.core.network.NetworkMonitor
 import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.MainOverviewFilter
+import com.example.financeapp.domain.model.SyncEvent
+import com.example.financeapp.domain.model.SyncStatus
 import com.example.financeapp.domain.usecase.DeleteFinancialAccountUseCase
 import com.example.financeapp.domain.usecase.DeleteTransactionUseCase
 import com.example.financeapp.domain.usecase.GetMainOverviewUseCase
+import com.example.financeapp.domain.usecase.ObserveSyncEventsUseCase
+import com.example.financeapp.domain.usecase.RetryFailedSyncOperationsUseCase
+import com.example.financeapp.domain.usecase.DiscardFailedSyncOperationsUseCase
 import com.example.financeapp.presentation.accounts.AccountsState
 import com.example.financeapp.presentation.common.model.TransactionsSectionState
-import com.example.financeapp.presentation.common.network.NetworkRefreshable
 import com.example.financeapp.presentation.common.placeholders.ScreenError
 import com.example.financeapp.presentation.common.placeholders.toScreenError
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -34,9 +38,12 @@ class MainViewModel @Inject constructor(
     private val getMainOverview: GetMainOverviewUseCase,
     private val deleteTransaction: DeleteTransactionUseCase,
     private val deleteFinancialAccount: DeleteFinancialAccountUseCase,
+    private val observeSyncEventsUseCase: ObserveSyncEventsUseCase,
+    private val retryFailedSyncOperations: RetryFailedSyncOperationsUseCase,
+    private val discardFailedSyncOperations: DiscardFailedSyncOperationsUseCase,
     private val networkMonitor: NetworkMonitor,
     private val clock: Clock
-) : ViewModel(), NetworkRefreshable {
+) : ViewModel() {
 
     private val _state = MutableStateFlow(
         MainState(selectedDate = LocalDate.now(clock))
@@ -52,6 +59,7 @@ class MainViewModel @Inject constructor(
 
     init {
         loadMainData()
+        startSyncEventObservation()
     }
 
     fun onIntent(intent: MainIntent) {
@@ -77,14 +85,35 @@ class MainViewModel @Inject constructor(
                     delete = { deleteFinancialAccount(intent.accountId) }
                 )
             }
+            MainIntent.RetryFailedSyncOperations -> controlFailedSyncOperations(
+                operation = { retryFailedSyncOperations() },
+                refreshAfterSuccess = false
+            )
+            MainIntent.DiscardFailedSyncOperations -> controlFailedSyncOperations(
+                operation = { discardFailedSyncOperations() },
+                refreshAfterSuccess = true
+            )
         }
     }
 
-    override fun refreshFromNetwork(isSilent: Boolean) {
+    fun refreshFromNetwork(isSilent: Boolean = false) {
         loadMainData(
             isSilent = isSilent,
             useRefreshLock = true
         )
+    }
+
+    private fun startSyncEventObservation() {
+        viewModelScope.launch {
+            observeSyncEventsUseCase().collect { event ->
+                when (event) {
+                    SyncEvent.DataRefreshed -> refreshFromNetwork(isSilent = true)
+                    is SyncEvent.OperationsFailed -> {
+                        effectChannel.send(MainEffect.SyncFailed(event.count))
+                    }
+                }
+            }
+        }
     }
 
     private fun loadMainData(
@@ -156,6 +185,13 @@ class MainViewModel @Inject constructor(
         _state.update { state ->
             val transactionsOverview = result.transactions.getOrNull()
             val accountsOverview = result.accounts.getOrNull()
+            val hasLoadedSyncState = transactionsOverview != null || accountsOverview != null
+            val hasPendingSync = if (hasLoadedSyncState) {
+                (transactionsOverview?.hasPendingSync() == true) ||
+                    (accountsOverview?.hasPendingSync() == true)
+            } else {
+                state.hasPendingSync
+            }
 
             state.copy(
                 expensesState = transactionsOverview
@@ -177,7 +213,8 @@ class MainViewModel @Inject constructor(
                     ?: state.accountsState.toLoadFailure(
                         isSilent = isSilent,
                         error = requireNotNull(accountsScreenError)
-                    )
+                    ),
+                hasPendingSync = hasPendingSync
             )
         }
     }
@@ -220,6 +257,21 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    private fun controlFailedSyncOperations(
+        operation: suspend () -> Result<Unit>,
+        refreshAfterSuccess: Boolean
+    ) {
+        viewModelScope.launch {
+            operation().onSuccess {
+                if (refreshAfterSuccess) {
+                    refreshFromNetwork(isSilent = true)
+                }
+            }.onFailure { error ->
+                Log.e(TAG, "Failed to control failed sync operations", error)
+            }
+        }
+    }
+
     private fun TransactionsSectionState.toLoadFailure(
         isSilent: Boolean,
         error: ScreenError
@@ -258,4 +310,16 @@ class MainViewModel @Inject constructor(
         const val TAG = "MainViewModel"
         const val RefreshTimeoutMillis = 30_000L
     }
+}
+
+private fun com.example.financeapp.domain.model.MainTransactionsOverview.hasPendingSync(): Boolean {
+    return expenses.overview.transactions.any { transaction ->
+        transaction.syncStatus == SyncStatus.PENDING
+    } || income.overview.transactions.any { transaction ->
+        transaction.syncStatus == SyncStatus.PENDING
+    }
+}
+
+private fun com.example.financeapp.domain.model.FinancialAccountsOverview.hasPendingSync(): Boolean {
+    return accounts.any { account -> account.syncStatus == SyncStatus.PENDING }
 }

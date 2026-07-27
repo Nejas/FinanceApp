@@ -5,7 +5,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import com.example.financeapp.domain.model.FinancialAccount
+import com.example.financeapp.domain.model.Account
 import com.example.financeapp.presentation.common.components.base.FinanceSelectionIconFrame
 import com.example.financeapp.presentation.common.components.base.FinanceSelectionIndicatorType
 import com.example.financeapp.presentation.common.components.base.FinanceSelectionRow
@@ -14,7 +14,7 @@ import com.example.financeapp.presentation.common.model.FinanceFieldType
 
 @Composable
 fun FinanceAccountSelectionSheetContent(
-    accounts: List<FinancialAccount>,
+    accounts: List<Account>,
     selectedAccountId: Long?,
     onAccountClick: (Long?) -> Unit,
     allAccountsTitle: String? = null

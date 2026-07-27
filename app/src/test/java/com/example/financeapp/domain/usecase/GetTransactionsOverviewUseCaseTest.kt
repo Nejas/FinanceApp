@@ -1,7 +1,7 @@
 package com.example.financeapp.domain.usecase
 
 import com.example.financeapp.domain.model.Currency
-import com.example.financeapp.domain.model.FinancialAccount
+import com.example.financeapp.domain.model.Account
 import com.example.financeapp.domain.model.FinancialAccountPayload
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.model.Transaction
@@ -94,7 +94,7 @@ class GetTransactionsOverviewUseCaseTest {
         id: Long,
         currency: Currency,
         createdAt: String
-    ) = FinancialAccount(
+    ) = Account(
         id = id,
         name = "Account $id",
         balance = Money(amountInMinorUnits = 0, currency = currency),
@@ -117,27 +117,27 @@ class GetTransactionsOverviewUseCaseTest {
     )
 
     private class FakeFinancialAccountsRepository(
-        private val accounts: List<FinancialAccount>
+        private val accounts: List<Account>
     ) : FinancialAccountsRepository {
 
-        override suspend fun getFinancialAccounts(): Result<List<FinancialAccount>> {
+        override suspend fun getFinancialAccounts(): Result<List<Account>> {
             return Result.success(accounts)
         }
 
         override suspend fun createFinancialAccount(
             payload: FinancialAccountPayload
-        ): Result<FinancialAccount> {
+        ): Result<Account> {
             return Result.success(accounts.first())
         }
 
-        override suspend fun getFinancialAccount(id: Long): Result<FinancialAccount> {
+        override suspend fun getFinancialAccount(id: Long): Result<Account> {
             return Result.success(accounts.first { account -> account.id == id })
         }
 
         override suspend fun updateFinancialAccount(
             id: Long,
             payload: FinancialAccountPayload
-        ): Result<FinancialAccount> {
+        ): Result<Account> {
             return getFinancialAccount(id)
         }
 

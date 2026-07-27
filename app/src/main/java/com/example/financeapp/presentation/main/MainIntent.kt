@@ -6,10 +6,13 @@ sealed interface MainIntent {
     data class DateSelected(val date: LocalDate) : MainIntent
     data class DeleteTransaction(val transactionId: Long) : MainIntent
     data class DeleteFinancialAccount(val accountId: Long) : MainIntent
+    data object RetryFailedSyncOperations : MainIntent
+    data object DiscardFailedSyncOperations : MainIntent
     data object DataChanged : MainIntent
     data object Retry : MainIntent
 }
 
 sealed interface MainEffect {
     data object DeleteFailed : MainEffect
+    data class SyncFailed(val count: Int) : MainEffect
 }

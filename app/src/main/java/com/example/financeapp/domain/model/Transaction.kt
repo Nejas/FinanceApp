@@ -8,5 +8,6 @@ data class Transaction(
     val categoryId: Long,
     val accountId: Long,
     val transactionDate: Instant,
-    val comment: String? = null
+    val comment: String? = null,
+    val syncStatus: SyncStatus = SyncStatus.SYNCED
 )

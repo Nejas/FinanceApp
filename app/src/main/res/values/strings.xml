@@ -30,7 +30,8 @@
     <string name="server_error_description">Мы повторили запрос, но сервер всё ещё вернул ошибку</string>
     <string name="timeout_error_title">Время ожидания истекло</string>
     <string name="timeout_error_description">Сервер слишком долго не отвечает. Попробуй снова</string>
-    <string name="network_offline_message">Нет подключения к интернету</string>
+    <string name="network_offline_message">Нет подключения к интернету. Показаны сохранённые данные</string>
+    <string name="transaction_saved_locally">Транзакция сохранена на устройстве и будет отправлена при подключении</string>
     <string name="analytics_period_title">Обзор за июнь</string>
     <string name="analytics_spending_dynamics">Динамика трат</string>
     <string name="analytics_categories">Категории</string>
@@ -143,4 +144,8 @@
     <string name="transaction_account_required">Выберите счёт</string>
     <string name="transaction_save_failed">Не удалось сохранить транзакцию. Попробуйте снова</string>
     <string name="transaction_saving">Сохранение…</string>
+    <string name="sync_failed_title">Не удалось синхронизировать изменения</string>
+    <string name="sync_failed_message">Сервер отклонил изменений: %1$d. Повторите попытку или отмените локальные изменения.</string>
+    <string name="sync_discard_changes">Отменить изменения</string>
+    <string name="pending_sync_message">Есть изменения, ожидающие синхронизации</string>
 </resources>

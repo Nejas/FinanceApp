@@ -9,12 +9,12 @@ import com.example.financeapp.domain.model.AnalyticsFilter
 import com.example.financeapp.domain.model.FinancialAccountsFilter
 import com.example.financeapp.domain.usecase.GetAnalyticsOverviewUseCase
 import com.example.financeapp.domain.usecase.GetFinancialAccountsOverviewUseCase
+import com.example.financeapp.domain.usecase.ObserveSyncEventsUseCase
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodFilterState
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodResolver
 import com.example.financeapp.presentation.analytics.mappers.AnalyticsCategoryColorMapper
 import com.example.financeapp.presentation.analytics.mappers.AnalyticsFilterUiMapper
 import com.example.financeapp.presentation.analytics.mappers.AnalyticsStateMapper
-import com.example.financeapp.presentation.common.network.NetworkRefreshable
 import com.example.financeapp.presentation.common.placeholders.ScreenError
 import com.example.financeapp.presentation.common.placeholders.toScreenError
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -38,6 +38,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 class AnalyticsViewModel @Inject constructor(
     private val getAnalyticsOverview: GetAnalyticsOverviewUseCase,
     private val getFinancialAccountsOverview: GetFinancialAccountsOverviewUseCase,
+    private val observeSyncEventsUseCase: ObserveSyncEventsUseCase,
     private val categoryColorMapper: AnalyticsCategoryColorMapper,
     private val periodResolver: AnalyticsPeriodResolver,
     private val filterUiMapper: AnalyticsFilterUiMapper,
@@ -45,7 +46,7 @@ class AnalyticsViewModel @Inject constructor(
     private val filterReducer: AnalyticsFilterReducer,
     private val networkMonitor: NetworkMonitor,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
-) : ViewModel(), NetworkRefreshable {
+) : ViewModel() {
 
     private val initialPeriodFilter = periodResolver.defaultPeriodFilter()
     private val initialFilter = defaultAnalyticsFilter(periodFilter = initialPeriodFilter)
@@ -69,6 +70,7 @@ class AnalyticsViewModel @Inject constructor(
     init {
         loadReferenceData()
         loadAnalytics()
+        startSyncEventObservation()
     }
 
     fun onIntent(intent: AnalyticsIntent) {
@@ -154,7 +156,7 @@ class AnalyticsViewModel @Inject constructor(
         }
     }
 
-    override fun refreshFromNetwork(isSilent: Boolean) {
+    fun refreshFromNetwork(isSilent: Boolean = false) {
         if (!refreshMutex.tryLock()) return
 
         referenceDataJob?.cancel()
@@ -318,6 +320,14 @@ class AnalyticsViewModel @Inject constructor(
     private fun sendEffect(effect: AnalyticsEffect) {
         viewModelScope.launch {
             effectChannel.send(effect)
+        }
+    }
+
+    private fun startSyncEventObservation() {
+        viewModelScope.launch {
+            observeSyncEventsUseCase().collect {
+                refreshFromNetwork(isSilent = true)
+            }
         }
     }
 

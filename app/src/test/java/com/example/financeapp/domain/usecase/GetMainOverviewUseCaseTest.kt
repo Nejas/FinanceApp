@@ -2,7 +2,7 @@ package com.example.financeapp.domain.usecase
 
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Currency
-import com.example.financeapp.domain.model.FinancialAccount
+import com.example.financeapp.domain.model.Account
 import com.example.financeapp.domain.model.FinancialAccountPayload
 import com.example.financeapp.domain.model.MainOverviewFilter
 import com.example.financeapp.domain.model.Money
@@ -142,7 +142,7 @@ class GetMainOverviewUseCaseTest {
         id: Long,
         currency: Currency,
         balance: Long
-    ) = FinancialAccount(
+    ) = Account(
         id = id,
         name = "Account $id",
         balance = Money(amountInMinorUnits = balance, currency = currency),
@@ -174,14 +174,14 @@ class GetMainOverviewUseCaseTest {
     )
 
     private class FakeFinancialAccountsRepository(
-        private val accounts: List<FinancialAccount> = emptyList(),
+        private val accounts: List<Account> = emptyList(),
         private val failure: Throwable? = null
     ) : FinancialAccountsRepository {
 
         var loadCount: Int = 0
             private set
 
-        override suspend fun getFinancialAccounts(): Result<List<FinancialAccount>> {
+        override suspend fun getFinancialAccounts(): Result<List<Account>> {
             loadCount += 1
             return failure?.let(Result.Companion::failure)
                 ?: Result.success(accounts)
@@ -189,16 +189,16 @@ class GetMainOverviewUseCaseTest {
 
         override suspend fun createFinancialAccount(
             payload: FinancialAccountPayload
-        ): Result<FinancialAccount> = Result.success(accounts.first())
+        ): Result<Account> = Result.success(accounts.first())
 
-        override suspend fun getFinancialAccount(id: Long): Result<FinancialAccount> {
+        override suspend fun getFinancialAccount(id: Long): Result<Account> {
             return Result.success(accounts.first { account -> account.id == id })
         }
 
         override suspend fun updateFinancialAccount(
             id: Long,
             payload: FinancialAccountPayload
-        ): Result<FinancialAccount> = getFinancialAccount(id)
+        ): Result<Account> = getFinancialAccount(id)
 
         override suspend fun deleteFinancialAccount(id: Long): Result<Unit> = Result.success(Unit)
     }

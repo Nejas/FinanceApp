@@ -4,7 +4,7 @@ import com.example.financeapp.MainDispatcherRule
 import com.example.financeapp.core.network.NetworkMonitor
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Currency
-import com.example.financeapp.domain.model.FinancialAccount
+import com.example.financeapp.domain.model.Account
 import com.example.financeapp.domain.model.FinancialAccountPayload
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.model.Transaction
@@ -52,7 +52,7 @@ class TransactionEditorViewModelTest {
         emoji = "tag",
         type = TransactionType.INCOME
     )
-    private val account = FinancialAccount(
+    private val account = Account(
         id = 20,
         name = "Main",
         balance = Money(BigDecimal("1000"), Currency.RUB),
@@ -220,7 +220,7 @@ class TransactionEditorViewModelTest {
     }
 
     private class FakeFinancialAccountsRepository(
-        private val accounts: List<FinancialAccount>
+        private val accounts: List<Account>
     ) : FinancialAccountsRepository {
         override suspend fun getFinancialAccounts() = Result.success(accounts)
 

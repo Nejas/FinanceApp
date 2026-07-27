@@ -4,12 +4,12 @@ import com.example.financeapp.data.network.model.request.AccountCreateRequestDto
 import com.example.financeapp.data.network.model.request.AccountUpdateRequestDto
 import com.example.financeapp.data.network.model.response.AccountDetailsResponseDto
 import com.example.financeapp.data.network.model.response.AccountResponseDto
-import com.example.financeapp.domain.model.FinancialAccount
+import com.example.financeapp.domain.model.Account
 import com.example.financeapp.domain.model.FinancialAccountPayload
 import java.time.Instant
 
-fun AccountResponseDto.toDomain(): FinancialAccount {
-    return FinancialAccount(
+fun AccountResponseDto.toDomain(): Account {
+    return Account(
         id = id,
         name = name,
         balance = balance.toMoney(currency),
@@ -18,8 +18,8 @@ fun AccountResponseDto.toDomain(): FinancialAccount {
     )
 }
 
-fun AccountDetailsResponseDto.toDomain(): FinancialAccount {
-    return FinancialAccount(
+fun AccountDetailsResponseDto.toDomain(): Account {
+    return Account(
         id = id,
         name = name,
         balance = balance.toMoney(currency),

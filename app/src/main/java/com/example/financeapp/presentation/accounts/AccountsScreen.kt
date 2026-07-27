@@ -6,6 +6,7 @@ import androidx.compose.ui.res.stringResource
 import com.example.financeapp.R
 import com.example.financeapp.presentation.common.components.RouteScreenContent
 import com.example.financeapp.presentation.common.model.FinanceListItemUiModel
+import com.example.financeapp.domain.model.SyncStatus
 
 @Composable
 fun AccountsScreen(
@@ -23,7 +24,8 @@ fun AccountsScreen(
                 title = account.name,
                 leadingEmoji = account.emoji,
                 comment = account.description,
-                money = account.balance
+                money = account.balance,
+                isPendingSync = account.syncStatus == SyncStatus.PENDING
             )
         },
         emptyMessage = stringResource(R.string.empty_accounts),

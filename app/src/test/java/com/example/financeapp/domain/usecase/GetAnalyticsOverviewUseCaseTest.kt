@@ -3,7 +3,7 @@ package com.example.financeapp.domain.usecase
 import com.example.financeapp.domain.model.AnalyticsFilter
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Currency
-import com.example.financeapp.domain.model.FinancialAccount
+import com.example.financeapp.domain.model.Account
 import com.example.financeapp.domain.model.FinancialAccountPayload
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.model.Transaction
@@ -25,7 +25,7 @@ class GetAnalyticsOverviewUseCaseTest {
 
     @Test
     fun invoke_returnsDomainEntriesAndCategoryBreakdowns() = runTest {
-        val account = FinancialAccount(
+        val account = Account(
             id = 1,
             name = "Main account",
             balance = Money(amountInMinorUnits = 100_000, currency = Currency.RUB),
@@ -100,27 +100,27 @@ class GetAnalyticsOverviewUseCaseTest {
     }
 
     private class FakeFinancialAccountsRepository(
-        private val accounts: List<FinancialAccount>
+        private val accounts: List<Account>
     ) : FinancialAccountsRepository {
 
-        override suspend fun getFinancialAccounts(): Result<List<FinancialAccount>> {
+        override suspend fun getFinancialAccounts(): Result<List<Account>> {
             return Result.success(accounts)
         }
 
         override suspend fun createFinancialAccount(
             payload: FinancialAccountPayload
-        ): Result<FinancialAccount> {
+        ): Result<Account> {
             return Result.success(accounts.first())
         }
 
-        override suspend fun getFinancialAccount(id: Long): Result<FinancialAccount> {
+        override suspend fun getFinancialAccount(id: Long): Result<Account> {
             return Result.success(accounts.first { account -> account.id == id })
         }
 
         override suspend fun updateFinancialAccount(
             id: Long,
             payload: FinancialAccountPayload
-        ): Result<FinancialAccount> {
+        ): Result<Account> {
             return getFinancialAccount(id)
         }
 

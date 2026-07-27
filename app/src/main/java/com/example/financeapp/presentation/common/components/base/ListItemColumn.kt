@@ -1,6 +1,7 @@
 package com.example.financeapp.presentation.common.components.base
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,6 +34,13 @@ fun ListItemColumn(
         modifier = modifier
             .fillMaxWidth()
             .then(
+                if (item.isPendingSync) {
+                    Modifier.background(MaterialTheme.colorScheme.tertiaryContainer)
+                } else {
+                    Modifier
+                }
+            )
+            .then(
                 if (onClick != null) {
                     Modifier.clickable(onClick = onClick)
                 } else {
@@ -60,7 +68,7 @@ fun ListItemColumn(
                     text = item.title,
                     modifier = Modifier.fillMaxWidth(),
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = item.contentColor(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -71,7 +79,7 @@ fun ListItemColumn(
                             text = comment,
                             modifier = Modifier.fillMaxWidth(),
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = item.contentColor(),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -81,13 +89,20 @@ fun ListItemColumn(
             Text(
                 text = item.money.formatWithoutMinorUnits(),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = item.contentColor(),
                 textAlign = TextAlign.End,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         }
     }
+}
+
+@Composable
+private fun FinanceListItemUiModel.contentColor() = if (isPendingSync) {
+    MaterialTheme.colorScheme.onTertiaryContainer
+} else {
+    MaterialTheme.colorScheme.onSurface
 }
 
 @Preview(showBackground = true)

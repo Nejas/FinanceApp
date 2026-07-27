@@ -18,5 +18,5 @@ data class AnalyticsCategoryBreakdown(
 data class AnalyticsTransactionEntry(
     val transaction: Transaction,
     val category: Category?,
-    val account: FinancialAccount?
+    val account: Account?
 )

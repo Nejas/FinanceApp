@@ -7,23 +7,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.financeapp.presentation.analytics.ui.AnalyticsScreen
-import com.example.financeapp.presentation.common.network.LifecycleNetworkRefreshEffect
-import com.example.financeapp.presentation.common.network.NetworkStatusViewModel
+
 @Composable
 fun AnalyticsRoute(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: AnalyticsViewModel = hiltViewModel(),
-    networkStatusViewModel: NetworkStatusViewModel = hiltViewModel()
+    viewModel: AnalyticsViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    val isOnline by networkStatusViewModel.isOnline.collectAsState()
-
-    LifecycleNetworkRefreshEffect(
-        refreshable = viewModel,
-        isOnline = isOnline,
-        refreshImmediately = false
-    )
 
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->

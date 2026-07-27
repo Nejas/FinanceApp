@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.WifiOff
+import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -46,6 +47,40 @@ fun NetworkStatusBanner(
             )
             Text(
                 text = stringResource(R.string.network_offline_message),
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+    }
+}
+
+@Composable
+fun PendingSyncStatusBanner(
+    modifier: Modifier = Modifier
+) {
+    val spacing = LocalSpacing.current
+    val sizing = LocalSizing.current
+
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.tertiaryContainer,
+        contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+    ) {
+        Row(
+            modifier = Modifier.padding(
+                horizontal = spacing.md,
+                vertical = spacing.s
+            ),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Sync,
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(end = spacing.s)
+                    .size(sizing.icon)
+            )
+            Text(
+                text = stringResource(R.string.pending_sync_message),
                 style = MaterialTheme.typography.bodyMedium
             )
         }
