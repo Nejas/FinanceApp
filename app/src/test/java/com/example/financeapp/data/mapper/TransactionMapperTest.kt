@@ -2,7 +2,7 @@ package com.example.financeapp.data.mapper
 
 import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.Money
-import com.example.financeapp.domain.model.TransactionPayload
+import com.example.financeapp.domain.model.TransactionDraft
 import java.math.BigDecimal
 import java.time.Instant
 import kotlinx.serialization.encodeToString
@@ -49,8 +49,8 @@ class TransactionMapperTest {
     private fun transactionPayload(
         amount: BigDecimal,
         comment: String? = null
-    ): TransactionPayload {
-        return TransactionPayload(
+    ): TransactionDraft {
+        return TransactionDraft(
             accountId = 1740,
             categoryId = 9,
             amount = Money(

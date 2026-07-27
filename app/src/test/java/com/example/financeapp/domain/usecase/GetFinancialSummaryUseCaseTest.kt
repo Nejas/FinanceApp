@@ -3,11 +3,11 @@ package com.example.financeapp.domain.usecase
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.Account
-import com.example.financeapp.domain.model.FinancialAccountPayload
-import com.example.financeapp.domain.model.MainOverviewFilter
+import com.example.financeapp.domain.model.AccountDraft
+import com.example.financeapp.domain.model.FinancialSummaryCriteria
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.model.Transaction
-import com.example.financeapp.domain.model.TransactionPayload
+import com.example.financeapp.domain.model.TransactionDraft
 import com.example.financeapp.domain.model.TransactionsQuery
 import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.domain.repository.CategoriesRepository
@@ -20,7 +20,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class GetMainOverviewUseCaseTest {
+class GetFinancialSummaryUseCaseTest {
 
     @Test
     fun invoke_buildsExpenseIncomeAndAccountsOverviewFromOneAccountsLoad() = runTest {
@@ -47,7 +47,7 @@ class GetMainOverviewUseCaseTest {
         )
 
         val result = useCase(
-            MainOverviewFilter(currency = Currency.RUB)
+            FinancialSummaryCriteria(currency = Currency.RUB)
         )
 
         val accountsOverview = result.accounts.getOrThrow()
@@ -95,7 +95,7 @@ class GetMainOverviewUseCaseTest {
         )
 
         val result = useCase(
-            MainOverviewFilter(currency = Currency.RUB)
+            FinancialSummaryCriteria(currency = Currency.RUB)
         )
 
         assertTrue(result.accounts.isSuccess)
@@ -114,7 +114,7 @@ class GetMainOverviewUseCaseTest {
         )
 
         val result = useCase(
-            MainOverviewFilter(currency = Currency.RUB)
+            FinancialSummaryCriteria(currency = Currency.RUB)
         )
 
         assertTrue(result.accounts.isFailure)
@@ -126,13 +126,13 @@ class GetMainOverviewUseCaseTest {
         accountsRepository: FinancialAccountsRepository,
         categoriesRepository: CategoriesRepository,
         transactionsRepository: TransactionsRepository
-    ): GetMainOverviewUseCase {
-        return GetMainOverviewUseCase(
-            getFinancialAccountsOverview = GetFinancialAccountsOverviewUseCase(
+    ): GetFinancialSummaryUseCase {
+        return GetFinancialSummaryUseCase(
+            accountUseCases = AccountUseCases(
                 repository = accountsRepository,
                 defaultDispatcher = Dispatchers.Unconfined
             ),
-            categoriesRepository = categoriesRepository,
+            categoryUseCase = CategoryUseCase(categoriesRepository),
             transactionsRepository = transactionsRepository,
             defaultDispatcher = Dispatchers.Unconfined
         )
@@ -188,7 +188,7 @@ class GetMainOverviewUseCaseTest {
         }
 
         override suspend fun createFinancialAccount(
-            payload: FinancialAccountPayload
+            payload: AccountDraft
         ): Result<Account> = Result.success(accounts.first())
 
         override suspend fun getFinancialAccount(id: Long): Result<Account> {
@@ -197,7 +197,7 @@ class GetMainOverviewUseCaseTest {
 
         override suspend fun updateFinancialAccount(
             id: Long,
-            payload: FinancialAccountPayload
+            payload: AccountDraft
         ): Result<Account> = getFinancialAccount(id)
 
         override suspend fun deleteFinancialAccount(id: Long): Result<Unit> = Result.success(Unit)
@@ -236,7 +236,7 @@ class GetMainOverviewUseCaseTest {
         }
 
         override suspend fun createTransaction(
-            payload: TransactionPayload
+            payload: TransactionDraft
         ): Result<Transaction> = Result.success(transactions.first())
 
         override suspend fun getTransaction(id: Long): Result<Transaction> {
@@ -245,7 +245,7 @@ class GetMainOverviewUseCaseTest {
 
         override suspend fun updateTransaction(
             id: Long,
-            payload: TransactionPayload
+            payload: TransactionDraft
         ): Result<Transaction> = getTransaction(id)
 
         override suspend fun deleteTransaction(id: Long): Result<Unit> = Result.success(Unit)

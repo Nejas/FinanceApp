@@ -1,8 +1,8 @@
 package com.example.financeapp.presentation.analytics.mappers
 
 import androidx.compose.ui.graphics.Color
-import com.example.financeapp.domain.model.AnalyticsCategoryBreakdown
-import com.example.financeapp.domain.model.AnalyticsOverview
+import com.example.financeapp.domain.model.CategoryBreakdown
+import com.example.financeapp.domain.model.TransactionAnalysis
 import com.example.financeapp.presentation.analytics.AnalyticsCategoryUi
 import com.example.financeapp.presentation.analytics.AnalyticsState
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodFilterState
@@ -10,10 +10,10 @@ import com.example.financeapp.presentation.common.model.FinanceListItemUiModel
 import javax.inject.Inject
 
 class AnalyticsStateMapper @Inject constructor(
-    private val filterUiMapper: AnalyticsFilterUiMapper
+    private val filterUiMapper: TransactionAnalysisCriteriaUiMapper
 ) {
 
-    fun mapCategories(categories: List<AnalyticsCategoryBreakdown>): List<AnalyticsCategoryUi> {
+    fun mapCategories(categories: List<CategoryBreakdown>): List<AnalyticsCategoryUi> {
         return categories.map { breakdown ->
             AnalyticsCategoryUi(
                 categoryId = breakdown.categoryId,
@@ -27,7 +27,7 @@ class AnalyticsStateMapper @Inject constructor(
 
     fun mapOverview(
         currentState: AnalyticsState,
-        overview: AnalyticsOverview,
+        overview: TransactionAnalysis,
         categoryItems: List<AnalyticsCategoryUi>,
         categoryColors: Map<Long, Color>,
         periodFilter: AnalyticsPeriodFilterState

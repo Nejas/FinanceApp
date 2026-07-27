@@ -5,20 +5,18 @@ import com.example.financeapp.core.network.NetworkMonitor
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.Account
-import com.example.financeapp.domain.model.FinancialAccountPayload
+import com.example.financeapp.domain.model.AccountDraft
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.model.Transaction
-import com.example.financeapp.domain.model.TransactionPayload
+import com.example.financeapp.domain.model.TransactionDraft
 import com.example.financeapp.domain.model.TransactionsQuery
 import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.domain.repository.CategoriesRepository
 import com.example.financeapp.domain.repository.FinancialAccountsRepository
 import com.example.financeapp.domain.repository.TransactionsRepository
-import com.example.financeapp.domain.usecase.CreateTransactionUseCase
-import com.example.financeapp.domain.usecase.GetCategoriesUseCase
-import com.example.financeapp.domain.usecase.GetFinancialAccountsOverviewUseCase
-import com.example.financeapp.domain.usecase.GetTransactionUseCase
-import com.example.financeapp.domain.usecase.UpdateTransactionUseCase
+import com.example.financeapp.domain.usecase.CategoryUseCase
+import com.example.financeapp.domain.usecase.AccountUseCases
+import com.example.financeapp.domain.usecase.TransactionUseCases
 import com.example.financeapp.presentation.bottomSheets.transactionEditor.TransactionEditorEffect
 import com.example.financeapp.presentation.bottomSheets.transactionEditor.TransactionEditorIntent
 import com.example.financeapp.presentation.bottomSheets.transactionEditor.TransactionEditorMode
@@ -185,16 +183,21 @@ class TransactionEditorViewModelTest {
         transactionsRepository: FakeTransactionsRepository = FakeTransactionsRepository()
     ): TransactionEditorViewModel {
         return TransactionEditorViewModel(
-            getCategories = GetCategoriesUseCase(
+            categoryUseCase = CategoryUseCase(
                 FakeCategoriesRepository(listOf(category))
             ),
-            getFinancialAccountsOverview = GetFinancialAccountsOverviewUseCase(
+            accountUseCases = AccountUseCases(
                 repository = FakeFinancialAccountsRepository(listOf(account)),
                 defaultDispatcher = Dispatchers.Unconfined
             ),
-            getTransaction = GetTransactionUseCase(transactionsRepository),
-            createTransaction = CreateTransactionUseCase(transactionsRepository),
-            updateTransaction = UpdateTransactionUseCase(transactionsRepository),
+            transactionUseCases = TransactionUseCases(
+                transactionsRepository = transactionsRepository,
+                accountUseCases = AccountUseCases(
+                    repository = FakeFinancialAccountsRepository(listOf(account)),
+                    defaultDispatcher = Dispatchers.Unconfined
+                ),
+                defaultDispatcher = Dispatchers.Unconfined
+            ),
             reducer = TransactionEditorReducer(),
             networkMonitor = FakeNetworkMonitor(),
             clock = clock
@@ -225,7 +228,7 @@ class TransactionEditorViewModelTest {
         override suspend fun getFinancialAccounts() = Result.success(accounts)
 
         override suspend fun createFinancialAccount(
-            payload: FinancialAccountPayload
+            payload: AccountDraft
         ) = Result.success(accounts.first())
 
         override suspend fun getFinancialAccount(id: Long) = Result.success(
@@ -234,7 +237,7 @@ class TransactionEditorViewModelTest {
 
         override suspend fun updateFinancialAccount(
             id: Long,
-            payload: FinancialAccountPayload
+            payload: AccountDraft
         ) = getFinancialAccount(id)
 
         override suspend fun deleteFinancialAccount(id: Long) = Result.success(Unit)
@@ -243,9 +246,9 @@ class TransactionEditorViewModelTest {
     private class FakeTransactionsRepository(
         private val existingTransaction: Transaction? = null
     ) : TransactionsRepository {
-        var createdPayload: TransactionPayload? = null
+        var createdPayload: TransactionDraft? = null
         var updatedId: Long? = null
-        var updatedPayload: TransactionPayload? = null
+        var updatedPayload: TransactionDraft? = null
 
         override suspend fun getTransactions(
             query: TransactionsQuery
@@ -254,7 +257,7 @@ class TransactionEditorViewModelTest {
         }
 
         override suspend fun createTransaction(
-            payload: TransactionPayload
+            payload: TransactionDraft
         ): Result<Transaction> {
             createdPayload = payload
             return Result.success(
@@ -278,7 +281,7 @@ class TransactionEditorViewModelTest {
 
         override suspend fun updateTransaction(
             id: Long,
-            payload: TransactionPayload
+            payload: TransactionDraft
         ): Result<Transaction> {
             updatedId = id
             updatedPayload = payload

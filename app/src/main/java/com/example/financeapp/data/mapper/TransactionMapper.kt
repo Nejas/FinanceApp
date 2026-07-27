@@ -4,7 +4,7 @@ import com.example.financeapp.data.network.model.request.TransactionRequestDto
 import com.example.financeapp.data.network.model.response.TransactionPlainResponseDto
 import com.example.financeapp.data.network.model.response.TransactionResponseDto
 import com.example.financeapp.domain.model.Transaction
-import com.example.financeapp.domain.model.TransactionPayload
+import com.example.financeapp.domain.model.TransactionDraft
 import java.time.Instant
 
 fun TransactionResponseDto.toDomain(): Transaction {
@@ -31,7 +31,7 @@ fun TransactionPlainResponseDto.toDomain(
     )
 }
 
-fun TransactionPayload.toRequestDto(): TransactionRequestDto {
+fun TransactionDraft.toRequestDto(): TransactionRequestDto {
     return TransactionRequestDto(
         accountId = accountId,
         categoryId = categoryId,

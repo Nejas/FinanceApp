@@ -13,9 +13,9 @@ import com.example.financeapp.data.repository.CategoriesDataRepository
 import com.example.financeapp.data.repository.FinancialAccountsDataRepository
 import com.example.financeapp.data.repository.TransactionsDataRepository
 import com.example.financeapp.domain.model.Currency
-import com.example.financeapp.domain.model.FinancialAccountPayload
+import com.example.financeapp.domain.model.AccountDraft
 import com.example.financeapp.domain.model.Money
-import com.example.financeapp.domain.model.TransactionPayload
+import com.example.financeapp.domain.model.TransactionDraft
 import com.example.financeapp.domain.model.TransactionType
 import java.io.File
 import java.math.BigDecimal
@@ -86,15 +86,19 @@ class RealServerUseCaseIntegrationTest {
             defaultDispatcher = Dispatchers.Default
         )
 
+        val accountUseCases = AccountUseCases(
+            repository = accountsRepository,
+            defaultDispatcher = Dispatchers.Default
+        )
         return TestDependencies(
             remoteDataSource = networkDataSource,
-            createAccount = CreateFinancialAccountUseCase(accountsRepository),
-            getAccount = GetFinancialAccountUseCase(accountsRepository),
-            deleteAccount = DeleteFinancialAccountUseCase(accountsRepository),
-            getCategories = GetCategoriesUseCase(categoriesRepository),
-            createTransaction = CreateTransactionUseCase(transactionsRepository),
-            getTransaction = GetTransactionUseCase(transactionsRepository),
-            deleteTransaction = DeleteTransactionUseCase(transactionsRepository)
+            accountUseCases = accountUseCases,
+            categoryUseCase = CategoryUseCase(categoriesRepository),
+            transactionUseCases = TransactionUseCases(
+                transactionsRepository = transactionsRepository,
+                accountUseCases = accountUseCases,
+                defaultDispatcher = Dispatchers.Default
+            )
         )
     }
 
@@ -122,7 +126,7 @@ class RealServerUseCaseIntegrationTest {
             }
 
             printlnHeader("Create account request")
-            val accountPayload = FinancialAccountPayload(
+            val accountPayload = AccountDraft(
                 name = "Яндекс Банк",
                 emoji = null,
                 balance = Money(
@@ -132,21 +136,21 @@ class RealServerUseCaseIntegrationTest {
             )
             println(accountPayload)
 
-            val account = dependencies.createAccount(
+            val account = dependencies.accountUseCases.create(
                 accountPayload
             ).getOrThrow()
             createdAccountId = account.id
             printlnHeader("Created account domain result")
             println(account)
 
-            val loadedAccount = dependencies.getAccount(account.id).getOrThrow()
+            val loadedAccount = dependencies.accountUseCases.getAccount(account.id).getOrThrow()
             printlnHeader("Loaded account domain result")
             println(loadedAccount)
             assertEquals(account.id, loadedAccount.id)
             assertEquals(account.name, loadedAccount.name)
 
-            val incomeCategories = dependencies.getCategories(TransactionType.INCOME).getOrThrow()
-            val expenseCategories = dependencies.getCategories(TransactionType.EXPENSE).getOrThrow()
+            val incomeCategories = dependencies.categoryUseCase.getCategories(TransactionType.INCOME).getOrThrow()
+            val expenseCategories = dependencies.categoryUseCase.getCategories(TransactionType.EXPENSE).getOrThrow()
             val incomeCategory = incomeCategories.first()
             val expenseCategory = expenseCategories.first()
 
@@ -156,8 +160,8 @@ class RealServerUseCaseIntegrationTest {
             expenseCategories.forEach(::println)
 
             printlnHeader("Create income transaction")
-            val incomeTransaction = dependencies.createTransaction(
-                TransactionPayload(
+            val incomeTransaction = dependencies.transactionUseCases.create(
+                TransactionDraft(
                     accountId = account.id,
                     categoryId = incomeCategory.id,
                     amount = Money(
@@ -172,8 +176,8 @@ class RealServerUseCaseIntegrationTest {
             println(incomeTransaction)
 
             printlnHeader("Create expense transaction")
-            val expenseTransaction = dependencies.createTransaction(
-                TransactionPayload(
+            val expenseTransaction = dependencies.transactionUseCases.create(
+                TransactionDraft(
                     accountId = account.id,
                     categoryId = expenseCategory.id,
                     amount = Money(
@@ -207,8 +211,8 @@ class RealServerUseCaseIntegrationTest {
                     }
                 }
 
-            val loadedIncomeTransaction = dependencies.getTransaction(incomeTransaction.id).getOrThrow()
-            val loadedExpenseTransaction = dependencies.getTransaction(expenseTransaction.id).getOrThrow()
+            val loadedIncomeTransaction = dependencies.transactionUseCases.getTransaction(incomeTransaction.id).getOrThrow()
+            val loadedExpenseTransaction = dependencies.transactionUseCases.getTransaction(expenseTransaction.id).getOrThrow()
             printlnHeader("Loaded transactions domain result")
             println(loadedIncomeTransaction)
             println(loadedExpenseTransaction)
@@ -220,22 +224,22 @@ class RealServerUseCaseIntegrationTest {
             assertEquals(account.id, loadedExpenseTransaction.accountId)
             assertEquals(expenseCategory.id, loadedExpenseTransaction.categoryId)
 
-            dependencies.deleteTransaction(incomeTransaction.id).getOrThrow()
+            dependencies.transactionUseCases.delete(incomeTransaction.id).getOrThrow()
             createdTransactionIds -= incomeTransaction.id
-            dependencies.deleteTransaction(expenseTransaction.id).getOrThrow()
+            dependencies.transactionUseCases.delete(expenseTransaction.id).getOrThrow()
             createdTransactionIds -= expenseTransaction.id
-            assertTrue(dependencies.getTransaction(incomeTransaction.id).isFailure)
-            assertTrue(dependencies.getTransaction(expenseTransaction.id).isFailure)
+            assertTrue(dependencies.transactionUseCases.getTransaction(incomeTransaction.id).isFailure)
+            assertTrue(dependencies.transactionUseCases.getTransaction(expenseTransaction.id).isFailure)
 
-            dependencies.deleteAccount(account.id).getOrThrow()
+            dependencies.accountUseCases.delete(account.id).getOrThrow()
             createdAccountId = null
-            assertTrue(dependencies.getAccount(account.id).isFailure)
+            assertTrue(dependencies.accountUseCases.getAccount(account.id).isFailure)
         } finally {
             createdTransactionIds.toList().forEach { transactionId ->
-                dependencies.deleteTransaction(transactionId)
+                dependencies.transactionUseCases.delete(transactionId)
             }
             createdAccountId?.let { accountId ->
-                dependencies.deleteAccount(accountId)
+                dependencies.accountUseCases.delete(accountId)
             }
         }
     }
@@ -275,13 +279,9 @@ class RealServerUseCaseIntegrationTest {
 
     private data class TestDependencies(
         val remoteDataSource: FinanceRemoteDataSource,
-        val createAccount: CreateFinancialAccountUseCase,
-        val getAccount: GetFinancialAccountUseCase,
-        val deleteAccount: DeleteFinancialAccountUseCase,
-        val getCategories: GetCategoriesUseCase,
-        val createTransaction: CreateTransactionUseCase,
-        val getTransaction: GetTransactionUseCase,
-        val deleteTransaction: DeleteTransactionUseCase
+        val accountUseCases: AccountUseCases,
+        val categoryUseCase: CategoryUseCase,
+        val transactionUseCases: TransactionUseCases
     )
 
     private object AlwaysOnlineNetworkMonitor : NetworkMonitor {

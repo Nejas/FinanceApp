@@ -1,5 +1,5 @@
 package com.example.financeapp.domain.model
 
-data class FinancialAccountsFilter(
+data class AccountQuery(
     val currency: Currency? = null
 )

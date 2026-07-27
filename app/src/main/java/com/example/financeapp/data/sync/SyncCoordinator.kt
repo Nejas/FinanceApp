@@ -19,8 +19,8 @@ import com.example.financeapp.data.network.result.NetworkResult
 import com.example.financeapp.data.network.result.isRetryable
 import com.example.financeapp.data.remote.datasource.FinanceRemoteDataSource
 import com.example.financeapp.domain.model.SyncEvent
-import com.example.financeapp.domain.model.FinancialAccountPayload
-import com.example.financeapp.domain.model.TransactionPayload
+import com.example.financeapp.domain.model.AccountDraft
+import com.example.financeapp.domain.model.TransactionDraft
 import com.example.financeapp.domain.model.TransactionsQuery
 import java.time.Clock
 import javax.inject.Inject
@@ -107,7 +107,7 @@ class SyncCoordinator @Inject constructor(
         operation: SyncOperationEntity
     ): NetworkResult<Unit> {
         val createResult = networkDataSource.createTransaction(
-            operation.toTransactionPayload().toRequestDto()
+            operation.toTransactionDraft().toRequestDto()
         )
         if (createResult !is NetworkResult.Success) {
             return createResult.asUnit()
@@ -136,7 +136,7 @@ class SyncCoordinator @Inject constructor(
         val serverId = operation.serverTransactionId ?: operation.localTransactionId
         val updateResult = networkDataSource.updateTransaction(
             id = serverId,
-            request = operation.toTransactionPayload().toRequestDto()
+            request = operation.toTransactionDraft().toRequestDto()
         )
         if (updateResult !is NetworkResult.Success) {
             return updateResult.asUnit()
@@ -169,7 +169,7 @@ class SyncCoordinator @Inject constructor(
         operation: SyncOperationEntity
     ): NetworkResult<Unit> {
         val createResult = networkDataSource.createAccount(
-            operation.toFinancialAccountPayload().toCreateRequestDto()
+            operation.toAccountDraft().toCreateRequestDto()
         )
         if (createResult !is NetworkResult.Success) {
             return createResult.asUnit()
@@ -197,7 +197,7 @@ class SyncCoordinator @Inject constructor(
         val serverId = operation.serverAccountId ?: operation.accountId
         val updateResult = networkDataSource.updateAccount(
             id = serverId,
-            request = operation.toFinancialAccountPayload().toUpdateRequestDto()
+            request = operation.toAccountDraft().toUpdateRequestDto()
         )
         if (updateResult !is NetworkResult.Success) {
             return updateResult.asUnit()
@@ -268,8 +268,8 @@ private enum class RefreshResult {
     RetryLater
 }
 
-private fun SyncOperationEntity.toTransactionPayload(): TransactionPayload {
-    return TransactionPayload(
+private fun SyncOperationEntity.toTransactionDraft(): TransactionDraft {
+    return TransactionDraft(
         accountId = accountId,
         categoryId = categoryId,
         amount = amount.toMoney(currencyCode),
@@ -278,8 +278,8 @@ private fun SyncOperationEntity.toTransactionPayload(): TransactionPayload {
     )
 }
 
-private fun SyncOperationEntity.toFinancialAccountPayload(): FinancialAccountPayload {
-    return FinancialAccountPayload(
+private fun SyncOperationEntity.toAccountDraft(): AccountDraft {
+    return AccountDraft(
         name = requireNotNull(accountName),
         emoji = accountEmoji,
         balance = requireNotNull(accountBalance).toMoney(

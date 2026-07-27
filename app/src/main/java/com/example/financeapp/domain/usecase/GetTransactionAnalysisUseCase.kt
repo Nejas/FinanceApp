@@ -2,60 +2,59 @@ package com.example.financeapp.domain.usecase
 
 import com.example.financeapp.core.coroutines.DefaultDispatcher
 import com.example.financeapp.core.coroutines.suspendRunCatching
-import com.example.financeapp.domain.model.AnalyticsCategoryBreakdown
-import com.example.financeapp.domain.model.AnalyticsFilter
-import com.example.financeapp.domain.model.AnalyticsOverview
-import com.example.financeapp.domain.model.AnalyticsTransactionEntry
+import com.example.financeapp.domain.model.CategoryBreakdown
+import com.example.financeapp.domain.model.TransactionAnalysisCriteria
+import com.example.financeapp.domain.model.TransactionAnalysis
+import com.example.financeapp.domain.model.AnalyzedTransaction
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.Account
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.model.Transaction
-import com.example.financeapp.domain.model.TransactionsOverviewFilter
-import com.example.financeapp.domain.repository.CategoriesRepository
+import com.example.financeapp.domain.model.TransactionSelectionCriteria
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
-class GetAnalyticsOverviewUseCase @Inject constructor(
-    private val getTransactionsOverview: GetTransactionsOverviewUseCase,
-    private val categoriesRepository: CategoriesRepository,
+class GetTransactionAnalysisUseCase @Inject constructor(
+    private val transactionUseCases: TransactionUseCases,
+    private val categoryUseCase: CategoryUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
     suspend operator fun invoke(
-        filter: AnalyticsFilter
-    ): Result<AnalyticsOverview> {
+        filter: TransactionAnalysisCriteria
+    ): Result<TransactionAnalysis> {
         return suspendRunCatching {
-            val categories = categoriesRepository.getCategories(filter.type).getOrThrow()
-            val transactionsOverview = getTransactionsOverview(
-                filter = filter.toTransactionsOverviewFilter().copy(categoryIds = emptySet())
+            val categories = categoryUseCase.getCategories(filter.type).getOrThrow()
+            val transactionSummary = transactionUseCases.getSummary(
+                criteria = filter.toTransactionSelectionCriteria().copy(categoryIds = emptySet())
             ).getOrThrow()
 
             withContext(defaultDispatcher) {
                 val categoriesById = categories.associateBy { category -> category.id }
-                val accountsById = transactionsOverview.accounts.associateBy { account -> account.id }
-                val filteredTransactions = transactionsOverview.transactions.filterByCategories(filter.categoryIds)
+                val accountsById = transactionSummary.accounts.associateBy { account -> account.id }
+                val filteredTransactions = transactionSummary.transactions.filterByCategories(filter.categoryIds)
                 val total = Money.sum(
                     amounts = filteredTransactions.map { transaction -> transaction.amount },
                     fallbackCurrency = filter.currency
                 )
 
-                AnalyticsOverview(
+                TransactionAnalysis(
                     total = total,
                     categories = filteredTransactions.toCategoryBreakdowns(
                         categoriesById = categoriesById,
                         total = total,
                         fallbackCurrency = filter.currency
                     ),
-                    availableCategories = transactionsOverview.transactions.toAvailableCategories(
+                    availableCategories = transactionSummary.transactions.toAvailableCategories(
                         categoriesById = categoriesById,
                         fallbackCurrency = filter.currency
                     ),
                     transactions = filteredTransactions.map { transaction ->
-                        transaction.toAnalyticsTransactionEntry(
+                        transaction.toAnalyzedTransaction(
                             category = categoriesById[transaction.categoryId],
                             account = accountsById[transaction.accountId]
                         )
@@ -92,8 +91,8 @@ class GetAnalyticsOverviewUseCase @Inject constructor(
             .toList()
     }
 
-    private fun AnalyticsFilter.toTransactionsOverviewFilter(): TransactionsOverviewFilter {
-        return TransactionsOverviewFilter(
+    private fun TransactionAnalysisCriteria.toTransactionSelectionCriteria(): TransactionSelectionCriteria {
+        return TransactionSelectionCriteria(
             accountId = accountId,
             startDate = startDate,
             endDate = endDate,
@@ -107,7 +106,7 @@ class GetAnalyticsOverviewUseCase @Inject constructor(
         categoriesById: Map<Long, Category>,
         total: Money,
         fallbackCurrency: Currency
-    ): List<AnalyticsCategoryBreakdown> {
+    ): List<CategoryBreakdown> {
         return groupBy { transaction -> transaction.categoryId }
             .map { (categoryId, transactions) ->
                 val category = categoriesById[categoryId]
@@ -115,7 +114,7 @@ class GetAnalyticsOverviewUseCase @Inject constructor(
                     amounts = transactions.map { transaction -> transaction.amount },
                     fallbackCurrency = fallbackCurrency
                 )
-                AnalyticsCategoryBreakdown(
+                CategoryBreakdown(
                     categoryId = categoryId,
                     category = category,
                     amount = amount,
@@ -125,11 +124,11 @@ class GetAnalyticsOverviewUseCase @Inject constructor(
             .sortedByDescending { category -> category.amount.amount }
     }
 
-    private fun Transaction.toAnalyticsTransactionEntry(
+    private fun Transaction.toAnalyzedTransaction(
         category: Category?,
         account: Account?
-    ): AnalyticsTransactionEntry {
-        return AnalyticsTransactionEntry(
+    ): AnalyzedTransaction {
+        return AnalyzedTransaction(
             transaction = this,
             category = category,
             account = account

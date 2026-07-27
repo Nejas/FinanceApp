@@ -1,7 +1,7 @@
 package com.example.financeapp.presentation.analytics
 
 import com.example.financeapp.R
-import com.example.financeapp.domain.model.AnalyticsFilter
+import com.example.financeapp.domain.model.TransactionAnalysisCriteria
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.Account
@@ -9,7 +9,7 @@ import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodFilterState
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodType
-import com.example.financeapp.presentation.analytics.mappers.AnalyticsFilterUiMapper
+import com.example.financeapp.presentation.analytics.mappers.TransactionAnalysisCriteriaUiMapper
 import com.example.financeapp.presentation.common.model.FinanceFieldType
 import java.time.Instant
 import java.time.LocalDate
@@ -17,13 +17,13 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 
-class AnalyticsFilterUiMapperTest {
+class TransactionAnalysisCriteriaUiMapperTest {
 
-    private val mapper = AnalyticsFilterUiMapper()
+    private val mapper = TransactionAnalysisCriteriaUiMapper()
 
     @Test
     fun map_returnsSelectedFilterLabels() {
-        val filter = AnalyticsFilter(
+        val filter = TransactionAnalysisCriteria(
             accountId = 2,
             startDate = LocalDate.of(2026, 7, 10),
             endDate = LocalDate.of(2026, 7, 12),
@@ -68,7 +68,7 @@ class AnalyticsFilterUiMapperTest {
 
     @Test
     fun map_returnsDefaultLabelsForEmptySelections() {
-        val filter = AnalyticsFilter(
+        val filter = TransactionAnalysisCriteria(
             accountId = null,
             startDate = LocalDate.of(2026, 7, 1),
             endDate = LocalDate.of(2026, 7, 31),

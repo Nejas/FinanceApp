@@ -6,11 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.financeapp.R
 import com.example.financeapp.core.network.NetworkMonitor
 import com.example.financeapp.domain.model.Account
-import com.example.financeapp.domain.model.FinancialAccountPayload
+import com.example.financeapp.domain.model.AccountDraft
 import com.example.financeapp.domain.model.Money
-import com.example.financeapp.domain.usecase.CreateFinancialAccountUseCase
-import com.example.financeapp.domain.usecase.GetFinancialAccountUseCase
-import com.example.financeapp.domain.usecase.UpdateFinancialAccountUseCase
+import com.example.financeapp.domain.usecase.AccountUseCases
 import com.example.financeapp.presentation.common.placeholders.toScreenError
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.math.BigDecimal
@@ -27,9 +25,7 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class AccountEditorViewModel @Inject constructor(
-    private val getFinancialAccount: GetFinancialAccountUseCase,
-    private val createFinancialAccount: CreateFinancialAccountUseCase,
-    private val updateFinancialAccount: UpdateFinancialAccountUseCase,
+    private val accountUseCases: AccountUseCases,
     private val reducer: AccountEditorReducer,
     private val networkMonitor: NetworkMonitor
 ) : ViewModel() {
@@ -72,7 +68,7 @@ class AccountEditorViewModel @Inject constructor(
     }
 
     private suspend fun load(mode: AccountEditorMode.Edit) {
-        val result = getFinancialAccount(mode.accountId)
+        val result = accountUseCases.getAccount(mode.accountId)
 
         result.fold(
             onSuccess = { account ->
@@ -126,7 +122,7 @@ class AccountEditorViewModel @Inject constructor(
             return
         }
 
-        val payload = FinancialAccountPayload(
+        val payload = AccountDraft(
             name = form.name.trim(),
             emoji = form.emoji.trim().takeIf { emoji -> emoji.isNotBlank() },
             balance = Money(
@@ -147,10 +143,10 @@ class AccountEditorViewModel @Inject constructor(
         saveJob?.cancel()
         saveJob = viewModelScope.launch {
             val result = when (val mode = form.mode) {
-                AccountEditorMode.Create -> createFinancialAccount(payload)
-                is AccountEditorMode.Edit -> updateFinancialAccount(
+                AccountEditorMode.Create -> accountUseCases.create(payload)
+                is AccountEditorMode.Edit -> accountUseCases.update(
                     id = mode.accountId,
-                    payload = payload
+                    draft = payload
                 )
             }
 

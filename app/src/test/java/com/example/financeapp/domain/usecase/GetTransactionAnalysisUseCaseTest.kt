@@ -1,13 +1,13 @@
 package com.example.financeapp.domain.usecase
 
-import com.example.financeapp.domain.model.AnalyticsFilter
+import com.example.financeapp.domain.model.TransactionAnalysisCriteria
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.Account
-import com.example.financeapp.domain.model.FinancialAccountPayload
+import com.example.financeapp.domain.model.AccountDraft
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.model.Transaction
-import com.example.financeapp.domain.model.TransactionPayload
+import com.example.financeapp.domain.model.TransactionDraft
 import com.example.financeapp.domain.model.TransactionsQuery
 import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.domain.repository.CategoriesRepository
@@ -21,7 +21,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
 import org.junit.Test
 
-class GetAnalyticsOverviewUseCaseTest {
+class GetTransactionAnalysisUseCaseTest {
 
     @Test
     fun invoke_returnsDomainEntriesAndCategoryBreakdowns() = runTest {
@@ -48,21 +48,21 @@ class GetAnalyticsOverviewUseCaseTest {
             transaction(id = 101, categoryId = food.id, amountInMinorUnits = 7_500),
             transaction(id = 102, categoryId = transport.id, amountInMinorUnits = 2_500)
         )
-        val useCase = GetAnalyticsOverviewUseCase(
-            getTransactionsOverview = GetTransactionsOverviewUseCase(
+        val useCase = GetTransactionAnalysisUseCase(
+            transactionUseCases = TransactionUseCases(
                 transactionsRepository = FakeTransactionsRepository(transactions),
-                getFinancialAccountsOverview = GetFinancialAccountsOverviewUseCase(
+                accountUseCases = AccountUseCases(
                     repository = FakeFinancialAccountsRepository(listOf(account)),
                     defaultDispatcher = Dispatchers.Unconfined
                 ),
                 defaultDispatcher = Dispatchers.Unconfined
             ),
-            categoriesRepository = FakeCategoriesRepository(listOf(food, transport)),
+            categoryUseCase = CategoryUseCase(FakeCategoriesRepository(listOf(food, transport))),
             defaultDispatcher = Dispatchers.Unconfined
         )
 
         val overview = useCase(
-            AnalyticsFilter(
+            TransactionAnalysisCriteria(
                 startDate = LocalDate.of(2026, 7, 1),
                 endDate = LocalDate.of(2026, 7, 31),
                 currency = Currency.RUB
@@ -108,7 +108,7 @@ class GetAnalyticsOverviewUseCaseTest {
         }
 
         override suspend fun createFinancialAccount(
-            payload: FinancialAccountPayload
+            payload: AccountDraft
         ): Result<Account> {
             return Result.success(accounts.first())
         }
@@ -119,7 +119,7 @@ class GetAnalyticsOverviewUseCaseTest {
 
         override suspend fun updateFinancialAccount(
             id: Long,
-            payload: FinancialAccountPayload
+            payload: AccountDraft
         ): Result<Account> {
             return getFinancialAccount(id)
         }
@@ -140,7 +140,7 @@ class GetAnalyticsOverviewUseCaseTest {
         }
 
         override suspend fun createTransaction(
-            payload: TransactionPayload
+            payload: TransactionDraft
         ): Result<Transaction> {
             return Result.success(transactions.first())
         }
@@ -151,7 +151,7 @@ class GetAnalyticsOverviewUseCaseTest {
 
         override suspend fun updateTransaction(
             id: Long,
-            payload: TransactionPayload
+            payload: TransactionDraft
         ): Result<Transaction> {
             return getTransaction(id)
         }

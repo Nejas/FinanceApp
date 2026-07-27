@@ -25,7 +25,7 @@ import com.example.financeapp.data.network.result.NetworkResult
 import com.example.financeapp.data.remote.datasource.FinanceRemoteDataSource
 import com.example.financeapp.data.sync.SyncWorkScheduler
 import com.example.financeapp.domain.model.Transaction
-import com.example.financeapp.domain.model.TransactionPayload
+import com.example.financeapp.domain.model.TransactionDraft
 import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.domain.model.TransactionsQuery
 import com.example.financeapp.domain.repository.TransactionsRepository
@@ -116,7 +116,7 @@ class TransactionsDataRepository @Inject constructor(
     }
 
     override suspend fun createTransaction(
-        payload: TransactionPayload
+        payload: TransactionDraft
     ): Result<Transaction> {
         val request = payload.toRequestDto()
         Log.d(TAG, "Creating transaction: payload=${payload.logSummary()}, request=$request")
@@ -176,7 +176,7 @@ class TransactionsDataRepository @Inject constructor(
 
     override suspend fun updateTransaction(
         id: Long,
-        payload: TransactionPayload
+        payload: TransactionDraft
     ): Result<Transaction> {
         val request = payload.toRequestDto()
         Log.d(TAG, "Updating transaction: id=$id, payload=${payload.logSummary()}, request=$request")
@@ -284,7 +284,7 @@ class TransactionsDataRepository @Inject constructor(
         return filter { transaction -> transaction.categoryId in categoryIds }
     }
 
-    private suspend fun createPendingTransaction(payload: TransactionPayload): Transaction {
+    private suspend fun createPendingTransaction(payload: TransactionDraft): Transaction {
         val id = localIdGenerator.nextId()
         val now = clock.millis()
         val entity = payload.toEntity(
@@ -308,7 +308,7 @@ class TransactionsDataRepository @Inject constructor(
 
     private suspend fun updatePendingTransaction(
         id: Long,
-        payload: TransactionPayload
+        payload: TransactionDraft
     ): Transaction {
         val now = clock.millis()
         val entity = payload.toEntity(
@@ -334,7 +334,7 @@ class TransactionsDataRepository @Inject constructor(
 
     private suspend fun queueTransactionUpdate(
         id: Long,
-        payload: TransactionPayload
+        payload: TransactionDraft
     ): Transaction {
         val now = clock.millis()
         val entity = payload.toEntity(
@@ -411,8 +411,8 @@ private fun TransactionEntity.toDeleteOperation(
     )
 }
 
-private fun TransactionPayload.logSummary(): String {
-    return "TransactionPayload(" +
+private fun TransactionDraft.logSummary(): String {
+    return "TransactionDraft(" +
         "accountId=$accountId, " +
         "categoryId=$categoryId, " +
         "amount=${amount.amount.toPlainString()} ${amount.currency.code}, " +

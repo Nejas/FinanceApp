@@ -8,15 +8,13 @@ import com.example.financeapp.core.network.NetworkMonitor
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.Account
-import com.example.financeapp.domain.model.FinancialAccountsFilter
+import com.example.financeapp.domain.model.AccountQuery
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.model.Transaction
-import com.example.financeapp.domain.model.TransactionPayload
-import com.example.financeapp.domain.usecase.CreateTransactionUseCase
-import com.example.financeapp.domain.usecase.GetCategoriesUseCase
-import com.example.financeapp.domain.usecase.GetFinancialAccountsOverviewUseCase
-import com.example.financeapp.domain.usecase.GetTransactionUseCase
-import com.example.financeapp.domain.usecase.UpdateTransactionUseCase
+import com.example.financeapp.domain.model.TransactionDraft
+import com.example.financeapp.domain.usecase.CategoryUseCase
+import com.example.financeapp.domain.usecase.AccountUseCases
+import com.example.financeapp.domain.usecase.TransactionUseCases
 import com.example.financeapp.presentation.common.placeholders.toScreenError
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.math.RoundingMode
@@ -38,11 +36,9 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class TransactionEditorViewModel @Inject constructor(
-    private val getCategories: GetCategoriesUseCase,
-    private val getFinancialAccountsOverview: GetFinancialAccountsOverviewUseCase,
-    private val getTransaction: GetTransactionUseCase,
-    private val createTransaction: CreateTransactionUseCase,
-    private val updateTransaction: UpdateTransactionUseCase,
+    private val categoryUseCase: CategoryUseCase,
+    private val accountUseCases: AccountUseCases,
+    private val transactionUseCases: TransactionUseCases,
     private val reducer: TransactionEditorReducer,
     private val networkMonitor: NetworkMonitor,
     private val clock: Clock
@@ -88,17 +84,17 @@ class TransactionEditorViewModel @Inject constructor(
     private suspend fun load(mode: TransactionEditorMode) {
         coroutineScope {
             val categoriesDeferred = async {
-                getCategories(mode.transactionType)
+                categoryUseCase.getCategories(mode.transactionType)
             }
             val accountsDeferred = async {
-                getFinancialAccountsOverview(
-                    filter = FinancialAccountsFilter(),
+                accountUseCases.getSummary(
+                    query = AccountQuery(),
                     totalCurrency = Currency.RUB
                 )
             }
             val transactionDeferred = (mode as? TransactionEditorMode.Edit)?.let { editMode ->
                 async {
-                    getTransaction(editMode.transactionId)
+                    transactionUseCases.getTransaction(editMode.transactionId)
                 }
             }
 
@@ -194,7 +190,7 @@ class TransactionEditorViewModel @Inject constructor(
 
         val account = requireNotNull(form.effectiveAccount)
         val category = requireNotNull(form.selectedCategory)
-        val payload = TransactionPayload(
+        val payload = TransactionDraft(
             accountId = account.id,
             categoryId = category.id,
             amount = Money(
@@ -231,10 +227,10 @@ class TransactionEditorViewModel @Inject constructor(
         saveJob?.cancel()
         saveJob = viewModelScope.launch {
             val result = when (val mode = form.mode) {
-                is TransactionEditorMode.Create -> createTransaction(payload)
-                is TransactionEditorMode.Edit -> updateTransaction(
+                is TransactionEditorMode.Create -> transactionUseCases.create(payload)
+                is TransactionEditorMode.Edit -> transactionUseCases.update(
                     id = mode.transactionId,
-                    payload = payload
+                    draft = payload
                 )
             }
 

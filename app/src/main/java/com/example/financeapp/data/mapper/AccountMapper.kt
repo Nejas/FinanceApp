@@ -5,7 +5,7 @@ import com.example.financeapp.data.network.model.request.AccountUpdateRequestDto
 import com.example.financeapp.data.network.model.response.AccountDetailsResponseDto
 import com.example.financeapp.data.network.model.response.AccountResponseDto
 import com.example.financeapp.domain.model.Account
-import com.example.financeapp.domain.model.FinancialAccountPayload
+import com.example.financeapp.domain.model.AccountDraft
 import java.time.Instant
 
 fun AccountResponseDto.toDomain(): Account {
@@ -28,7 +28,7 @@ fun AccountDetailsResponseDto.toDomain(): Account {
     )
 }
 
-fun FinancialAccountPayload.toCreateRequestDto(): AccountCreateRequestDto {
+fun AccountDraft.toCreateRequestDto(): AccountCreateRequestDto {
     return AccountCreateRequestDto(
         name = name,
         emoji = emoji,
@@ -37,7 +37,7 @@ fun FinancialAccountPayload.toCreateRequestDto(): AccountCreateRequestDto {
     )
 }
 
-fun FinancialAccountPayload.toUpdateRequestDto(): AccountUpdateRequestDto {
+fun AccountDraft.toUpdateRequestDto(): AccountUpdateRequestDto {
     return AccountUpdateRequestDto(
         name = name,
         emoji = emoji,

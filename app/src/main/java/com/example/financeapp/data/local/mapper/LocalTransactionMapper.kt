@@ -10,7 +10,7 @@ import com.example.financeapp.data.mapper.toMoney
 import com.example.financeapp.data.network.model.response.TransactionPlainResponseDto
 import com.example.financeapp.data.network.model.response.TransactionResponseDto
 import com.example.financeapp.domain.model.Transaction
-import com.example.financeapp.domain.model.TransactionPayload
+import com.example.financeapp.domain.model.TransactionDraft
 import com.example.financeapp.domain.model.SyncStatus
 import java.time.Instant
 
@@ -71,7 +71,7 @@ fun Transaction.toEntity(
     )
 }
 
-fun TransactionPayload.toEntity(
+fun TransactionDraft.toEntity(
     id: Long,
     syncState: TransactionSyncState,
     isDeletedPendingSync: Boolean = false,
@@ -104,7 +104,7 @@ fun TransactionEntity.toDomain(): Transaction {
     )
 }
 
-fun TransactionPayload.toSyncOperation(
+fun TransactionDraft.toSyncOperation(
     operationType: SyncOperationType,
     localTransactionId: Long,
     serverTransactionId: Long?,

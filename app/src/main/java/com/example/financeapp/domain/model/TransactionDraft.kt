@@ -2,7 +2,7 @@ package com.example.financeapp.domain.model
 
 import java.time.Instant
 
-data class TransactionPayload(
+data class TransactionDraft(
     val accountId: Long,
     val categoryId: Long,
     val amount: Money,

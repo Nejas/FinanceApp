@@ -1,6 +1,6 @@
 package com.example.financeapp.domain.model
 
-data class FinancialAccountPayload(
+data class AccountDraft(
     val name: String,
     val emoji: String? = null,
     val balance: Money

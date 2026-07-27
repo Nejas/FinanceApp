@@ -2,20 +2,19 @@ package com.example.financeapp.domain.usecase
 
 import com.example.financeapp.core.coroutines.DefaultDispatcher
 import com.example.financeapp.core.coroutines.suspendRunCatching
-import com.example.financeapp.domain.model.CategorizedTransactionsOverview
+import com.example.financeapp.domain.model.TransactionCategorySummary
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.Account
-import com.example.financeapp.domain.model.FinancialAccountsFilter
-import com.example.financeapp.domain.model.FinancialAccountsOverview
-import com.example.financeapp.domain.model.MainOverviewFilter
-import com.example.financeapp.domain.model.MainTransactionsOverview
+import com.example.financeapp.domain.model.AccountQuery
+import com.example.financeapp.domain.model.AccountSummary
+import com.example.financeapp.domain.model.FinancialSummaryCriteria
+import com.example.financeapp.domain.model.FinancialFlowSummary
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.model.Transaction
-import com.example.financeapp.domain.model.TransactionsOverview
+import com.example.financeapp.domain.model.TransactionSummary
 import com.example.financeapp.domain.model.TransactionsQuery
 import com.example.financeapp.domain.model.TransactionType
-import com.example.financeapp.domain.repository.CategoriesRepository
 import com.example.financeapp.domain.repository.TransactionsRepository
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -23,30 +22,30 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 
-data class MainOverviewLoadResult(
-    val accounts: Result<FinancialAccountsOverview>,
-    val transactions: Result<MainTransactionsOverview>
+data class FinancialSummaryLoadResult(
+    val accounts: Result<AccountSummary>,
+    val transactions: Result<FinancialFlowSummary>
 )
 
-class GetMainOverviewUseCase @Inject constructor(
-    private val getFinancialAccountsOverview: GetFinancialAccountsOverviewUseCase,
-    private val categoriesRepository: CategoriesRepository,
+class GetFinancialSummaryUseCase @Inject constructor(
+    private val accountUseCases: AccountUseCases,
+    private val categoryUseCase: CategoryUseCase,
     private val transactionsRepository: TransactionsRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
     suspend operator fun invoke(
-        filter: MainOverviewFilter
-    ): MainOverviewLoadResult {
+        filter: FinancialSummaryCriteria
+    ): FinancialSummaryLoadResult {
         return coroutineScope {
             val accountsDeferred = async {
-                getFinancialAccountsOverview(
-                    filter = FinancialAccountsFilter(),
+                accountUseCases.getSummary(
+                    query = AccountQuery(),
                     totalCurrency = filter.currency
                 )
             }
             val categoriesDeferred = async {
-                categoriesRepository.getCategories()
+                categoryUseCase.getCategories()
             }
             val transactionsDeferred = async {
                 suspendRunCatching {
@@ -64,7 +63,7 @@ class GetMainOverviewUseCase @Inject constructor(
                     ).getOrThrow()
 
                     withContext(defaultDispatcher) {
-                        MainTransactionsOverview(
+                        FinancialFlowSummary(
                             expenses = buildOverview(
                                 type = TransactionType.EXPENSE,
                                 currency = filter.currency,
@@ -84,7 +83,7 @@ class GetMainOverviewUseCase @Inject constructor(
                 }
             }
 
-            MainOverviewLoadResult(
+            FinancialSummaryLoadResult(
                 accounts = accountsDeferred.await(),
                 transactions = transactionsDeferred.await()
             )
@@ -97,15 +96,15 @@ class GetMainOverviewUseCase @Inject constructor(
         accounts: List<Account>,
         categories: List<Category>,
         transactions: List<Transaction>
-    ): CategorizedTransactionsOverview {
+    ): TransactionCategorySummary {
         val categoriesById = categories.associateBy { category -> category.id }
         val typeCategories = categories.filter { category -> category.type == type }
         val typeTransactions = transactions
             .filter { transaction -> categoriesById[transaction.categoryId]?.type == type }
             .sortedByDescending { transaction -> transaction.transactionDate }
 
-        return CategorizedTransactionsOverview(
-            overview = TransactionsOverview(
+        return TransactionCategorySummary(
+            overview = TransactionSummary(
                 transactions = typeTransactions,
                 accounts = accounts,
                 total = Money.sum(

@@ -20,7 +20,7 @@ import com.example.financeapp.data.network.result.NetworkResult
 import com.example.financeapp.data.remote.datasource.FinanceRemoteDataSource
 import com.example.financeapp.data.sync.SyncWorkScheduler
 import com.example.financeapp.domain.model.Account
-import com.example.financeapp.domain.model.FinancialAccountPayload
+import com.example.financeapp.domain.model.AccountDraft
 import com.example.financeapp.domain.repository.FinancialAccountsRepository
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -69,7 +69,7 @@ class FinancialAccountsDataRepository @Inject constructor(
     }
 
     override suspend fun createFinancialAccount(
-        payload: FinancialAccountPayload
+        payload: AccountDraft
     ): Result<Account> {
         Log.d(TAG, "Creating financial account")
         val result = networkDataSource.createAccount(payload.toCreateRequestDto())
@@ -121,7 +121,7 @@ class FinancialAccountsDataRepository @Inject constructor(
 
     override suspend fun updateFinancialAccount(
         id: Long,
-        payload: FinancialAccountPayload
+        payload: AccountDraft
     ): Result<Account> {
         Log.d(TAG, "Updating financial account: id=$id")
         if (id < 0) {
@@ -159,7 +159,7 @@ class FinancialAccountsDataRepository @Inject constructor(
             }
     }
 
-    private suspend fun createPendingAccount(payload: FinancialAccountPayload): Account {
+    private suspend fun createPendingAccount(payload: AccountDraft): Account {
         val id = localIdGenerator.nextId()
         val now = clock.millis()
         val entity = payload.toEntity(
@@ -183,7 +183,7 @@ class FinancialAccountsDataRepository @Inject constructor(
 
     private suspend fun updatePendingAccount(
         id: Long,
-        payload: FinancialAccountPayload
+        payload: AccountDraft
     ): Account {
         val now = clock.millis()
         val entity = payload.toEntity(
@@ -209,7 +209,7 @@ class FinancialAccountsDataRepository @Inject constructor(
 
     private suspend fun queueAccountUpdate(
         id: Long,
-        payload: FinancialAccountPayload
+        payload: AccountDraft
     ): Account {
         val now = clock.millis()
         val entity = payload.toEntity(

@@ -2,8 +2,8 @@ package com.example.financeapp.domain.usecase
 
 import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.Account
-import com.example.financeapp.domain.model.FinancialAccountsFilter
-import com.example.financeapp.domain.model.FinancialAccountPayload
+import com.example.financeapp.domain.model.AccountQuery
+import com.example.financeapp.domain.model.AccountDraft
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.repository.FinancialAccountsRepository
 import java.time.Instant
@@ -13,7 +13,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class GetAccountsOverviewUseCaseTest {
+class AccountUseCasesTest {
 
     @Test
     fun invoke_withoutCurrencyFilter_returnsAllAccountsAndRequestedCurrencyTotal() = runTest {
@@ -24,8 +24,8 @@ class GetAccountsOverviewUseCaseTest {
         )
         val useCase = createUseCase(accounts)
 
-        val result = useCase(
-            filter = FinancialAccountsFilter(),
+        val result = useCase.getSummary(
+            query = AccountQuery(),
             totalCurrency = Currency.RUB
         ).getOrThrow()
 
@@ -45,8 +45,8 @@ class GetAccountsOverviewUseCaseTest {
         )
         val useCase = createUseCase(accounts)
 
-        val result = useCase(
-            filter = FinancialAccountsFilter(currency = Currency.RUB),
+        val result = useCase.getSummary(
+            query = AccountQuery(currency = Currency.RUB),
             totalCurrency = Currency.RUB
         ).getOrThrow()
 
@@ -59,15 +59,15 @@ class GetAccountsOverviewUseCaseTest {
 
     @Test
     fun invoke_propagatesRepositoryFailure() = runTest {
-        val useCase = GetFinancialAccountsOverviewUseCase(
+        val useCase = AccountUseCases(
             repository = FakeFinancialAccountsRepository(
                 failure = IllegalStateException("Repository failed")
             ),
             defaultDispatcher = Dispatchers.Unconfined
         )
 
-        val result = useCase(
-            filter = FinancialAccountsFilter(),
+        val result = useCase.getSummary(
+            query = AccountQuery(),
             totalCurrency = Currency.RUB
         )
 
@@ -76,8 +76,8 @@ class GetAccountsOverviewUseCaseTest {
 
     private fun createUseCase(
         accounts: List<Account>
-    ): GetFinancialAccountsOverviewUseCase {
-        return GetFinancialAccountsOverviewUseCase(
+    ): AccountUseCases {
+        return AccountUseCases(
             repository = FakeFinancialAccountsRepository(accounts),
             defaultDispatcher = Dispatchers.Unconfined
         )
@@ -106,7 +106,7 @@ class GetAccountsOverviewUseCaseTest {
         }
 
         override suspend fun createFinancialAccount(
-            payload: FinancialAccountPayload
+            payload: AccountDraft
         ): Result<Account> {
             return failure?.let(Result.Companion::failure)
                 ?: Result.success(accounts.first())
@@ -119,7 +119,7 @@ class GetAccountsOverviewUseCaseTest {
 
         override suspend fun updateFinancialAccount(
             id: Long,
-            payload: FinancialAccountPayload
+            payload: AccountDraft
         ): Result<Account> {
             return getFinancialAccount(id)
         }

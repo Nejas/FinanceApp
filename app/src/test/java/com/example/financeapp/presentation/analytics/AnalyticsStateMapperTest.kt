@@ -1,10 +1,10 @@
 package com.example.financeapp.presentation.analytics
 
 import androidx.compose.ui.graphics.Color
-import com.example.financeapp.domain.model.AnalyticsCategoryBreakdown
-import com.example.financeapp.domain.model.AnalyticsFilter
-import com.example.financeapp.domain.model.AnalyticsOverview
-import com.example.financeapp.domain.model.AnalyticsTransactionEntry
+import com.example.financeapp.domain.model.CategoryBreakdown
+import com.example.financeapp.domain.model.TransactionAnalysisCriteria
+import com.example.financeapp.domain.model.TransactionAnalysis
+import com.example.financeapp.domain.model.AnalyzedTransaction
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.Account
@@ -13,7 +13,7 @@ import com.example.financeapp.domain.model.Transaction
 import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodFilterState
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodType
-import com.example.financeapp.presentation.analytics.mappers.AnalyticsFilterUiMapper
+import com.example.financeapp.presentation.analytics.mappers.TransactionAnalysisCriteriaUiMapper
 import com.example.financeapp.presentation.analytics.mappers.AnalyticsStateMapper
 import java.time.Instant
 import java.time.LocalDate
@@ -25,7 +25,7 @@ import org.junit.Test
 class AnalyticsStateMapperTest {
 
     private val mapper = AnalyticsStateMapper(
-        filterUiMapper = AnalyticsFilterUiMapper()
+        filterUiMapper = TransactionAnalysisCriteriaUiMapper()
     )
 
     @Test
@@ -51,7 +51,7 @@ class AnalyticsStateMapperTest {
             transactionDate = Instant.parse("2026-07-20T12:00:00Z"),
             comment = "Lunch"
         )
-        val filter = AnalyticsFilter(
+        val filter = TransactionAnalysisCriteria(
             accountId = account.id,
             startDate = LocalDate.of(2026, 7, 1),
             endDate = LocalDate.of(2026, 7, 31),
@@ -64,10 +64,10 @@ class AnalyticsStateMapperTest {
             startDate = filter.startDate,
             endDate = filter.endDate
         )
-        val overview = AnalyticsOverview(
+        val overview = TransactionAnalysis(
             total = transaction.amount,
             categories = listOf(
-                AnalyticsCategoryBreakdown(
+                CategoryBreakdown(
                     categoryId = food.id,
                     category = food,
                     amount = transaction.amount,
@@ -76,7 +76,7 @@ class AnalyticsStateMapperTest {
             ),
             availableCategories = listOf(food),
             transactions = listOf(
-                AnalyticsTransactionEntry(
+                AnalyzedTransaction(
                     transaction = transaction,
                     category = food,
                     account = account

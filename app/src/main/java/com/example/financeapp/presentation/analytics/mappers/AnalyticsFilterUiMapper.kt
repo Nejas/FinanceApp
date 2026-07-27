@@ -1,30 +1,30 @@
 package com.example.financeapp.presentation.analytics.mappers
 
 import com.example.financeapp.R
-import com.example.financeapp.domain.model.AnalyticsFilter
+import com.example.financeapp.domain.model.TransactionAnalysisCriteria
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Account
 import com.example.financeapp.domain.model.TransactionType
-import com.example.financeapp.presentation.analytics.AnalyticsFilterUi
+import com.example.financeapp.presentation.analytics.TransactionAnalysisCriteriaUi
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodFilterState
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodType
 import com.example.financeapp.presentation.common.model.FinanceFieldType
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
-class AnalyticsFilterUiMapper @Inject constructor() {
+class TransactionAnalysisCriteriaUiMapper @Inject constructor() {
     fun map(
-        filter: AnalyticsFilter,
+        filter: TransactionAnalysisCriteria,
         periodFilter: AnalyticsPeriodFilterState,
         categories: List<Category>,
         accounts: List<Account>
-    ): List<AnalyticsFilterUi> {
+    ): List<TransactionAnalysisCriteriaUi> {
         return listOf(
-            AnalyticsFilterUi(
+            TransactionAnalysisCriteriaUi(
                 type = FinanceFieldType.TransactionType,
                 valueResId = filter.type.analyticsTitleResId()
             ),
-            AnalyticsFilterUi(
+            TransactionAnalysisCriteriaUi(
                 type = FinanceFieldType.Period,
                 valueResId = periodFilter.selectedType
                     .takeUnless { periodType -> periodType == AnalyticsPeriodType.Custom }
@@ -35,7 +35,7 @@ class AnalyticsFilterUiMapper @Inject constructor() {
                     ""
                 }
             ),
-            AnalyticsFilterUi(
+            TransactionAnalysisCriteriaUi(
                 type = FinanceFieldType.Category,
                 valueResId = if (filter.categoryIds.isEmpty()) {
                     R.string.analytics_filter_all_categories
@@ -46,7 +46,7 @@ class AnalyticsFilterUiMapper @Inject constructor() {
                     .filter { category -> category.id in filter.categoryIds }
                     .joinToString(separator = ", ") { category -> category.name }
             ),
-            AnalyticsFilterUi(
+            TransactionAnalysisCriteriaUi(
                 type = FinanceFieldType.Account,
                 valueResId = if (filter.accountId == null) {
                     R.string.analytics_filter_all_accounts
@@ -58,7 +58,7 @@ class AnalyticsFilterUiMapper @Inject constructor() {
         )
     }
 
-    private fun AnalyticsFilter.formattedPeriod(): String {
+    private fun TransactionAnalysisCriteria.formattedPeriod(): String {
         return "${startDate.format(FilterDateFormatter)} – ${endDate.format(FilterDateFormatter)}"
     }
 

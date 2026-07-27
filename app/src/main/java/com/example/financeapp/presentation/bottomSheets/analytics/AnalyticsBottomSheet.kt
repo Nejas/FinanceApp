@@ -1,7 +1,7 @@
 package com.example.financeapp.presentation.bottomSheets.analytics
 
 import androidx.compose.runtime.Composable
-import com.example.financeapp.presentation.analytics.AnalyticsFilterSheet
+import com.example.financeapp.presentation.analytics.TransactionAnalysisCriteriaSheet
 import com.example.financeapp.presentation.analytics.AnalyticsIntent
 import com.example.financeapp.presentation.analytics.AnalyticsState
 import com.example.financeapp.presentation.bottomSheets.components.account.AnalyticsAccountSheet
@@ -31,7 +31,7 @@ fun AnalyticsBottomSheet(
     }
 
     when (state.activeFilterSheet) {
-        AnalyticsFilterSheet.Type -> FinanceModalBottomSheet(
+        TransactionAnalysisCriteriaSheet.Type -> FinanceModalBottomSheet(
             onDismissRequest = { onIntent(AnalyticsIntent.FilterDismissed) }
         ) {
             AnalyticsTypeSheet(
@@ -39,7 +39,7 @@ fun AnalyticsBottomSheet(
                 onApply = { type -> onIntent(AnalyticsIntent.TypeApplied(type)) }
             )
         }
-        AnalyticsFilterSheet.Period -> FinanceModalBottomSheet(
+        TransactionAnalysisCriteriaSheet.Period -> FinanceModalBottomSheet(
             onDismissRequest = { onIntent(AnalyticsIntent.FilterDismissed) }
         ) {
             AnalyticsPeriodSheet(
@@ -47,7 +47,7 @@ fun AnalyticsBottomSheet(
                 onPeriodClick = { periodType -> onIntent(AnalyticsIntent.PeriodSelected(periodType)) }
             )
         }
-        AnalyticsFilterSheet.CustomPeriod -> FinanceModalBottomSheet(
+        TransactionAnalysisCriteriaSheet.CustomPeriod -> FinanceModalBottomSheet(
             onDismissRequest = { onIntent(AnalyticsIntent.FilterDismissed) },
             skipPartiallyExpanded = true
         ) {
@@ -60,7 +60,7 @@ fun AnalyticsBottomSheet(
                 }
             )
         }
-        AnalyticsFilterSheet.Category -> FinanceModalBottomSheet(
+        TransactionAnalysisCriteriaSheet.Category -> FinanceModalBottomSheet(
             onDismissRequest = { onIntent(AnalyticsIntent.FilterDismissed) }
         ) {
             AnalyticsCategorySheet(
@@ -71,7 +71,7 @@ fun AnalyticsBottomSheet(
                 }
             )
         }
-        AnalyticsFilterSheet.Account -> FinanceModalBottomSheet(
+        TransactionAnalysisCriteriaSheet.Account -> FinanceModalBottomSheet(
             onDismissRequest = { onIntent(AnalyticsIntent.FilterDismissed) }
         ) {
             AnalyticsAccountSheet(

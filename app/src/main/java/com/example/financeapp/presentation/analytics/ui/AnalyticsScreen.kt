@@ -37,13 +37,13 @@ import com.example.financeapp.core.theme.LocalSpacing
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.presentation.analytics.mappers.AnalyticsCategoryColorMapper
 import com.example.financeapp.presentation.analytics.AnalyticsCategoryUi
-import com.example.financeapp.presentation.analytics.AnalyticsFilterUi
+import com.example.financeapp.presentation.analytics.TransactionAnalysisCriteriaUi
 import com.example.financeapp.presentation.analytics.AnalyticsIntent
 import com.example.financeapp.presentation.analytics.AnalyticsState
 import com.example.financeapp.presentation.bottomSheets.analytics.AnalyticsBottomSheet
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodType
 import com.example.financeapp.presentation.bottomSheets.components.period.defaultAnalyticsPeriodFilterState
-import com.example.financeapp.presentation.analytics.defaultAnalyticsFilter
+import com.example.financeapp.presentation.analytics.defaultTransactionAnalysisCriteria
 import com.example.financeapp.presentation.common.components.FinanceFieldIcon
 import com.example.financeapp.presentation.common.components.base.FinancePullToRefreshBox
 import com.example.financeapp.presentation.common.components.base.ListItemColumn
@@ -159,7 +159,7 @@ private fun AnalyticsContent(
             items = state.filters,
             key = { _, filter -> filter.type }
         ) { index, filter ->
-            AnalyticsFilterRow(
+            TransactionAnalysisCriteriaRow(
                 filter = filter,
                 onClick = { onFilterClick(filter.type) },
                 showDivider = index != state.filters.lastIndex
@@ -241,8 +241,8 @@ private fun AnalyticsLegend(
 }
 
 @Composable
-private fun AnalyticsFilterRow(
-    filter: AnalyticsFilterUi,
+private fun TransactionAnalysisCriteriaRow(
+    filter: TransactionAnalysisCriteriaUi,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     showDivider: Boolean = true
@@ -295,7 +295,7 @@ private fun AnalyticsFilterRow(
 }
 
 @Composable
-private fun AnalyticsFilterUi.resolveValue(): String {
+private fun TransactionAnalysisCriteriaUi.resolveValue(): String {
     return valueResId?.let { resId -> stringResource(resId) } ?: value
 }
 
@@ -305,7 +305,7 @@ private fun AnalyticsScreenPreview() {
     FinanceAppTheme(dynamicColor = false) {
         val previewPeriodFilter = defaultAnalyticsPeriodFilterState(today = LocalDate.of(2026, 2, 5))
             .copy(selectedType = AnalyticsPeriodType.Month)
-        val previewFilter = defaultAnalyticsFilter(periodFilter = previewPeriodFilter)
+        val previewFilter = defaultTransactionAnalysisCriteria(periodFilter = previewPeriodFilter)
         val categories = listOf(
             AnalyticsCategoryUi(1, "Ремонт", "🔧", Money(amountInMinorUnits = 80_200L * 100), 61),
             AnalyticsCategoryUi(2, "Авто", "🚗", Money(amountInMinorUnits = 31_500L * 100), 24),
@@ -319,19 +319,19 @@ private fun AnalyticsScreenPreview() {
                 categories = categories,
                 categoryColors = AnalyticsCategoryColorMapper().map(categories),
                 filters = listOf(
-                    AnalyticsFilterUi(
+                    TransactionAnalysisCriteriaUi(
                         type = FinanceFieldType.TransactionType,
                         valueResId = R.string.analytics_filter_expenses
                     ),
-                    AnalyticsFilterUi(
+                    TransactionAnalysisCriteriaUi(
                         type = FinanceFieldType.Period,
                         valueResId = previewPeriodFilter.selectedType.titleResId
                     ),
-                    AnalyticsFilterUi(
+                    TransactionAnalysisCriteriaUi(
                         type = FinanceFieldType.Category,
                         value = "Ремонт, Авто"
                     ),
-                    AnalyticsFilterUi(
+                    TransactionAnalysisCriteriaUi(
                         type = FinanceFieldType.Account,
                         valueResId = R.string.analytics_filter_all_accounts
                     )

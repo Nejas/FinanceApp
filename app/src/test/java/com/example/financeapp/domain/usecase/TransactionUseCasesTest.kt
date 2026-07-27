@@ -2,13 +2,13 @@ package com.example.financeapp.domain.usecase
 
 import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.Account
-import com.example.financeapp.domain.model.FinancialAccountPayload
+import com.example.financeapp.domain.model.AccountDraft
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.model.Transaction
-import com.example.financeapp.domain.model.TransactionPayload
+import com.example.financeapp.domain.model.TransactionDraft
 import com.example.financeapp.domain.model.TransactionsQuery
 import com.example.financeapp.domain.model.TransactionType
-import com.example.financeapp.domain.model.TransactionsOverviewFilter
+import com.example.financeapp.domain.model.TransactionSelectionCriteria
 import com.example.financeapp.domain.repository.FinancialAccountsRepository
 import com.example.financeapp.domain.repository.TransactionsRepository
 import java.time.Instant
@@ -18,7 +18,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class GetTransactionsOverviewUseCaseTest {
+class TransactionUseCasesTest {
 
     @Test
     fun invoke_loadsTransactionsForMatchingCurrencyAccountsWithoutDefaultStartDate() = runTest {
@@ -56,17 +56,17 @@ class GetTransactionsOverviewUseCaseTest {
                 )
             )
         )
-        val useCase = GetTransactionsOverviewUseCase(
+        val useCase = TransactionUseCases(
             transactionsRepository = transactionsRepository,
-            getFinancialAccountsOverview = GetFinancialAccountsOverviewUseCase(
+            accountUseCases = AccountUseCases(
                 repository = FakeFinancialAccountsRepository(accounts),
                 defaultDispatcher = Dispatchers.Unconfined
             ),
             defaultDispatcher = Dispatchers.Unconfined
         )
 
-        val result = useCase(
-            filter = TransactionsOverviewFilter(
+        val result = useCase.getSummary(
+            criteria = TransactionSelectionCriteria(
                 endDate = LocalDate.of(2026, 7, 20),
                 type = TransactionType.EXPENSE,
                 currency = Currency.RUB,
@@ -125,7 +125,7 @@ class GetTransactionsOverviewUseCaseTest {
         }
 
         override suspend fun createFinancialAccount(
-            payload: FinancialAccountPayload
+            payload: AccountDraft
         ): Result<Account> {
             return Result.success(accounts.first())
         }
@@ -136,7 +136,7 @@ class GetTransactionsOverviewUseCaseTest {
 
         override suspend fun updateFinancialAccount(
             id: Long,
-            payload: FinancialAccountPayload
+            payload: AccountDraft
         ): Result<Account> {
             return getFinancialAccount(id)
         }
@@ -164,7 +164,7 @@ class GetTransactionsOverviewUseCaseTest {
         }
 
         override suspend fun createTransaction(
-            payload: TransactionPayload
+            payload: TransactionDraft
         ): Result<Transaction> {
             return Result.success(transactionsByAccountId.values.flatten().first())
         }
@@ -177,7 +177,7 @@ class GetTransactionsOverviewUseCaseTest {
 
         override suspend fun updateTransaction(
             id: Long,
-            payload: TransactionPayload
+            payload: TransactionDraft
         ): Result<Transaction> {
             return getTransaction(id)
         }

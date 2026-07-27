@@ -8,7 +8,7 @@ import com.example.financeapp.data.local.db.entity.SyncOperationType
 import com.example.financeapp.data.network.model.response.AccountDetailsResponseDto
 import com.example.financeapp.data.network.model.response.AccountResponseDto
 import com.example.financeapp.domain.model.Account
-import com.example.financeapp.domain.model.FinancialAccountPayload
+import com.example.financeapp.domain.model.AccountDraft
 import com.example.financeapp.domain.model.SyncStatus
 import com.example.financeapp.data.mapper.toMoney
 import java.time.Instant
@@ -47,7 +47,7 @@ fun Account.toEntity(): AccountEntity {
     )
 }
 
-fun FinancialAccountPayload.toEntity(
+fun AccountDraft.toEntity(
     id: Long,
     createdAt: Instant,
     syncState: AccountSyncState
@@ -75,7 +75,7 @@ fun AccountEntity.toDomain(): Account {
     )
 }
 
-fun FinancialAccountPayload.toAccountSyncOperation(
+fun AccountDraft.toAccountSyncOperation(
     operationType: SyncOperationType,
     accountId: Long,
     serverAccountId: Long?,

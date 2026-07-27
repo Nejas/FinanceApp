@@ -5,15 +5,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financeapp.core.network.NetworkMonitor
 import com.example.financeapp.domain.model.Currency
-import com.example.financeapp.domain.model.MainOverviewFilter
+import com.example.financeapp.domain.model.FinancialSummaryCriteria
 import com.example.financeapp.domain.model.SyncEvent
 import com.example.financeapp.domain.model.SyncStatus
-import com.example.financeapp.domain.usecase.DeleteFinancialAccountUseCase
-import com.example.financeapp.domain.usecase.DeleteTransactionUseCase
-import com.example.financeapp.domain.usecase.GetMainOverviewUseCase
-import com.example.financeapp.domain.usecase.ObserveSyncEventsUseCase
-import com.example.financeapp.domain.usecase.RetryFailedSyncOperationsUseCase
-import com.example.financeapp.domain.usecase.DiscardFailedSyncOperationsUseCase
+import com.example.financeapp.domain.usecase.AccountUseCases
+import com.example.financeapp.domain.usecase.TransactionUseCases
+import com.example.financeapp.domain.usecase.GetFinancialSummaryUseCase
+import com.example.financeapp.domain.usecase.SynchronizationUseCases
 import com.example.financeapp.presentation.accounts.AccountsState
 import com.example.financeapp.presentation.common.model.TransactionsSectionState
 import com.example.financeapp.presentation.common.placeholders.ScreenError
@@ -35,12 +33,10 @@ import kotlinx.coroutines.withTimeoutOrNull
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val getMainOverview: GetMainOverviewUseCase,
-    private val deleteTransaction: DeleteTransactionUseCase,
-    private val deleteFinancialAccount: DeleteFinancialAccountUseCase,
-    private val observeSyncEventsUseCase: ObserveSyncEventsUseCase,
-    private val retryFailedSyncOperations: RetryFailedSyncOperationsUseCase,
-    private val discardFailedSyncOperations: DiscardFailedSyncOperationsUseCase,
+    private val financialSummaryUseCase: GetFinancialSummaryUseCase,
+    private val transactionUseCases: TransactionUseCases,
+    private val accountUseCases: AccountUseCases,
+    private val synchronizationUseCases: SynchronizationUseCases,
     private val networkMonitor: NetworkMonitor,
     private val clock: Clock
 ) : ViewModel() {
@@ -76,21 +72,21 @@ class MainViewModel @Inject constructor(
             is MainIntent.DeleteTransaction -> {
                 deleteMainItem(
                     logMessage = "Failed to delete transaction: id=${intent.transactionId}",
-                    delete = { deleteTransaction(intent.transactionId) }
+                    delete = { transactionUseCases.delete(intent.transactionId) }
                 )
             }
             is MainIntent.DeleteFinancialAccount -> {
                 deleteMainItem(
                     logMessage = "Failed to delete financial account: id=${intent.accountId}",
-                    delete = { deleteFinancialAccount(intent.accountId) }
+                    delete = { accountUseCases.delete(intent.accountId) }
                 )
             }
             MainIntent.RetryFailedSyncOperations -> controlFailedSyncOperations(
-                operation = { retryFailedSyncOperations() },
+                operation = { synchronizationUseCases.retryFailedOperations() },
                 refreshAfterSuccess = false
             )
             MainIntent.DiscardFailedSyncOperations -> controlFailedSyncOperations(
-                operation = { discardFailedSyncOperations() },
+                operation = { synchronizationUseCases.discardFailedOperations() },
                 refreshAfterSuccess = true
             )
         }
@@ -105,7 +101,7 @@ class MainViewModel @Inject constructor(
 
     private fun startSyncEventObservation() {
         viewModelScope.launch {
-            observeSyncEventsUseCase().collect { event ->
+            synchronizationUseCases.observeEvents().collect { event ->
                 when (event) {
                     SyncEvent.DataRefreshed -> refreshFromNetwork(isSilent = true)
                     is SyncEvent.OperationsFailed -> {
@@ -157,8 +153,8 @@ class MainViewModel @Inject constructor(
             }
         }
 
-        val result = getMainOverview(
-            MainOverviewFilter(currency = Currency.RUB)
+        val result = financialSummaryUseCase(
+            FinancialSummaryCriteria(currency = Currency.RUB)
         )
         val transactionsError = result.transactions.exceptionOrNull()
         val accountsError = result.accounts.exceptionOrNull()
@@ -312,7 +308,7 @@ class MainViewModel @Inject constructor(
     }
 }
 
-private fun com.example.financeapp.domain.model.MainTransactionsOverview.hasPendingSync(): Boolean {
+private fun com.example.financeapp.domain.model.FinancialFlowSummary.hasPendingSync(): Boolean {
     return expenses.overview.transactions.any { transaction ->
         transaction.syncStatus == SyncStatus.PENDING
     } || income.overview.transactions.any { transaction ->
@@ -320,6 +316,6 @@ private fun com.example.financeapp.domain.model.MainTransactionsOverview.hasPend
     }
 }
 
-private fun com.example.financeapp.domain.model.FinancialAccountsOverview.hasPendingSync(): Boolean {
+private fun com.example.financeapp.domain.model.AccountSummary.hasPendingSync(): Boolean {
     return accounts.any { account -> account.syncStatus == SyncStatus.PENDING }
 }

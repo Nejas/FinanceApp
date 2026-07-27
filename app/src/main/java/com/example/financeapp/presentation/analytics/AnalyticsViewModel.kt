@@ -5,15 +5,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financeapp.core.coroutines.DefaultDispatcher
 import com.example.financeapp.core.network.NetworkMonitor
-import com.example.financeapp.domain.model.AnalyticsFilter
-import com.example.financeapp.domain.model.FinancialAccountsFilter
-import com.example.financeapp.domain.usecase.GetAnalyticsOverviewUseCase
-import com.example.financeapp.domain.usecase.GetFinancialAccountsOverviewUseCase
-import com.example.financeapp.domain.usecase.ObserveSyncEventsUseCase
+import com.example.financeapp.domain.model.TransactionAnalysisCriteria
+import com.example.financeapp.domain.model.AccountQuery
+import com.example.financeapp.domain.usecase.GetTransactionAnalysisUseCase
+import com.example.financeapp.domain.usecase.AccountUseCases
+import com.example.financeapp.domain.usecase.SynchronizationUseCases
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodFilterState
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodResolver
 import com.example.financeapp.presentation.analytics.mappers.AnalyticsCategoryColorMapper
-import com.example.financeapp.presentation.analytics.mappers.AnalyticsFilterUiMapper
+import com.example.financeapp.presentation.analytics.mappers.TransactionAnalysisCriteriaUiMapper
 import com.example.financeapp.presentation.analytics.mappers.AnalyticsStateMapper
 import com.example.financeapp.presentation.common.placeholders.ScreenError
 import com.example.financeapp.presentation.common.placeholders.toScreenError
@@ -36,20 +36,20 @@ import kotlinx.coroutines.withTimeoutOrNull
 
 @HiltViewModel
 class AnalyticsViewModel @Inject constructor(
-    private val getAnalyticsOverview: GetAnalyticsOverviewUseCase,
-    private val getFinancialAccountsOverview: GetFinancialAccountsOverviewUseCase,
-    private val observeSyncEventsUseCase: ObserveSyncEventsUseCase,
+    private val getTransactionAnalysis: GetTransactionAnalysisUseCase,
+    private val accountUseCases: AccountUseCases,
+    private val synchronizationUseCases: SynchronizationUseCases,
     private val categoryColorMapper: AnalyticsCategoryColorMapper,
     private val periodResolver: AnalyticsPeriodResolver,
-    private val filterUiMapper: AnalyticsFilterUiMapper,
+    private val filterUiMapper: TransactionAnalysisCriteriaUiMapper,
     private val stateMapper: AnalyticsStateMapper,
-    private val filterReducer: AnalyticsFilterReducer,
+    private val filterReducer: TransactionAnalysisCriteriaReducer,
     private val networkMonitor: NetworkMonitor,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
     private val initialPeriodFilter = periodResolver.defaultPeriodFilter()
-    private val initialFilter = defaultAnalyticsFilter(periodFilter = initialPeriodFilter)
+    private val initialFilter = defaultTransactionAnalysisCriteria(periodFilter = initialPeriodFilter)
     private val _state = MutableStateFlow(
         AnalyticsState(
             filter = initialFilter,
@@ -147,7 +147,7 @@ class AnalyticsViewModel @Inject constructor(
         }
     }
 
-    private fun applyFilterChange(change: AnalyticsFilterChange) {
+    private fun applyFilterChange(change: TransactionAnalysisCriteriaChange) {
         currentFilter = change.filter
         currentPeriodFilter = change.periodFilter
         _state.value = change.state
@@ -217,8 +217,8 @@ class AnalyticsViewModel @Inject constructor(
     }
 
     private suspend fun loadReferenceDataInternal(isSilent: Boolean = false) {
-        getFinancialAccountsOverview(
-            filter = FinancialAccountsFilter(currency = currentFilter.currency),
+        accountUseCases.getSummary(
+            query = AccountQuery(currency = currentFilter.currency),
             totalCurrency = currentFilter.currency
         )
             .onSuccess { overview ->
@@ -244,7 +244,7 @@ class AnalyticsViewModel @Inject constructor(
     }
 
     private suspend fun loadAnalyticsInternal(
-        requestedFilter: AnalyticsFilter,
+        requestedFilter: TransactionAnalysisCriteria,
         requestedPeriodFilter: AnalyticsPeriodFilterState,
         isSilent: Boolean = false
     ) {
@@ -261,7 +261,7 @@ class AnalyticsViewModel @Inject constructor(
             }
         }
 
-        getAnalyticsOverview(requestedFilter).fold(
+        getTransactionAnalysis(requestedFilter).fold(
             onSuccess = { overview ->
                 Log.d(TAG, "Loaded ${overview.transactions.size} analytics transactions")
                 val categoryItems = stateMapper.mapCategories(overview.categories)
@@ -325,7 +325,7 @@ class AnalyticsViewModel @Inject constructor(
 
     private fun startSyncEventObservation() {
         viewModelScope.launch {
-            observeSyncEventsUseCase().collect {
+            synchronizationUseCases.observeEvents().collect {
                 refreshFromNetwork(isSilent = true)
             }
         }

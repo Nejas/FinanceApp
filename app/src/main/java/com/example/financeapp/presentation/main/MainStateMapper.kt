@@ -1,21 +1,21 @@
 package com.example.financeapp.presentation.main
 
-import com.example.financeapp.domain.model.CategorizedTransactionsOverview
-import com.example.financeapp.domain.model.FinancialAccountsOverview
+import com.example.financeapp.domain.model.TransactionCategorySummary
+import com.example.financeapp.domain.model.AccountSummary
 import com.example.financeapp.presentation.accounts.AccountsState
 import com.example.financeapp.presentation.common.model.TransactionsSectionState
 import com.example.financeapp.presentation.expenses.ExpensesState
 import com.example.financeapp.presentation.income.IncomeState
 
-internal fun CategorizedTransactionsOverview.toExpensesState(): ExpensesState {
+internal fun TransactionCategorySummary.toExpensesState(): ExpensesState {
     return toTransactionsSectionState()
 }
 
-internal fun CategorizedTransactionsOverview.toIncomeState(): IncomeState {
+internal fun TransactionCategorySummary.toIncomeState(): IncomeState {
     return toTransactionsSectionState()
 }
 
-private fun CategorizedTransactionsOverview.toTransactionsSectionState(): TransactionsSectionState {
+private fun TransactionCategorySummary.toTransactionsSectionState(): TransactionsSectionState {
     return TransactionsSectionState(
         transactions = overview.transactions,
         categoriesById = categories.associateBy { category -> category.id },
@@ -26,7 +26,7 @@ private fun CategorizedTransactionsOverview.toTransactionsSectionState(): Transa
     )
 }
 
-internal fun FinancialAccountsOverview.toAccountsState(): AccountsState {
+internal fun AccountSummary.toAccountsState(): AccountsState {
     return AccountsState(
         accounts = accounts,
         totalBalance = totalBalance,

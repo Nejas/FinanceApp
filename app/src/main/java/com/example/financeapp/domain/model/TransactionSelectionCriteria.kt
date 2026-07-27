@@ -2,11 +2,11 @@ package com.example.financeapp.domain.model
 
 import java.time.LocalDate
 
-data class AnalyticsFilter(
+data class TransactionSelectionCriteria(
     val accountId: Long? = null,
-    val startDate: LocalDate,
+    val startDate: LocalDate? = null,
     val endDate: LocalDate,
-    val type: TransactionType? = TransactionType.EXPENSE,
+    val type: TransactionType? = null,
     val currency: Currency,
     val categoryIds: Set<Long> = emptySet()
 )

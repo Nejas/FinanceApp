@@ -1,18 +1,18 @@
 package com.example.financeapp.presentation.analytics
 
-import com.example.financeapp.domain.model.AnalyticsFilter
+import com.example.financeapp.domain.model.TransactionAnalysisCriteria
 import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodFilterState
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodResolver
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodType
-import com.example.financeapp.presentation.analytics.mappers.AnalyticsFilterUiMapper
+import com.example.financeapp.presentation.analytics.mappers.TransactionAnalysisCriteriaUiMapper
 import com.example.financeapp.presentation.common.model.FinanceFieldType
 import java.time.LocalDate
 import javax.inject.Inject
 
-class AnalyticsFilterReducer @Inject constructor(
+class TransactionAnalysisCriteriaReducer @Inject constructor(
     private val periodResolver: AnalyticsPeriodResolver,
-    private val filterUiMapper: AnalyticsFilterUiMapper
+    private val filterUiMapper: TransactionAnalysisCriteriaUiMapper
 ) {
 
     fun showDetail(state: AnalyticsState): AnalyticsState {
@@ -41,15 +41,15 @@ class AnalyticsFilterReducer @Inject constructor(
     }
 
     fun returnToPeriodSheet(state: AnalyticsState): AnalyticsState {
-        return state.copy(activeFilterSheet = AnalyticsFilterSheet.Period)
+        return state.copy(activeFilterSheet = TransactionAnalysisCriteriaSheet.Period)
     }
 
     fun applyType(
         state: AnalyticsState,
-        currentFilter: AnalyticsFilter,
+        currentFilter: TransactionAnalysisCriteria,
         currentPeriodFilter: AnalyticsPeriodFilterState,
         type: TransactionType?
-    ): AnalyticsFilterChange {
+    ): TransactionAnalysisCriteriaChange {
         return applyFilter(
             state = state,
             filter = currentFilter.copy(
@@ -62,13 +62,13 @@ class AnalyticsFilterReducer @Inject constructor(
 
     fun selectPeriod(
         state: AnalyticsState,
-        currentFilter: AnalyticsFilter,
+        currentFilter: TransactionAnalysisCriteria,
         currentPeriodFilter: AnalyticsPeriodFilterState,
         periodType: AnalyticsPeriodType
-    ): AnalyticsFilterChange {
+    ): TransactionAnalysisCriteriaChange {
         if (periodType == AnalyticsPeriodType.Custom) {
-            return AnalyticsFilterChange(
-                state = state.copy(activeFilterSheet = AnalyticsFilterSheet.CustomPeriod),
+            return TransactionAnalysisCriteriaChange(
+                state = state.copy(activeFilterSheet = TransactionAnalysisCriteriaSheet.CustomPeriod),
                 filter = currentFilter,
                 periodFilter = currentPeriodFilter,
                 shouldReload = false
@@ -91,10 +91,10 @@ class AnalyticsFilterReducer @Inject constructor(
 
     fun applyCustomPeriod(
         state: AnalyticsState,
-        currentFilter: AnalyticsFilter,
+        currentFilter: TransactionAnalysisCriteria,
         startDate: LocalDate,
         endDate: LocalDate
-    ): AnalyticsFilterChange {
+    ): TransactionAnalysisCriteriaChange {
         val periodFilter = periodResolver.resolveCustomPeriod(
             startDate = startDate,
             endDate = endDate
@@ -111,10 +111,10 @@ class AnalyticsFilterReducer @Inject constructor(
 
     fun applyCategories(
         state: AnalyticsState,
-        currentFilter: AnalyticsFilter,
+        currentFilter: TransactionAnalysisCriteria,
         currentPeriodFilter: AnalyticsPeriodFilterState,
         categoryIds: Set<Long>
-    ): AnalyticsFilterChange {
+    ): TransactionAnalysisCriteriaChange {
         return applyFilter(
             state = state,
             filter = currentFilter.copy(categoryIds = categoryIds),
@@ -124,10 +124,10 @@ class AnalyticsFilterReducer @Inject constructor(
 
     fun applyAccount(
         state: AnalyticsState,
-        currentFilter: AnalyticsFilter,
+        currentFilter: TransactionAnalysisCriteria,
         currentPeriodFilter: AnalyticsPeriodFilterState,
         accountId: Long?
-    ): AnalyticsFilterChange {
+    ): TransactionAnalysisCriteriaChange {
         return applyFilter(
             state = state,
             filter = currentFilter.copy(accountId = accountId),
@@ -137,10 +137,10 @@ class AnalyticsFilterReducer @Inject constructor(
 
     private fun applyFilter(
         state: AnalyticsState,
-        filter: AnalyticsFilter,
+        filter: TransactionAnalysisCriteria,
         periodFilter: AnalyticsPeriodFilterState
-    ): AnalyticsFilterChange {
-        return AnalyticsFilterChange(
+    ): TransactionAnalysisCriteriaChange {
+        return TransactionAnalysisCriteriaChange(
             state = state.copy(
                 filter = filter,
                 periodFilter = periodFilter,
@@ -158,12 +158,12 @@ class AnalyticsFilterReducer @Inject constructor(
         )
     }
 
-    private fun FinanceFieldType.toFilterSheet(): AnalyticsFilterSheet? {
+    private fun FinanceFieldType.toFilterSheet(): TransactionAnalysisCriteriaSheet? {
         return when (this) {
-            FinanceFieldType.TransactionType -> AnalyticsFilterSheet.Type
-            FinanceFieldType.Period -> AnalyticsFilterSheet.Period
-            FinanceFieldType.Category -> AnalyticsFilterSheet.Category
-            FinanceFieldType.Account -> AnalyticsFilterSheet.Account
+            FinanceFieldType.TransactionType -> TransactionAnalysisCriteriaSheet.Type
+            FinanceFieldType.Period -> TransactionAnalysisCriteriaSheet.Period
+            FinanceFieldType.Category -> TransactionAnalysisCriteriaSheet.Category
+            FinanceFieldType.Account -> TransactionAnalysisCriteriaSheet.Account
             FinanceFieldType.Date,
             FinanceFieldType.Time,
             FinanceFieldType.Currency,
@@ -174,9 +174,9 @@ class AnalyticsFilterReducer @Inject constructor(
     }
 }
 
-data class AnalyticsFilterChange(
+data class TransactionAnalysisCriteriaChange(
     val state: AnalyticsState,
-    val filter: AnalyticsFilter,
+    val filter: TransactionAnalysisCriteria,
     val periodFilter: AnalyticsPeriodFilterState,
     val shouldReload: Boolean
 )
