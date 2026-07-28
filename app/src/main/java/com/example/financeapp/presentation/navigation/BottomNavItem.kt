@@ -1,6 +1,7 @@
 package com.example.financeapp.presentation.navigation
 
 import androidx.annotation.StringRes
+import androidx.compose.runtime.Immutable
 import com.example.financeapp.R
 
 enum class BottomNavIcon {
@@ -9,6 +10,7 @@ enum class BottomNavIcon {
     ACCOUNTS
 }
 
+@Immutable
 data class BottomNavItem(
     val route: AppRoute,
     val icon: BottomNavIcon,

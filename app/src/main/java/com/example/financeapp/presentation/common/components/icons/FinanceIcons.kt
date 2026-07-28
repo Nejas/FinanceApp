@@ -18,7 +18,9 @@ import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.DesktopWindows
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.DriveFileRenameOutline
 import androidx.compose.material.icons.outlined.Fingerprint
+import androidx.compose.material.icons.outlined.InsertEmoticon
 import androidx.compose.material.icons.outlined.JoinInner
 import androidx.compose.material.icons.outlined.Label
 import androidx.compose.material.icons.outlined.Language
@@ -27,6 +29,7 @@ import androidx.compose.material.icons.outlined.Receipt
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Sell
+import androidx.compose.material.icons.outlined.Textsms
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material.icons.outlined.WbSunny
 import androidx.compose.material3.Icon
@@ -54,12 +57,23 @@ fun FinanceCalendarIcon(
 ) {
     Icon(
         imageVector = Icons.Outlined.DateRange,
-        contentDescription = "Ночной режим",
+        contentDescription = null,
         tint = color,
         modifier = modifier
     )
 }
-
+@Composable
+fun FinanceEmojiIcon(
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Icon(
+        imageVector = Icons.Outlined.InsertEmoticon,
+        contentDescription = null,
+        tint = color,
+        modifier = modifier
+    )
+}
 @Composable
 fun FinanceBarChartIcon(
     color: Color,
@@ -304,7 +318,7 @@ fun FinanceTagIcon(
     modifier: Modifier = Modifier
 ) {
     Icon(
-        imageVector = Icons.Outlined.Label,
+        imageVector = Icons.Outlined.DriveFileRenameOutline,
         contentDescription = null,
         tint = color,
         modifier = modifier

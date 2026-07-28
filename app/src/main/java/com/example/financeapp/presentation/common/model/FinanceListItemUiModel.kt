@@ -1,10 +1,12 @@
 package com.example.financeapp.presentation.common.model
 
+import androidx.compose.runtime.Immutable
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.model.Transaction
 import com.example.financeapp.domain.model.SyncStatus
 
+@Immutable
 data class FinanceListItemUiModel(
     val id: String,
     val title: String,

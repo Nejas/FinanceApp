@@ -1,10 +1,12 @@
 package com.example.financeapp.presentation.analytics
 
+import androidx.compose.runtime.Immutable
 import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodType
 import com.example.financeapp.presentation.common.model.FinanceFieldType
 import java.time.LocalDate
 
+@Immutable
 sealed interface AnalyticsIntent {
     data object BackClicked : AnalyticsIntent
     data object Retry : AnalyticsIntent

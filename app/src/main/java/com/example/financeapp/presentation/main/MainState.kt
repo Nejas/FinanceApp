@@ -1,10 +1,12 @@
 package com.example.financeapp.presentation.main
 
+import androidx.compose.runtime.Immutable
 import com.example.financeapp.presentation.accounts.AccountsState
 import com.example.financeapp.presentation.expenses.ExpensesState
 import com.example.financeapp.presentation.income.IncomeState
 import java.time.LocalDate
 
+@Immutable
 data class MainState(
     val selectedDate: LocalDate = LocalDate.now(),
     val expensesState: ExpensesState = ExpensesState(),

@@ -1,5 +1,8 @@
 package com.example.financeapp.presentation.navigation
 
+import androidx.compose.runtime.Immutable
+
+@Immutable
 sealed class AppRoute(val route: String) {
     data object Expenses : AppRoute("expenses")
     data object Income : AppRoute("income")

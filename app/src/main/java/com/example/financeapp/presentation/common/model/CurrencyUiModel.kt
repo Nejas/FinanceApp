@@ -1,9 +1,11 @@
 package com.example.financeapp.presentation.common.model
 
 import androidx.annotation.StringRes
+import androidx.compose.runtime.Immutable
 import com.example.financeapp.R
 import com.example.financeapp.domain.model.Currency
 
+@Immutable
 data class CurrencyUiModel(
     val currency: Currency,
     val flag: String,

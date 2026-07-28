@@ -1,6 +1,7 @@
 package com.example.financeapp.presentation.analytics
 
 import androidx.annotation.StringRes
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 import com.example.financeapp.domain.model.TransactionAnalysisCriteria
 import com.example.financeapp.domain.model.Category
@@ -13,6 +14,7 @@ import com.example.financeapp.presentation.common.model.FinanceFieldType
 import com.example.financeapp.presentation.common.model.FinanceListItemUiModel
 import com.example.financeapp.presentation.common.placeholders.ScreenError
 
+@Immutable
 data class AnalyticsState(
     val filter: TransactionAnalysisCriteria,
     val periodFilter: AnalyticsPeriodFilterState,
@@ -30,6 +32,7 @@ data class AnalyticsState(
     val error: ScreenError? = null
 )
 
+@Immutable
 data class AnalyticsCategoryUi(
     val categoryId: Long,
     val title: String,
@@ -38,6 +41,7 @@ data class AnalyticsCategoryUi(
     val percent: Int
 )
 
+@Immutable
 data class TransactionAnalysisCriteriaUi(
     val type: FinanceFieldType,
     @StringRes val valueResId: Int? = null,

@@ -1,9 +1,11 @@
 package com.example.financeapp.presentation.bottomSheets.components.period
 
 import androidx.annotation.StringRes
+import androidx.compose.runtime.Immutable
 import com.example.financeapp.R
 import java.time.LocalDate
 
+@Immutable
 data class AnalyticsPeriodFilterState(
     val selectedType: AnalyticsPeriodType,
     val startDate: LocalDate,

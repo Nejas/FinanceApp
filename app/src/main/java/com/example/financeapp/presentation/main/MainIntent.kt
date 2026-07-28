@@ -1,8 +1,10 @@
 package com.example.financeapp.presentation.main
 
+import androidx.compose.runtime.Immutable
 import com.example.financeapp.presentation.common.placeholders.ScreenError
 import java.time.LocalDate
 
+@Immutable
 sealed interface MainIntent {
     data class DateSelected(val date: LocalDate) : MainIntent
     data class DeleteTransaction(val transactionId: Long) : MainIntent
@@ -13,6 +15,7 @@ sealed interface MainIntent {
     data object Retry : MainIntent
 }
 
+@Immutable
 sealed interface MainEffect {
     data class DeleteFailed(val error: ScreenError) : MainEffect
     data class SyncFailed(val count: Int) : MainEffect

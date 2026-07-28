@@ -1,5 +1,6 @@
 package com.example.financeapp.presentation.analytics
 
+import androidx.compose.runtime.Immutable
 import com.example.financeapp.domain.model.TransactionAnalysisCriteria
 import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodFilterState
@@ -174,6 +175,7 @@ class TransactionAnalysisCriteriaReducer @Inject constructor(
     }
 }
 
+@Immutable
 data class TransactionAnalysisCriteriaChange(
     val state: AnalyticsState,
     val filter: TransactionAnalysisCriteria,

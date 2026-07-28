@@ -64,6 +64,10 @@ android {
     }
 }
 
+composeCompiler {
+    stabilityConfigurationFile.set(rootProject.layout.projectDirectory.file("compose-stability.conf"))
+}
+
 tasks.withType<Test>().configureEach {
     testLogging {
         showStandardStreams = true
