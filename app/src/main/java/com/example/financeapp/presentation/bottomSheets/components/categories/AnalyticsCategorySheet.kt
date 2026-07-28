@@ -1,10 +1,12 @@
 package com.example.financeapp.presentation.bottomSheets.components.categories
 
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.example.financeapp.R
 import com.example.financeapp.domain.model.Category
@@ -34,7 +36,7 @@ internal fun AnalyticsCategorySheet(
             }
         },
         actions = {
-            SheetPrimaryAction(text = stringResource(R.string.picker_apply)) {
+            SheetPrimaryAction(text = stringResource(R.string.picker_apply), modifier = Modifier.fillMaxWidth()) {
                 onApply(
                     if (draftCategoryIds == allCategoryIds) {
                         emptySet()

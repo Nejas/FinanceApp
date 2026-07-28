@@ -33,6 +33,7 @@
     <string name="timeout_error_title">Zeitüberschreitung</string>
     <string name="timeout_error_description">Der Server antwortet zu langsam. Versuche es erneut</string>
     <string name="network_offline_message">Keine Internetverbindung</string>
+    <string name="transaction_saved_locally">Transaktion wurde auf diesem Gerät gespeichert und wird bei Verbindung gesendet</string>
     <string name="analytics_period_title">Juni-Übersicht</string>
     <string name="analytics_spending_dynamics">Ausgabendynamik</string>
     <string name="analytics_categories">Kategorien</string>
@@ -137,6 +138,7 @@
     <string name="currency_cny_name">Chinesischer Yuan</string>
     <string name="transaction_editor_adjustment_title">Transaktion korrigieren</string>
     <string name="transaction_date_picker_title">Datum auswählen</string>
+    <string name="transaction_date_picker_close">Datumsauswahl schließen</string>
     <string name="transaction_time_picker_title">Uhrzeit eingeben</string>
     <string name="transaction_amount_required">Betrag eingeben</string>
     <string name="transaction_amount_positive">Der Betrag muss größer als null sein</string>
@@ -144,4 +146,8 @@
     <string name="transaction_account_required">Konto auswählen</string>
     <string name="transaction_save_failed">Die Transaktion konnte nicht gespeichert werden. Versuchen Sie es erneut</string>
     <string name="transaction_saving">Wird gespeichert…</string>
+    <string name="sync_failed_title">Änderungen konnten nicht synchronisiert werden</string>
+    <string name="sync_failed_message">Der Server hat Änderungen abgelehnt: %1$d. Versuchen Sie es erneut oder verwerfen Sie lokale Änderungen.</string>
+    <string name="sync_discard_changes">Änderungen verwerfen</string>
+    <string name="pending_sync_message">Es gibt Änderungen, die auf Synchronisierung warten</string>
 </resources>

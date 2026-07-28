@@ -1,7 +1,11 @@
 package com.example.financeapp.data.sync.di
 
 import com.example.financeapp.data.sync.DefaultSyncEventsRepository
+import com.example.financeapp.data.sync.LastWriteWinsSyncConflictResolver
+import com.example.financeapp.data.sync.RoomSyncTransactionRunner
+import com.example.financeapp.data.sync.SyncConflictResolver
 import com.example.financeapp.data.sync.SyncEventPublisher
+import com.example.financeapp.data.sync.SyncTransactionRunner
 import com.example.financeapp.data.sync.SyncWorkScheduler
 import com.example.financeapp.data.sync.SyncOperationsDataRepository
 import com.example.financeapp.data.sync.WorkManagerSyncWorkScheduler
@@ -22,6 +26,18 @@ abstract class SyncModule {
     abstract fun bindSyncWorkScheduler(
         scheduler: WorkManagerSyncWorkScheduler
     ): SyncWorkScheduler
+
+    @Binds
+    @Singleton
+    abstract fun bindSyncConflictResolver(
+        resolver: LastWriteWinsSyncConflictResolver
+    ): SyncConflictResolver
+
+    @Binds
+    @Singleton
+    abstract fun bindSyncTransactionRunner(
+        runner: RoomSyncTransactionRunner
+    ): SyncTransactionRunner
 
     @Binds
     @Singleton

@@ -17,7 +17,7 @@
     <string name="action_cancel">Отмена</string>
     <string name="delete_confirmation_message">Вы уверены, что хотите удалить элемент?</string>
     <string name="delete_failed">Не удалось удалить элемент. Попробуйте снова</string>
-    <string name="delete_failed_no_internet">Нет подключения к интернету. Удаление сейчас недоступно</string>
+    <string name="delete_failed_no_internet">Нет подключения к интернету. Удаление счёта сейчас недоступно</string>
     <string name="retry">Повторить</string>
     <string name="loading">Загрузка…</string>
     <string name="empty_expenses">Расходов пока нет</string>
@@ -33,6 +33,7 @@
     <string name="timeout_error_title">Время ожидания истекло</string>
     <string name="timeout_error_description">Сервер слишком долго не отвечает. Попробуй снова</string>
     <string name="network_offline_message">Нет подключения к интернету</string>
+    <string name="transaction_saved_locally">Транзакция сохранена на устройстве и будет отправлена при подключении</string>
     <string name="analytics_period_title">Обзор за июнь</string>
     <string name="analytics_spending_dynamics">Динамика трат</string>
     <string name="analytics_categories">Категории</string>
@@ -137,6 +138,7 @@
     <string name="currency_cny_name">Китайский юань</string>
     <string name="transaction_editor_adjustment_title">Корректировка транзакции</string>
     <string name="transaction_date_picker_title">Выберите дату</string>
+    <string name="transaction_date_picker_close">Закрыть выбор даты</string>
     <string name="transaction_time_picker_title">Введите время</string>
     <string name="transaction_amount_required">Введите сумму</string>
     <string name="transaction_amount_positive">Сумма должна быть больше нуля</string>
@@ -144,4 +146,8 @@
     <string name="transaction_account_required">Выберите счёт</string>
     <string name="transaction_save_failed">Не удалось сохранить транзакцию. Попробуйте снова</string>
     <string name="transaction_saving">Сохранение…</string>
+    <string name="sync_failed_title">Не удалось синхронизировать изменения</string>
+    <string name="sync_failed_message">Сервер отклонил изменений: %1$d. Повторите попытку или отмените локальные изменения.</string>
+    <string name="sync_discard_changes">Отменить изменения</string>
+    <string name="pending_sync_message">Есть изменения, ожидающие синхронизации</string>
 </resources>

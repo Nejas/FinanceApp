@@ -8,5 +8,6 @@ data class AccountsState(
     val accounts: List<Account> = emptyList(),
     val totalBalance: Money = Money(amountInMinorUnits = 0),
     val isLoading: Boolean = false,
+    val hasLoaded: Boolean = false,
     val error: ScreenError? = null
 )

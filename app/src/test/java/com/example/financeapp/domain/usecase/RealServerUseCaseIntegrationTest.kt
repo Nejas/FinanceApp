@@ -9,14 +9,23 @@ import com.example.financeapp.data.remote.datasource.RetrofitFinanceRemoteDataSo
 import com.example.financeapp.data.network.result.NetworkResult
 import com.example.financeapp.data.network.result.RetryPolicy
 import com.example.financeapp.core.network.NetworkMonitor
-import com.example.financeapp.data.repository.CategoriesDataRepository
-import com.example.financeapp.data.repository.FinancialAccountsDataRepository
-import com.example.financeapp.data.repository.TransactionsDataRepository
+import com.example.financeapp.data.mapper.toCreateRequestDto
+import com.example.financeapp.data.mapper.toDomain
+import com.example.financeapp.data.mapper.toRequestDto
+import com.example.financeapp.data.mapper.toUpdateRequestDto
+import com.example.financeapp.data.repository.mapToResult
+import com.example.financeapp.domain.model.Account
+import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.AccountDraft
 import com.example.financeapp.domain.model.Money
+import com.example.financeapp.domain.model.Transaction
 import com.example.financeapp.domain.model.TransactionDraft
 import com.example.financeapp.domain.model.TransactionType
+import com.example.financeapp.domain.model.TransactionsQuery
+import com.example.financeapp.domain.repository.CategoriesRepository
+import com.example.financeapp.domain.repository.FinancialAccountsRepository
+import com.example.financeapp.domain.repository.TransactionsRepository
 import java.io.File
 import java.math.BigDecimal
 import java.time.Instant
@@ -73,15 +82,15 @@ class RealServerUseCaseIntegrationTest {
             )
         )
 
-        val accountsRepository = FinancialAccountsDataRepository(
+        val accountsRepository = RemoteFinancialAccountsRepository(
             networkDataSource = networkDataSource,
             defaultDispatcher = Dispatchers.Default
         )
-        val categoriesRepository = CategoriesDataRepository(
+        val categoriesRepository = RemoteCategoriesRepository(
             networkDataSource = networkDataSource,
             defaultDispatcher = Dispatchers.Default
         )
-        val transactionsRepository = TransactionsDataRepository(
+        val transactionsRepository = RemoteTransactionsRepository(
             networkDataSource = networkDataSource,
             defaultDispatcher = Dispatchers.Default
         )
@@ -286,6 +295,111 @@ class RealServerUseCaseIntegrationTest {
 
     private object AlwaysOnlineNetworkMonitor : NetworkMonitor {
         override val isOnline = MutableStateFlow(true)
+    }
+
+    private class RemoteFinancialAccountsRepository(
+        private val networkDataSource: FinanceRemoteDataSource,
+        private val defaultDispatcher: kotlinx.coroutines.CoroutineDispatcher
+    ) : FinancialAccountsRepository {
+
+        override suspend fun getFinancialAccounts(): Result<List<Account>> {
+            return networkDataSource.getAccounts().mapToResult(defaultDispatcher) { accounts ->
+                accounts.map { account -> account.toDomain() }
+            }
+        }
+
+        override suspend fun createFinancialAccount(payload: AccountDraft): Result<Account> {
+            return networkDataSource.createAccount(payload.toCreateRequestDto())
+                .mapToResult(defaultDispatcher) { account -> account.toDomain() }
+        }
+
+        override suspend fun getFinancialAccount(id: Long): Result<Account> {
+            return networkDataSource.getAccount(id)
+                .mapToResult(defaultDispatcher) { account -> account.toDomain() }
+        }
+
+        override suspend fun updateFinancialAccount(
+            id: Long,
+            payload: AccountDraft
+        ): Result<Account> {
+            return networkDataSource.updateAccount(
+                id = id,
+                request = payload.toUpdateRequestDto()
+            ).mapToResult(defaultDispatcher) { account -> account.toDomain() }
+        }
+
+        override suspend fun deleteFinancialAccount(id: Long): Result<Unit> {
+            return networkDataSource.deleteAccount(id).mapToResult(defaultDispatcher) {}
+        }
+    }
+
+    private class RemoteCategoriesRepository(
+        private val networkDataSource: FinanceRemoteDataSource,
+        private val defaultDispatcher: kotlinx.coroutines.CoroutineDispatcher
+    ) : CategoriesRepository {
+
+        override suspend fun getCategories(type: TransactionType?): Result<List<Category>> {
+            val result = when (type) {
+                TransactionType.EXPENSE -> networkDataSource.getCategoriesByType(isIncome = false)
+                TransactionType.INCOME -> networkDataSource.getCategoriesByType(isIncome = true)
+                null -> networkDataSource.getCategories()
+            }
+            return result.mapToResult(defaultDispatcher) { categories ->
+                categories.map { category -> category.toDomain() }
+            }
+        }
+    }
+
+    private class RemoteTransactionsRepository(
+        private val networkDataSource: FinanceRemoteDataSource,
+        private val defaultDispatcher: kotlinx.coroutines.CoroutineDispatcher
+    ) : TransactionsRepository {
+
+        override suspend fun getTransactions(query: TransactionsQuery): Result<List<Transaction>> {
+            val transactions = mutableListOf<Transaction>()
+            for (accountId in query.accountIds) {
+                val result = networkDataSource.getTransactionsByPeriod(
+                    accountId = accountId,
+                    startDate = query.startDate?.toString(),
+                    endDate = query.endDate?.toString()
+                ).mapToResult(defaultDispatcher) { remoteTransactions ->
+                    remoteTransactions
+                        .filter { transaction ->
+                            query.type == null || transaction.category.isIncome == (query.type == TransactionType.INCOME)
+                        }
+                        .map { transaction -> transaction.toDomain() }
+                }
+                result.onFailure { return result }
+                transactions += result.getOrThrow()
+            }
+            return Result.success(transactions)
+        }
+
+        override suspend fun createTransaction(payload: TransactionDraft): Result<Transaction> {
+            return networkDataSource.createTransaction(payload.toRequestDto())
+                .mapToResult(defaultDispatcher) { transaction ->
+                    transaction.toDomain(currencyCode = payload.amount.currency.code)
+                }
+        }
+
+        override suspend fun getTransaction(id: Long): Result<Transaction> {
+            return networkDataSource.getTransaction(id)
+                .mapToResult(defaultDispatcher) { transaction -> transaction.toDomain() }
+        }
+
+        override suspend fun updateTransaction(
+            id: Long,
+            payload: TransactionDraft
+        ): Result<Transaction> {
+            return networkDataSource.updateTransaction(
+                id = id,
+                request = payload.toRequestDto()
+            ).mapToResult(defaultDispatcher) { transaction -> transaction.toDomain() }
+        }
+
+        override suspend fun deleteTransaction(id: Long): Result<Unit> {
+            return networkDataSource.deleteTransaction(id).mapToResult(defaultDispatcher) {}
+        }
     }
 
     private companion object {

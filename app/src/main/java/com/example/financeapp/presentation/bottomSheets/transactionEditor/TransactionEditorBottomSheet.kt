@@ -198,7 +198,7 @@ private fun TransactionFormBottomSheet(
                 onClick = {
                     onIntent(TransactionEditorIntent.FieldClicked(fieldType))
                 },
-                showDivider = index != TransactionEditorFieldTypes.lastIndex,
+                showDivider = true,
                 leadingContent = {
                     RoundFrame(
                         content = {

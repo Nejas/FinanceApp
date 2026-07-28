@@ -1,43 +1,31 @@
 package com.example.financeapp.data.repository
 
 import android.util.Log
-import androidx.room.withTransaction
 import com.example.financeapp.core.coroutines.DefaultDispatcher
 import com.example.financeapp.core.network.NetworkMonitor
-import com.example.financeapp.data.local.LocalAccountIdGenerator
-import com.example.financeapp.data.local.db.FinanceDatabase
 import com.example.financeapp.data.local.db.dao.AccountDao
-import com.example.financeapp.data.local.db.dao.SyncOperationDao
 import com.example.financeapp.data.local.db.entity.AccountSyncState
-import com.example.financeapp.data.local.db.entity.SyncOperationType
 import com.example.financeapp.data.local.mapper.toDomain as localToDomain
-import com.example.financeapp.data.local.mapper.toAccountSyncOperation
 import com.example.financeapp.data.local.mapper.toEntity
 import com.example.financeapp.data.mapper.toCreateRequestDto
 import com.example.financeapp.data.mapper.toDomain
 import com.example.financeapp.data.mapper.toUpdateRequestDto
 import com.example.financeapp.data.network.result.NetworkResult
+import com.example.financeapp.data.offline.PendingAccountMutationStore
 import com.example.financeapp.data.remote.datasource.FinanceRemoteDataSource
-import com.example.financeapp.data.sync.SyncWorkScheduler
 import com.example.financeapp.domain.model.Account
 import com.example.financeapp.domain.model.AccountDraft
 import com.example.financeapp.domain.repository.FinancialAccountsRepository
 import javax.inject.Inject
 import javax.inject.Singleton
-import java.time.Clock
-import java.time.Instant
 import kotlinx.coroutines.CoroutineDispatcher
 
 @Singleton
 class FinancialAccountsDataRepository @Inject constructor(
     private val networkDataSource: FinanceRemoteDataSource,
-    private val database: FinanceDatabase,
     private val accountDao: AccountDao,
-    private val syncOperationDao: SyncOperationDao,
-    private val localIdGenerator: LocalAccountIdGenerator,
-    private val syncWorkScheduler: SyncWorkScheduler,
+    private val pendingMutations: PendingAccountMutationStore,
     private val networkMonitor: NetworkMonitor,
-    private val clock: Clock,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : FinancialAccountsRepository {
 
@@ -83,7 +71,7 @@ class FinancialAccountsDataRepository @Inject constructor(
         val error = requireNotNull(networkResult.exceptionOrNull())
         Log.e(TAG, "Failed to create financial account", error)
         return if (error.canReadFromLocalCache(networkMonitor.isOnline.value)) {
-            Result.success(createPendingAccount(payload))
+            Result.success(pendingMutations.create(payload))
         } else {
             networkResult
         }
@@ -125,7 +113,7 @@ class FinancialAccountsDataRepository @Inject constructor(
     ): Result<Account> {
         Log.d(TAG, "Updating financial account: id=$id")
         if (id < 0) {
-            return Result.success(updatePendingAccount(id, payload))
+            return Result.success(pendingMutations.updatePending(id, payload))
         }
         val result = networkDataSource.updateAccount(
             id = id,
@@ -141,7 +129,7 @@ class FinancialAccountsDataRepository @Inject constructor(
         val error = requireNotNull(networkResult.exceptionOrNull())
         Log.e(TAG, "Failed to update financial account: id=$id", error)
         return if (error.canReadFromLocalCache(networkMonitor.isOnline.value)) {
-            Result.success(queueAccountUpdate(id, payload))
+            Result.success(pendingMutations.queueUpdate(id, payload))
         } else {
             networkResult
         }
@@ -159,87 +147,7 @@ class FinancialAccountsDataRepository @Inject constructor(
             }
     }
 
-    private suspend fun createPendingAccount(payload: AccountDraft): Account {
-        val id = localIdGenerator.nextId()
-        val now = clock.millis()
-        val entity = payload.toEntity(
-            id = id,
-            createdAt = Instant.ofEpochMilli(now),
-            syncState = AccountSyncState.PENDING
-        )
-        val operation = payload.toAccountSyncOperation(
-            operationType = SyncOperationType.CREATE_ACCOUNT,
-            accountId = id,
-            serverAccountId = null,
-            createdAtEpochMillis = now
-        )
-        database.withTransaction {
-            accountDao.upsertAccount(entity)
-            syncOperationDao.upsertOperation(operation)
-        }
-        syncWorkScheduler.enqueueOneTimeSync()
-        return entity.localToDomain()
-    }
-
-    private suspend fun updatePendingAccount(
-        id: Long,
-        payload: AccountDraft
-    ): Account {
-        val now = clock.millis()
-        val entity = payload.toEntity(
-            id = id,
-            createdAt = accountDao.getAccount(id)?.createdAt?.let(Instant::parse)
-                ?: Instant.ofEpochMilli(now),
-            syncState = AccountSyncState.PENDING
-        )
-        val existingCreate = syncOperationDao.getCreateAccountOperation(id)
-        val operation = payload.toAccountSyncOperation(
-            operationType = SyncOperationType.CREATE_ACCOUNT,
-            accountId = id,
-            serverAccountId = null,
-            createdAtEpochMillis = existingCreate?.createdAtEpochMillis ?: now
-        ).withExistingId(existingCreate?.id)
-        database.withTransaction {
-            accountDao.upsertAccount(entity)
-            syncOperationDao.upsertOperation(operation)
-        }
-        syncWorkScheduler.enqueueOneTimeSync()
-        return entity.localToDomain()
-    }
-
-    private suspend fun queueAccountUpdate(
-        id: Long,
-        payload: AccountDraft
-    ): Account {
-        val now = clock.millis()
-        val entity = payload.toEntity(
-            id = id,
-            createdAt = accountDao.getAccount(id)?.createdAt?.let(Instant::parse)
-                ?: Instant.ofEpochMilli(now),
-            syncState = AccountSyncState.PENDING
-        )
-        val operation = payload.toAccountSyncOperation(
-            operationType = SyncOperationType.UPDATE_ACCOUNT,
-            accountId = id,
-            serverAccountId = id,
-            createdAtEpochMillis = now
-        )
-        database.withTransaction {
-            accountDao.upsertAccount(entity)
-            syncOperationDao.deleteOperationsForAccount(id)
-            syncOperationDao.upsertOperation(operation)
-        }
-        syncWorkScheduler.enqueueOneTimeSync()
-        return entity.localToDomain()
-    }
-
     private companion object {
         const val TAG = "FinancialAccountsRepo"
     }
-}
-
-private fun com.example.financeapp.data.local.db.entity.SyncOperationEntity.withExistingId(
-    id: Long?
-): com.example.financeapp.data.local.db.entity.SyncOperationEntity {
-    return if (id == null) this else copy(id = id)
 }

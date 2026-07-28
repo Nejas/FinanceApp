@@ -31,6 +31,7 @@ internal fun AccountSummary.toAccountsState(): AccountsState {
         accounts = accounts,
         totalBalance = totalBalance,
         isLoading = false,
+        hasLoaded = true,
         error = null
     )
 }

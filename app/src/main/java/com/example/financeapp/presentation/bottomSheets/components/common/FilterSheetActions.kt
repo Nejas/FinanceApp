@@ -9,15 +9,15 @@ import com.example.financeapp.presentation.common.components.base.FinanceSheetPr
 @Composable
 fun SheetPrimaryAction(
     text: String,
-    onClick: () -> Unit
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
 ) {
     val spacing = LocalSpacing.current
 
     FinanceSheetPrimaryButton(
-        modifier = Modifier.padding(start = spacing.sheetButtonHorizontal,
+        modifier = modifier.padding(start = spacing.sheetButtonHorizontal,
             end = spacing.sheetButtonHorizontal,
-            top = spacing.sheetButtonTop,
-            bottom = spacing.sheetButtonBottom),
+            top = spacing.sheetButtonTop,),
         text = text,
         onClick = onClick
     )

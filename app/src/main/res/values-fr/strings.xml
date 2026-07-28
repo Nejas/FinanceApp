@@ -33,6 +33,7 @@
     <string name="timeout_error_title">Délai d’attente dépassé</string>
     <string name="timeout_error_description">Le serveur met trop de temps à répondre. Réessaie</string>
     <string name="network_offline_message">Aucune connexion internet</string>
+    <string name="transaction_saved_locally">La transaction a été enregistrée sur cet appareil et sera envoyée une fois connecté</string>
     <string name="analytics_period_title">Aperçu de juin</string>
     <string name="analytics_spending_dynamics">Dynamique des dépenses</string>
     <string name="analytics_categories">Catégories</string>
@@ -137,6 +138,7 @@
     <string name="currency_cny_name">Yuan chinois</string>
     <string name="transaction_editor_adjustment_title">Correction de la transaction</string>
     <string name="transaction_date_picker_title">Sélectionnez une date</string>
+    <string name="transaction_date_picker_close">Fermer le sélecteur de date</string>
     <string name="transaction_time_picker_title">Saisissez l’heure</string>
     <string name="transaction_amount_required">Saisissez un montant</string>
     <string name="transaction_amount_positive">Le montant doit être supérieur à zéro</string>
@@ -144,4 +146,8 @@
     <string name="transaction_account_required">Sélectionnez un compte</string>
     <string name="transaction_save_failed">Impossible d’enregistrer la transaction. Réessayez</string>
     <string name="transaction_saving">Enregistrement…</string>
+    <string name="sync_failed_title">Impossible de synchroniser les modifications</string>
+    <string name="sync_failed_message">Le serveur a rejeté des modifications : %1$d. Réessayez ou annulez les modifications locales.</string>
+    <string name="sync_discard_changes">Annuler les modifications</string>
+    <string name="pending_sync_message">Des modifications sont en attente de synchronisation</string>
 </resources>

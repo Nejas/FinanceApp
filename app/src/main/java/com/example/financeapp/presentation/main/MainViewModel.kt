@@ -54,8 +54,9 @@ class MainViewModel @Inject constructor(
     private val refreshMutex = Mutex()
 
     init {
-        loadMainData()
+        loadMainData(useRefreshLock = true)
         startSyncEventObservation()
+        startNetworkStateObservation()
     }
 
     fun onIntent(intent: MainIntent) {
@@ -107,6 +108,17 @@ class MainViewModel @Inject constructor(
                     is SyncEvent.OperationsFailed -> {
                         effectChannel.send(MainEffect.SyncFailed(event.count))
                     }
+                }
+            }
+        }
+    }
+
+    private fun startNetworkStateObservation() {
+        viewModelScope.launch {
+            networkMonitor.isOnline.collect { isOnline ->
+                if (!isOnline && state.value.hasLoadedContent()) {
+                    loadJob?.cancel()
+                    showOfflineState()
                 }
             }
         }
@@ -276,7 +288,13 @@ class MainViewModel @Inject constructor(
         isSilent: Boolean,
         error: ScreenError
     ): TransactionsSectionState {
-        if (isSilent) return this
+        if (isSilent) {
+            return if (hasLoaded) {
+                copy(isLoading = false)
+            } else {
+                copy(isLoading = false, error = error)
+            }
+        }
         return copy(
             isLoading = false,
             error = error
@@ -287,11 +305,43 @@ class MainViewModel @Inject constructor(
         isSilent: Boolean,
         error: ScreenError
     ): AccountsState {
-        if (isSilent) return this
+        if (isSilent) {
+            return if (hasLoaded) {
+                copy(isLoading = false)
+            } else {
+                copy(isLoading = false, error = error)
+            }
+        }
         return copy(
             isLoading = false,
             error = error
         )
+    }
+
+    private fun showOfflineState() {
+        _state.update { state ->
+            state.copy(
+                expensesState = state.expensesState.toOfflineState(),
+                incomeState = state.incomeState.toOfflineState(),
+                accountsState = state.accountsState.toOfflineState()
+            )
+        }
+    }
+
+    private fun TransactionsSectionState.toOfflineState(): TransactionsSectionState {
+        return if (hasLoaded) {
+            copy(isLoading = false)
+        } else {
+            copy(isLoading = false, error = ScreenError.NO_INTERNET)
+        }
+    }
+
+    private fun AccountsState.toOfflineState(): AccountsState {
+        return if (hasLoaded) {
+            copy(isLoading = false)
+        } else {
+            copy(isLoading = false, error = ScreenError.NO_INTERNET)
+        }
     }
 
     private fun logLoadError(
@@ -322,4 +372,10 @@ private fun com.example.financeapp.domain.model.FinancialFlowSummary.hasPendingS
 
 private fun com.example.financeapp.domain.model.AccountSummary.hasPendingSync(): Boolean {
     return accounts.any { account -> account.syncStatus == SyncStatus.PENDING }
+}
+
+private fun MainState.hasLoadedContent(): Boolean {
+    return expensesState.hasLoaded ||
+        incomeState.hasLoaded ||
+        accountsState.hasLoaded
 }

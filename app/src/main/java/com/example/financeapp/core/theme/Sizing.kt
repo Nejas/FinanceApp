@@ -42,7 +42,7 @@ data class Sizing(
     val selectionSheetButtonCorner: Dp = 28.dp,
     val categorySelectionSheetMaxHeight: Dp = 595.dp,
     val categorySearchHeight: Dp = 56.dp,
-    val categorySearchCorner: Dp = 100.dp,
+    val categorySearchCorner: Dp = 28.dp,
     val categorySheetRowHeight: Dp = 56.dp,
     val analyticsCustomPeriodSheetMaxHeightFraction: Float = 0.9f,
     val analyticsDetailSheetMaxHeightFraction: Float = 0.9f,

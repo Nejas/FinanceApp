@@ -1,29 +1,21 @@
 package com.example.financeapp.data.repository
 
 import android.util.Log
-import androidx.room.withTransaction
 import com.example.financeapp.core.coroutines.DefaultDispatcher
 import com.example.financeapp.core.coroutines.suspendRunCatching
 import com.example.financeapp.core.network.NetworkMonitor
-import com.example.financeapp.data.local.LocalTransactionIdGenerator
 import com.example.financeapp.data.local.TransactionPeriodResolver
-import com.example.financeapp.data.local.db.FinanceDatabase
 import com.example.financeapp.data.local.db.dao.CategoryDao
-import com.example.financeapp.data.local.db.dao.SyncOperationDao
 import com.example.financeapp.data.local.db.dao.TransactionDao
-import com.example.financeapp.data.local.db.entity.SyncOperationEntity
-import com.example.financeapp.data.local.db.entity.SyncOperationType
 import com.example.financeapp.data.local.db.entity.TransactionEntity
-import com.example.financeapp.data.local.db.entity.TransactionSyncState
 import com.example.financeapp.data.local.mapper.toDomain as localToDomain
 import com.example.financeapp.data.local.mapper.toEntity
-import com.example.financeapp.data.local.mapper.toSyncOperation
 import com.example.financeapp.data.mapper.toDomain
 import com.example.financeapp.data.mapper.toRequestDto
 import com.example.financeapp.data.network.model.response.TransactionResponseDto
 import com.example.financeapp.data.network.result.NetworkResult
+import com.example.financeapp.data.offline.PendingTransactionMutationStore
 import com.example.financeapp.data.remote.datasource.FinanceRemoteDataSource
-import com.example.financeapp.data.sync.SyncWorkScheduler
 import com.example.financeapp.domain.model.Transaction
 import com.example.financeapp.domain.model.TransactionDraft
 import com.example.financeapp.domain.model.TransactionType
@@ -38,13 +30,10 @@ import kotlinx.coroutines.withContext
 @Singleton
 class TransactionsDataRepository @Inject constructor(
     private val networkDataSource: FinanceRemoteDataSource,
-    private val database: FinanceDatabase,
     private val transactionDao: TransactionDao,
     private val categoryDao: CategoryDao,
-    private val syncOperationDao: SyncOperationDao,
-    private val localIdGenerator: LocalTransactionIdGenerator,
+    private val pendingMutations: PendingTransactionMutationStore,
     private val periodResolver: TransactionPeriodResolver,
-    private val syncWorkScheduler: SyncWorkScheduler,
     private val networkMonitor: NetworkMonitor,
     private val clock: Clock,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
@@ -141,7 +130,7 @@ class TransactionsDataRepository @Inject constructor(
         val error = requireNotNull(networkResult.exceptionOrNull())
         Log.e(TAG, "Failed to create transaction: payload=${payload.logSummary()}", error)
         return if (error.canReadFromLocalCache(networkMonitor.isOnline.value)) {
-            Result.success(createPendingTransaction(payload))
+            Result.success(pendingMutations.create(payload))
         } else {
             networkResult
         }
@@ -181,7 +170,7 @@ class TransactionsDataRepository @Inject constructor(
         val request = payload.toRequestDto()
         Log.d(TAG, "Updating transaction: id=$id, payload=${payload.logSummary()}, request=$request")
         if (id < 0) {
-            return Result.success(updatePendingTransaction(id, payload))
+            return Result.success(pendingMutations.updatePending(id, payload))
         }
 
         val result = networkDataSource.updateTransaction(
@@ -199,7 +188,7 @@ class TransactionsDataRepository @Inject constructor(
         val error = requireNotNull(networkResult.exceptionOrNull())
         Log.e(TAG, "Failed to update transaction: id=$id, payload=${payload.logSummary()}", error)
         return if (error.canReadFromLocalCache(networkMonitor.isOnline.value)) {
-            Result.success(queueTransactionUpdate(id, payload))
+            Result.success(pendingMutations.queueUpdate(id, payload))
         } else {
             networkResult
         }
@@ -208,10 +197,7 @@ class TransactionsDataRepository @Inject constructor(
     override suspend fun deleteTransaction(id: Long): Result<Unit> {
         Log.d(TAG, "Deleting transaction: id=$id")
         if (id < 0) {
-            database.withTransaction {
-                transactionDao.deleteTransaction(id)
-                syncOperationDao.deletePendingOperationsForTransaction(id)
-            }
+            pendingMutations.discardLocal(id)
             return Result.success(Unit)
         }
 
@@ -224,7 +210,7 @@ class TransactionsDataRepository @Inject constructor(
         return when {
             mappedResult.isSuccess -> mappedResult
             error != null && error.canReadFromLocalCache(networkMonitor.isOnline.value) -> {
-                queueTransactionDelete(id)
+                pendingMutations.queueDelete(id)
             }
             else -> mappedResult.onFailure { failure ->
                 Log.e(TAG, "Failed to delete transaction: id=$id", failure)
@@ -284,98 +270,6 @@ class TransactionsDataRepository @Inject constructor(
         return filter { transaction -> transaction.categoryId in categoryIds }
     }
 
-    private suspend fun createPendingTransaction(payload: TransactionDraft): Transaction {
-        val id = localIdGenerator.nextId()
-        val now = clock.millis()
-        val entity = payload.toEntity(
-            id = id,
-            syncState = TransactionSyncState.PENDING,
-            updatedAtEpochMillis = now
-        )
-        val operation = payload.toSyncOperation(
-            operationType = SyncOperationType.CREATE_TRANSACTION,
-            localTransactionId = id,
-            serverTransactionId = null,
-            createdAtEpochMillis = now
-        )
-        database.withTransaction {
-            transactionDao.upsertTransaction(entity)
-            syncOperationDao.upsertOperation(operation)
-        }
-        syncWorkScheduler.enqueueOneTimeSync()
-        return entity.localToDomain()
-    }
-
-    private suspend fun updatePendingTransaction(
-        id: Long,
-        payload: TransactionDraft
-    ): Transaction {
-        val now = clock.millis()
-        val entity = payload.toEntity(
-            id = id,
-            syncState = TransactionSyncState.PENDING,
-            updatedAtEpochMillis = now
-        )
-        val pendingCreate = syncOperationDao.getCreateTransactionOperation(id)
-        val operation = payload.toSyncOperation(
-            operationType = SyncOperationType.CREATE_TRANSACTION,
-            localTransactionId = id,
-            serverTransactionId = null,
-            createdAtEpochMillis = pendingCreate?.createdAtEpochMillis ?: now
-        ).withExistingId(pendingCreate?.id)
-
-        database.withTransaction {
-            transactionDao.upsertTransaction(entity)
-            syncOperationDao.upsertOperation(operation)
-        }
-        syncWorkScheduler.enqueueOneTimeSync()
-        return entity.localToDomain()
-    }
-
-    private suspend fun queueTransactionUpdate(
-        id: Long,
-        payload: TransactionDraft
-    ): Transaction {
-        val now = clock.millis()
-        val entity = payload.toEntity(
-            id = id,
-            syncState = TransactionSyncState.PENDING,
-            updatedAtEpochMillis = now
-        )
-        val operation = payload.toSyncOperation(
-            operationType = SyncOperationType.UPDATE_TRANSACTION,
-            localTransactionId = id,
-            serverTransactionId = id,
-            createdAtEpochMillis = now
-        )
-        database.withTransaction {
-            transactionDao.upsertTransaction(entity)
-            syncOperationDao.deleteOperationsForTransaction(id)
-            syncOperationDao.upsertOperation(operation)
-        }
-        syncWorkScheduler.enqueueOneTimeSync()
-        return entity.localToDomain()
-    }
-
-    private suspend fun queueTransactionDelete(id: Long): Result<Unit> {
-        val cachedTransaction = transactionDao.getTransaction(id)
-            ?: return Result.failure(NoSuchElementException("Cached transaction not found: id=$id"))
-        val now = clock.millis()
-        val operation = cachedTransaction.toDeleteOperation(
-            createdAtEpochMillis = now
-        )
-        database.withTransaction {
-            transactionDao.markDeletedPendingSync(
-                id = id,
-                updatedAtEpochMillis = now
-            )
-            syncOperationDao.deleteOperationsForTransaction(id)
-            syncOperationDao.upsertOperation(operation)
-        }
-        syncWorkScheduler.enqueueOneTimeSync()
-        return Result.success(Unit)
-    }
-
     private fun TransactionResponseDto.matchesType(type: TransactionType?): Boolean {
         return when (type) {
             TransactionType.EXPENSE -> !category.isIncome
@@ -387,28 +281,6 @@ class TransactionsDataRepository @Inject constructor(
     private companion object {
         const val TAG = "TransactionsRepository"
     }
-}
-
-private fun SyncOperationEntity.withExistingId(id: Long?): SyncOperationEntity {
-    return if (id == null) this else copy(id = id)
-}
-
-private fun TransactionEntity.toDeleteOperation(
-    createdAtEpochMillis: Long
-): SyncOperationEntity {
-    return SyncOperationEntity(
-        operationType = SyncOperationType.DELETE_TRANSACTION.name,
-        localTransactionId = id,
-        serverTransactionId = id,
-        accountId = accountId,
-        categoryId = categoryId,
-        amount = amount,
-        currencyCode = currencyCode,
-        transactionDate = transactionDate,
-        transactionDateEpochMillis = transactionDateEpochMillis,
-        comment = comment,
-        createdAtEpochMillis = createdAtEpochMillis
-    )
 }
 
 private fun TransactionDraft.logSummary(): String {
