@@ -86,7 +86,7 @@ class AnalyticsViewModel @Inject constructor(
                 _state.update { state -> filterReducer.hideDetail(state) }
             }
             is AnalyticsIntent.FilterClicked -> {
-                _state.update { state -> filterReducer.openFilterSheet(state, intent.type) }
+                _state.update { state -> filterReducer.openFilterSheet(state, intent.field) }
             }
             AnalyticsIntent.FilterDismissed -> {
                 _state.update { state -> filterReducer.dismissFilterSheet(state) }

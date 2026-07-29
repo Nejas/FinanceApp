@@ -7,7 +7,6 @@ import com.example.financeapp.presentation.bottomSheets.components.period.Analyt
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodResolver
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodType
 import com.example.financeapp.presentation.analytics.mappers.TransactionAnalysisCriteriaUiMapper
-import com.example.financeapp.presentation.common.model.FinanceFieldType
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -29,10 +28,10 @@ class TransactionAnalysisCriteriaReducer @Inject constructor(
 
     fun openFilterSheet(
         state: AnalyticsState,
-        type: FinanceFieldType
+        field: AnalyticsFilterField
     ): AnalyticsState {
         return state.copy(
-            activeFilterSheet = type.toFilterSheet(),
+            activeFilterSheet = field.toFilterSheet(),
             isDetailVisible = false
         )
     }
@@ -159,18 +158,12 @@ class TransactionAnalysisCriteriaReducer @Inject constructor(
         )
     }
 
-    private fun FinanceFieldType.toFilterSheet(): TransactionAnalysisCriteriaSheet? {
+    private fun AnalyticsFilterField.toFilterSheet(): TransactionAnalysisCriteriaSheet {
         return when (this) {
-            FinanceFieldType.TransactionType -> TransactionAnalysisCriteriaSheet.Type
-            FinanceFieldType.Period -> TransactionAnalysisCriteriaSheet.Period
-            FinanceFieldType.Category -> TransactionAnalysisCriteriaSheet.Category
-            FinanceFieldType.Account -> TransactionAnalysisCriteriaSheet.Account
-            FinanceFieldType.Date,
-            FinanceFieldType.Time,
-            FinanceFieldType.Currency,
-            FinanceFieldType.Name,
-            FinanceFieldType.Emoji,
-            FinanceFieldType.Description -> null
+            AnalyticsFilterField.TransactionType -> TransactionAnalysisCriteriaSheet.Type
+            AnalyticsFilterField.Period -> TransactionAnalysisCriteriaSheet.Period
+            AnalyticsFilterField.Category -> TransactionAnalysisCriteriaSheet.Category
+            AnalyticsFilterField.Account -> TransactionAnalysisCriteriaSheet.Account
         }
     }
 }

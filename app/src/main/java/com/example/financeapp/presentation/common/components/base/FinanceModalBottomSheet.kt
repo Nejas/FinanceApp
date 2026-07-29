@@ -60,20 +60,4 @@ private fun FinanceModalBottomSheetHandle() {
             .background(MaterialTheme.colorScheme.outline)
     )
 }
-
-@Preview(showBackground = true, widthDp = 360, heightDp = 640)
-@Composable
-private fun FinanceModalBottomSheetPreview() {
-    FinanceAppTheme(dynamicColor = false) {
-        FinanceModalBottomSheet(onDismissRequest = {}) {
-            Text(
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp),
-                text = "Bottom sheet content",
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-    }
-}
-
 private val BottomSheetCorner = 24.dp

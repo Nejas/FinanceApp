@@ -10,7 +10,6 @@ import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodFilterState
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodType
 import com.example.financeapp.presentation.analytics.mappers.TransactionAnalysisCriteriaUiMapper
-import com.example.financeapp.presentation.common.model.FinanceFieldType
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.Assert.assertEquals
@@ -50,17 +49,17 @@ class TransactionAnalysisCriteriaUiMapperTest {
 
         assertEquals(
             R.string.analytics_filter_income,
-            filters.first { item -> item.type == FinanceFieldType.TransactionType }.valueResId
+            filters.first { item -> item.field == AnalyticsFilterField.TransactionType }.valueResId
         )
-        filters.first { item -> item.type == FinanceFieldType.Period }.let { item ->
+        filters.first { item -> item.field == AnalyticsFilterField.Period }.let { item ->
             assertNull(item.valueResId)
             assertEquals("10.07.2026 – 12.07.2026", item.value)
         }
-        filters.first { item -> item.type == FinanceFieldType.Category }.let { item ->
+        filters.first { item -> item.field == AnalyticsFilterField.Category }.let { item ->
             assertNull(item.valueResId)
             assertEquals("Salary, Bonus", item.value)
         }
-        filters.first { item -> item.type == FinanceFieldType.Account }.let { item ->
+        filters.first { item -> item.field == AnalyticsFilterField.Account }.let { item ->
             assertNull(item.valueResId)
             assertEquals("Main account", item.value)
         }
@@ -91,19 +90,19 @@ class TransactionAnalysisCriteriaUiMapperTest {
 
         assertEquals(
             R.string.analytics_filter_all,
-            filters.first { item -> item.type == FinanceFieldType.TransactionType }.valueResId
+            filters.first { item -> item.field == AnalyticsFilterField.TransactionType }.valueResId
         )
         assertEquals(
             R.string.analytics_period_month,
-            filters.first { item -> item.type == FinanceFieldType.Period }.valueResId
+            filters.first { item -> item.field == AnalyticsFilterField.Period }.valueResId
         )
         assertEquals(
             R.string.analytics_filter_all_categories,
-            filters.first { item -> item.type == FinanceFieldType.Category }.valueResId
+            filters.first { item -> item.field == AnalyticsFilterField.Category }.valueResId
         )
         assertEquals(
             R.string.analytics_filter_all_accounts,
-            filters.first { item -> item.type == FinanceFieldType.Account }.valueResId
+            filters.first { item -> item.field == AnalyticsFilterField.Account }.valueResId
         )
     }
 

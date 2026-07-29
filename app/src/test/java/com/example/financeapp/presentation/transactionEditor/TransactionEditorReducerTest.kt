@@ -4,10 +4,10 @@ import com.example.financeapp.R
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.presentation.bottomSheets.transactionEditor.TransactionEditorIntent
+import com.example.financeapp.presentation.bottomSheets.transactionEditor.TransactionEditorField
 import com.example.financeapp.presentation.bottomSheets.transactionEditor.TransactionEditorMode
 import com.example.financeapp.presentation.bottomSheets.transactionEditor.TransactionEditorReducer
 import com.example.financeapp.presentation.bottomSheets.transactionEditor.TransactionEditorState
-import com.example.financeapp.presentation.common.model.FinanceFieldType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -49,7 +49,7 @@ class TransactionEditorReducerTest {
         val category = category(id = 2)
         val state = state().copy(
             availableCategories = listOf(category),
-            activeField = FinanceFieldType.Category
+            activeField = TransactionEditorField.Category
         )
 
         val result = reducer.reduce(

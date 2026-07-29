@@ -10,28 +10,32 @@ import com.example.financeapp.presentation.common.components.icons.FinanceClockI
 import com.example.financeapp.presentation.common.components.icons.FinanceCurrencyIcon
 import com.example.financeapp.presentation.common.components.icons.FinanceEmojiIcon
 import com.example.financeapp.presentation.common.components.icons.FinanceListTypeIcon
+import com.example.financeapp.presentation.common.components.icons.FinanceSettingsBiometryIcon
 import com.example.financeapp.presentation.common.components.icons.FinanceSettingsArticleIcon
+import com.example.financeapp.presentation.common.components.icons.FinanceSettingsGlobeIcon
+import com.example.financeapp.presentation.common.components.icons.FinanceSettingsLockIcon
+import com.example.financeapp.presentation.common.components.icons.FinanceSettingsMoonIcon
 import com.example.financeapp.presentation.common.components.icons.FinanceTagIcon
-import com.example.financeapp.presentation.common.model.FinanceFieldType
+import com.example.financeapp.presentation.common.model.FinanceFieldIconType
 
 @Composable
 fun FinanceFieldIcon(
-    type: FinanceFieldType,
+    icon: FinanceFieldIconType,
     color: Color,
     modifier: Modifier = Modifier
 ) {
-    when (type) {
-        FinanceFieldType.Account ->FinanceAccountCardIcon(color = color, modifier = modifier)
-        FinanceFieldType.Emoji -> FinanceEmojiIcon(color = color, modifier = modifier)
-        FinanceFieldType.Name -> FinanceTagIcon(color = color, modifier = modifier)
-
-        FinanceFieldType.Category -> FinanceArticleIcon(color = color, modifier = modifier)
-        FinanceFieldType.Description -> FinanceSettingsArticleIcon(color = color, modifier = modifier)
-        FinanceFieldType.TransactionType -> FinanceListTypeIcon(color = color, modifier = modifier)
-        FinanceFieldType.Date -> FinanceCalendarIcon(color = color, modifier = modifier)
-        FinanceFieldType.Time -> FinanceClockIcon(color = color, modifier = modifier)
-        FinanceFieldType.Period -> FinanceCalendarIcon(color = color, modifier = modifier)
-
-        FinanceFieldType.Currency -> FinanceCurrencyIcon(color = color, modifier = modifier)
+    when (icon) {
+        FinanceFieldIconType.Account -> FinanceAccountCardIcon(color = color, modifier = modifier)
+        FinanceFieldIconType.Article -> FinanceArticleIcon(color = color, modifier = modifier)
+        FinanceFieldIconType.Calendar -> FinanceCalendarIcon(color = color, modifier = modifier)
+        FinanceFieldIconType.Clock -> FinanceClockIcon(color = color, modifier = modifier)
+        FinanceFieldIconType.Currency -> FinanceCurrencyIcon(color = color, modifier = modifier)
+        FinanceFieldIconType.Emoji -> FinanceEmojiIcon(color = color, modifier = modifier)
+        FinanceFieldIconType.ListType -> FinanceListTypeIcon(color = color, modifier = modifier)
+        FinanceFieldIconType.SettingsBiometrics -> FinanceSettingsBiometryIcon(color = color, modifier = modifier)
+        FinanceFieldIconType.SettingsLanguage -> FinanceSettingsGlobeIcon(color = color, modifier = modifier)
+        FinanceFieldIconType.SettingsPinCode -> FinanceSettingsLockIcon(color = color, modifier = modifier)
+        FinanceFieldIconType.SettingsTheme -> FinanceSettingsMoonIcon(color = color, modifier = modifier)
+        FinanceFieldIconType.Tag -> FinanceTagIcon(color = color, modifier = modifier)
     }
 }

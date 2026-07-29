@@ -3,6 +3,7 @@ package com.example.financeapp.presentation.analytics
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
+import com.example.financeapp.R
 import com.example.financeapp.domain.model.TransactionAnalysisCriteria
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Currency
@@ -10,7 +11,8 @@ import com.example.financeapp.domain.model.Account
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodFilterState
-import com.example.financeapp.presentation.common.model.FinanceFieldType
+import com.example.financeapp.presentation.common.model.FinanceFieldIconType
+import com.example.financeapp.presentation.common.model.FinanceFieldUi
 import com.example.financeapp.presentation.common.model.FinanceListItemUiModel
 import com.example.financeapp.presentation.common.placeholders.ScreenError
 
@@ -43,10 +45,39 @@ data class AnalyticsCategoryUi(
 
 @Immutable
 data class TransactionAnalysisCriteriaUi(
-    val type: FinanceFieldType,
+    val field: AnalyticsFilterField,
     @StringRes val valueResId: Int? = null,
     val value: String = ""
 )
+
+@Immutable
+sealed interface AnalyticsFilterField : FinanceFieldUi {
+    val saveableKey: String
+
+    data object TransactionType : AnalyticsFilterField {
+        override val saveableKey: String = "transaction_type"
+        override val titleResId: Int = R.string.analytics_filter_type
+        override val icon: FinanceFieldIconType = FinanceFieldIconType.ListType
+    }
+
+    data object Period : AnalyticsFilterField {
+        override val saveableKey: String = "period"
+        override val titleResId: Int = R.string.analytics_filter_period
+        override val icon: FinanceFieldIconType = FinanceFieldIconType.Calendar
+    }
+
+    data object Category : AnalyticsFilterField {
+        override val saveableKey: String = "category"
+        override val titleResId: Int = R.string.editor_category
+        override val icon: FinanceFieldIconType = FinanceFieldIconType.Article
+    }
+
+    data object Account : AnalyticsFilterField {
+        override val saveableKey: String = "account"
+        override val titleResId: Int = R.string.editor_account
+        override val icon: FinanceFieldIconType = FinanceFieldIconType.Account
+    }
+}
 
 enum class TransactionAnalysisCriteriaSheet {
     Type,
@@ -67,14 +98,14 @@ fun defaultTransactionAnalysisCriteria(periodFilter: AnalyticsPeriodFilterState)
 }
 
 fun defaultTransactionAnalysisCriterias(): List<TransactionAnalysisCriteriaUi> {
-    return AnalyticsFieldTypes.map { type ->
-        TransactionAnalysisCriteriaUi(type = type)
+    return AnalyticsFilterFields.map { field ->
+        TransactionAnalysisCriteriaUi(field = field)
     }
 }
 
-val AnalyticsFieldTypes: List<FinanceFieldType> = listOf(
-    FinanceFieldType.TransactionType,
-    FinanceFieldType.Period,
-    FinanceFieldType.Category,
-    FinanceFieldType.Account
+val AnalyticsFilterFields: List<AnalyticsFilterField> = listOf(
+    AnalyticsFilterField.TransactionType,
+    AnalyticsFilterField.Period,
+    AnalyticsFilterField.Category,
+    AnalyticsFilterField.Account
 )

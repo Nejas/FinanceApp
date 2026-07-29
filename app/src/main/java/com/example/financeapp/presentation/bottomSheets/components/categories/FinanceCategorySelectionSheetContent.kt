@@ -49,12 +49,18 @@ fun FinanceCategorySelectionSheetContent(
     categories: List<Category>,
     selectedCategoryIds: Set<Long>,
     indicatorType: FinanceSelectionIndicatorType,
-    onCategoryClick: (Long) -> Unit,
+    onCategoryClick: ((Long) -> Unit)?,
     actions: @Composable ColumnScope.() -> Unit = {}
 ) {
     val spacing = LocalSpacing.current
     val sizing = LocalSizing.current
     var searchQuery by remember { mutableStateOf("") }
+    val isSelectionEnabled = onCategoryClick != null
+    val resolvedIndicatorType = if (isSelectionEnabled) {
+        indicatorType
+    } else {
+        FinanceSelectionIndicatorType.CheckMark
+    }
     val filteredCategories = remember(categories, searchQuery) {
         categories.filterByQuery(searchQuery)
     }
@@ -102,8 +108,9 @@ fun FinanceCategorySelectionSheetContent(
                 FinanceSelectionRow(
                     title = category.name,
                     isSelected = category.id in selectedCategoryIds,
-                    indicatorType = indicatorType,
-                    onClick = { onCategoryClick(category.id) },
+                    indicatorType = resolvedIndicatorType,
+                    onClick = { onCategoryClick?.invoke(category.id) },
+                    enabled = isSelectionEnabled,
                     rowHeight = sizing.categorySheetRowHeight,
                     leadingContent = {
                         Text(

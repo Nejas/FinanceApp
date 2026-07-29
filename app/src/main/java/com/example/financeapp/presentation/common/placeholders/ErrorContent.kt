@@ -69,6 +69,7 @@ private val ScreenError.titleResId: Int
         ScreenError.NO_INTERNET -> R.string.no_internet_error_title
         ScreenError.SERVER_ERROR -> R.string.server_error_title
         ScreenError.TIMEOUT -> R.string.timeout_error_title
+        ScreenError.ACCOUNT_HAS_TRANSACTIONS -> R.string.account_delete_failed_title
         ScreenError.LOAD_FAILED -> R.string.load_error_title
     }
 
@@ -77,6 +78,7 @@ private val ScreenError.descriptionResId: Int
         ScreenError.NO_INTERNET -> R.string.no_internet_error_description
         ScreenError.SERVER_ERROR -> R.string.server_error_description
         ScreenError.TIMEOUT -> R.string.timeout_error_description
+        ScreenError.ACCOUNT_HAS_TRANSACTIONS -> R.string.account_delete_has_transactions
         ScreenError.LOAD_FAILED -> R.string.load_error_description
     }
 

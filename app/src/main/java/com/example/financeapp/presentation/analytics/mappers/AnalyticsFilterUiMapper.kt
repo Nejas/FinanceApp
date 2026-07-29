@@ -5,10 +5,10 @@ import com.example.financeapp.domain.model.TransactionAnalysisCriteria
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Account
 import com.example.financeapp.domain.model.TransactionType
+import com.example.financeapp.presentation.analytics.AnalyticsFilterField
 import com.example.financeapp.presentation.analytics.TransactionAnalysisCriteriaUi
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodFilterState
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodType
-import com.example.financeapp.presentation.common.model.FinanceFieldType
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
@@ -21,11 +21,11 @@ class TransactionAnalysisCriteriaUiMapper @Inject constructor() {
     ): List<TransactionAnalysisCriteriaUi> {
         return listOf(
             TransactionAnalysisCriteriaUi(
-                type = FinanceFieldType.TransactionType,
+                field = AnalyticsFilterField.TransactionType,
                 valueResId = filter.type.analyticsTitleResId()
             ),
             TransactionAnalysisCriteriaUi(
-                type = FinanceFieldType.Period,
+                field = AnalyticsFilterField.Period,
                 valueResId = periodFilter.selectedType
                     .takeUnless { periodType -> periodType == AnalyticsPeriodType.Custom }
                     ?.titleResId,
@@ -36,7 +36,7 @@ class TransactionAnalysisCriteriaUiMapper @Inject constructor() {
                 }
             ),
             TransactionAnalysisCriteriaUi(
-                type = FinanceFieldType.Category,
+                field = AnalyticsFilterField.Category,
                 valueResId = if (filter.categoryIds.isEmpty()) {
                     R.string.analytics_filter_all_categories
                 } else {
@@ -47,7 +47,7 @@ class TransactionAnalysisCriteriaUiMapper @Inject constructor() {
                     .joinToString(separator = ", ") { category -> category.name }
             ),
             TransactionAnalysisCriteriaUi(
-                type = FinanceFieldType.Account,
+                field = AnalyticsFilterField.Account,
                 valueResId = if (filter.accountId == null) {
                     R.string.analytics_filter_all_accounts
                 } else {

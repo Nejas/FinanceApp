@@ -2,7 +2,10 @@ package com.example.financeapp.presentation.bottomSheets.accountEditor
 
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
+import com.example.financeapp.R
 import com.example.financeapp.domain.model.Currency
+import com.example.financeapp.presentation.common.model.FinanceFieldIconType
+import com.example.financeapp.presentation.common.model.FinanceFieldUi
 import com.example.financeapp.presentation.common.placeholders.ScreenError
 
 @Immutable
@@ -40,10 +43,21 @@ sealed interface AccountEditorMode {
 }
 
 @Immutable
-enum class AccountEditorField {
-    Name,
-    Emoji,
-    Currency
+sealed interface AccountEditorField : FinanceFieldUi {
+    data object Name : AccountEditorField {
+        override val titleResId: Int = R.string.editor_name
+        override val icon: FinanceFieldIconType = FinanceFieldIconType.Tag
+    }
+
+    data object Emoji : AccountEditorField {
+        override val titleResId: Int = R.string.editor_emoji
+        override val icon: FinanceFieldIconType = FinanceFieldIconType.Emoji
+    }
+
+    data object Currency : AccountEditorField {
+        override val titleResId: Int = R.string.editor_currency
+        override val icon: FinanceFieldIconType = FinanceFieldIconType.Currency
+    }
 }
 
 @Immutable

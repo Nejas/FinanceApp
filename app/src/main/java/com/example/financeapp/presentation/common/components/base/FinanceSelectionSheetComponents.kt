@@ -76,6 +76,7 @@ fun FinanceSelectionRow(
     indicatorType: FinanceSelectionIndicatorType,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     subtitle: String? = null,
     showDivider: Boolean = true,
     rowHeight: Dp? = null,
@@ -100,7 +101,10 @@ fun FinanceSelectionRow(
             modifier = Modifier
                 .height(resolvedRowHeight)
                 .fillMaxWidth()
-                .clickable(onClick = onClick)
+                .clickable(
+                    enabled = enabled,
+                    onClick = onClick
+                )
                 .padding(horizontal = spacing.sheetRowHorizontal),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(spacing.sheetRowGap)

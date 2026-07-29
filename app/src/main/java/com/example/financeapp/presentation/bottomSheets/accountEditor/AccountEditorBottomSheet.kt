@@ -19,7 +19,6 @@ import com.example.financeapp.presentation.common.components.base.FinanceSelecti
 import com.example.financeapp.presentation.common.components.base.FinanceSelectionRow
 import com.example.financeapp.presentation.common.components.base.RoundFrame
 import com.example.financeapp.presentation.common.components.base.TextOvalFrame
-import com.example.financeapp.presentation.common.model.FinanceFieldType
 import com.example.financeapp.presentation.common.placeholders.ErrorContent
 import com.example.financeapp.presentation.common.placeholders.LoadingContent
 import com.example.financeapp.presentation.common.utils.symbol
@@ -143,17 +142,17 @@ private fun AccountFormBottomSheet(
         }
     ) {
         AccountEditorFieldRow(
-            type = FinanceFieldType.Name,
+            field = AccountEditorField.Name,
             value = state.name.ifBlank { selectLabel },
             onClick = { onIntent(AccountEditorIntent.NameClicked) }
         )
         AccountEditorFieldRow(
-            type = FinanceFieldType.Emoji,
+            field = AccountEditorField.Emoji,
             value = state.emoji.ifBlank { selectLabel },
             onClick = { onIntent(AccountEditorIntent.EmojiClicked) }
         )
         AccountEditorFieldRow(
-            type = FinanceFieldType.Currency,
+            field = AccountEditorField.Currency,
             value = state.selectedCurrency.code,
             onClick = { onIntent(AccountEditorIntent.CurrencyClicked) },
             showDivider = false
@@ -163,14 +162,14 @@ private fun AccountFormBottomSheet(
 
 @Composable
 private fun AccountEditorFieldRow(
-    type: FinanceFieldType,
+    field: AccountEditorField,
     value: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     showDivider: Boolean = true
 ) {
     FinanceSelectionRow(
-        title = stringResource(type.titleResId),
+        title = stringResource(field.titleResId),
         isSelected = false,
         indicatorType = FinanceSelectionIndicatorType.CheckMark,
         onClick = onClick,
@@ -179,7 +178,7 @@ private fun AccountEditorFieldRow(
         leadingContent = {
             RoundFrame(content = {
                 FinanceFieldIcon(
-                    type = type,
+                    icon = field.icon,
                     color = MaterialTheme.colorScheme.onSecondary,
                     modifier = Modifier.size(LocalSizing.current.icon)
                 )

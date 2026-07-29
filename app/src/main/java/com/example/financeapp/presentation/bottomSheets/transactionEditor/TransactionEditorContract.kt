@@ -2,11 +2,13 @@ package com.example.financeapp.presentation.bottomSheets.transactionEditor
 
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
+import com.example.financeapp.R
 import com.example.financeapp.domain.model.Category
 import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.Account
 import com.example.financeapp.domain.model.TransactionType
-import com.example.financeapp.presentation.common.model.FinanceFieldType
+import com.example.financeapp.presentation.common.model.FinanceFieldIconType
+import com.example.financeapp.presentation.common.model.FinanceFieldUi
 import com.example.financeapp.presentation.common.placeholders.ScreenError
 import java.time.LocalDate
 import java.time.LocalTime
@@ -26,7 +28,7 @@ data class TransactionEditorState(
     val time: LocalTime = LocalTime.now().withSecond(0).withNano(0),
     val availableCategories: List<Category> = emptyList(),
     val availableAccounts: List<Account> = emptyList(),
-    val activeField: FinanceFieldType? = null,
+    val activeField: TransactionEditorField? = null,
     val comment: String? = null,
     @StringRes val formMessageResId: Int? = null,
     val isLoading: Boolean = false,
@@ -69,10 +71,38 @@ sealed interface TransactionEditorMode {
 }
 
 @Immutable
+sealed interface TransactionEditorField : FinanceFieldUi {
+    data object Category : TransactionEditorField {
+        override val titleResId: Int = R.string.editor_category
+        override val icon: FinanceFieldIconType = FinanceFieldIconType.Article
+    }
+
+    data object Date : TransactionEditorField {
+        override val titleResId: Int = R.string.editor_date
+        override val icon: FinanceFieldIconType = FinanceFieldIconType.Calendar
+    }
+
+    data object Time : TransactionEditorField {
+        override val titleResId: Int = R.string.editor_time
+        override val icon: FinanceFieldIconType = FinanceFieldIconType.Clock
+    }
+
+    data object Account : TransactionEditorField {
+        override val titleResId: Int = R.string.editor_account
+        override val icon: FinanceFieldIconType = FinanceFieldIconType.Account
+    }
+
+    data object Description : TransactionEditorField {
+        override val titleResId: Int = R.string.editor_description
+        override val icon: FinanceFieldIconType = FinanceFieldIconType.Article
+    }
+}
+
+@Immutable
 sealed interface TransactionEditorIntent {
     data class Open(val mode: TransactionEditorMode) : TransactionEditorIntent
     data class AmountChanged(val amount: String) : TransactionEditorIntent
-    data class FieldClicked(val type: FinanceFieldType) : TransactionEditorIntent
+    data class FieldClicked(val field: TransactionEditorField) : TransactionEditorIntent
     data object FieldDismissed : TransactionEditorIntent
     data class CategorySelected(val categoryId: Long) : TransactionEditorIntent
     data class DateChanged(val date: LocalDate) : TransactionEditorIntent
@@ -90,10 +120,10 @@ sealed interface TransactionEditorEffect {
     data object Close : TransactionEditorEffect
 }
 
-val TransactionEditorFieldTypes: List<FinanceFieldType> = listOf(
-    FinanceFieldType.Category,
-    FinanceFieldType.Date,
-    FinanceFieldType.Time,
-    FinanceFieldType.Account,
-    FinanceFieldType.Description
+val TransactionEditorFields: List<TransactionEditorField> = listOf(
+    TransactionEditorField.Category,
+    TransactionEditorField.Date,
+    TransactionEditorField.Time,
+    TransactionEditorField.Account,
+    TransactionEditorField.Description
 )

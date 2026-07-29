@@ -8,7 +8,6 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,6 +26,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -38,9 +38,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.financeapp.R
-import com.example.financeapp.core.theme.ColorDarkDanger
+import com.example.financeapp.core.localization.AppLanguage
+import com.example.financeapp.core.theme.AppThemeMode
 import com.example.financeapp.core.theme.LocalSizing
 import com.example.financeapp.core.theme.LocalSpacing
+import com.example.financeapp.domain.model.Category
+import com.example.financeapp.domain.model.UserSettings
 import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.presentation.accounts.AccountsRoute
 import com.example.financeapp.presentation.analytics.AnalyticsRoute
@@ -49,11 +52,14 @@ import com.example.financeapp.presentation.bottomSheets.accountEditor.AccountEdi
 import com.example.financeapp.presentation.bottomSheets.accountEditor.AccountEditorIntent
 import com.example.financeapp.presentation.bottomSheets.accountEditor.AccountEditorMode
 import com.example.financeapp.presentation.bottomSheets.accountEditor.AccountEditorViewModel
+import com.example.financeapp.presentation.bottomSheets.components.categories.FinanceCategorySelectionSheetContent
 import com.example.financeapp.presentation.bottomSheets.transactionEditor.TransactionEditorBottomSheet
 import com.example.financeapp.presentation.bottomSheets.transactionEditor.TransactionEditorEffect
 import com.example.financeapp.presentation.bottomSheets.transactionEditor.TransactionEditorIntent
 import com.example.financeapp.presentation.bottomSheets.transactionEditor.TransactionEditorMode
 import com.example.financeapp.presentation.bottomSheets.transactionEditor.TransactionEditorViewModel
+import com.example.financeapp.presentation.common.components.base.FinanceModalBottomSheet
+import com.example.financeapp.presentation.common.components.base.FinanceSelectionIndicatorType
 import com.example.financeapp.presentation.common.components.base.FinanceActionButton
 import com.example.financeapp.presentation.common.components.base.AppTopBar
 import com.example.financeapp.presentation.common.components.base.BottomNavigationBar
@@ -68,11 +74,19 @@ import com.example.financeapp.presentation.income.IncomeRoute
 import com.example.financeapp.presentation.navigation.AppNavGraph
 import com.example.financeapp.presentation.navigation.AppRoute
 import com.example.financeapp.presentation.navigation.isMainRoute
+import com.example.financeapp.presentation.bottomSheets.settings.LanguageSettingsSheet
+import com.example.financeapp.presentation.bottomSheets.settings.SettingsBottomSheet
+import com.example.financeapp.presentation.bottomSheets.settings.SettingsListItem
+import com.example.financeapp.presentation.bottomSheets.settings.ThemeSettingsSheet
 import java.time.LocalDate
 import kotlin.math.abs
 
 @Composable
 fun FinanceApp(
+    userSettings: UserSettings,
+    selectedLanguage: AppLanguage,
+    onLanguageSelected: (AppLanguage) -> Unit,
+    onThemeModeSelected: (AppThemeMode) -> Unit,
     mainViewModel: MainViewModel = hiltViewModel(),
     networkStatusViewModel: NetworkStatusViewModel = hiltViewModel(),
     transactionEditorViewModel: TransactionEditorViewModel = hiltViewModel(),
@@ -91,26 +105,33 @@ fun FinanceApp(
     val snackbarHostState = remember { SnackbarHostState() }
     var pendingDeleteTarget by remember { mutableStateOf<DeleteTarget?>(null) }
     var failedSyncOperationsCount by remember { mutableStateOf<Int?>(null) }
+    var isSettingsSheetVisible by rememberSaveable { mutableStateOf(false) }
+    var activeSettingsItemKey by rememberSaveable { mutableStateOf<String?>(null) }
+    val activeSettingsItem = SettingsListItem.fromSaveableKey(activeSettingsItemKey)
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val selectedRoute = navBackStackEntry?.destination?.route.toAppRoute()
     val selectedTransactionType = selectedRoute.toTransactionTypeOrNull()
     val deleteFailedMessage = stringResource(R.string.delete_failed)
     val deleteFailedNoInternetMessage = stringResource(R.string.delete_failed_no_internet)
+    val accountDeleteHasTransactionsMessage = stringResource(R.string.account_delete_has_transactions)
     val transactionSavedLocallyMessage = stringResource(R.string.transaction_saved_locally)
 
     LaunchedEffect(
         mainViewModel,
         snackbarHostState,
         deleteFailedMessage,
-        deleteFailedNoInternetMessage
+        deleteFailedNoInternetMessage,
+        accountDeleteHasTransactionsMessage
     ) {
         mainViewModel.effects.collect { effect ->
             when (effect) {
                 is MainEffect.DeleteFailed -> {
-                    val message = if (effect.error == ScreenError.NO_INTERNET) {
-                        deleteFailedNoInternetMessage
-                    } else {
-                        deleteFailedMessage
+                    val message = when (effect.error) {
+                        ScreenError.NO_INTERNET -> deleteFailedNoInternetMessage
+                        ScreenError.ACCOUNT_HAS_TRANSACTIONS -> accountDeleteHasTransactionsMessage
+                        ScreenError.SERVER_ERROR,
+                        ScreenError.TIMEOUT,
+                        ScreenError.LOAD_FAILED -> deleteFailedMessage
                     }
                     snackbarHostState.showSnackbar(message)
                 }
@@ -162,7 +183,9 @@ fun FinanceApp(
                 onBackClick = {
                     navController.navigateBackToMain()
                 },
-                onSettingsClick = {}
+                onSettingsClick = {
+                    isSettingsSheetVisible = true
+                }
             )
         },
         floatingActionButton = {
@@ -352,6 +375,67 @@ fun FinanceApp(
         )
     }
 
+    if (isSettingsSheetVisible) {
+        when (activeSettingsItem) {
+            SettingsListItem.Articles -> FinanceModalBottomSheet(
+                onDismissRequest = {
+                    activeSettingsItemKey = null
+                }
+            ) {
+                FinanceCategorySelectionSheetContent(
+                    categories = mainState.settingsCategories(),
+                    selectedCategoryIds = emptySet(),
+                    indicatorType = FinanceSelectionIndicatorType.CheckMark,
+                    onCategoryClick = null
+                )
+            }
+            SettingsListItem.Language -> FinanceModalBottomSheet(
+                onDismissRequest = {
+                    activeSettingsItemKey = null
+                }
+            ) {
+                LanguageSettingsSheet(
+                    selectedLanguage = selectedLanguage,
+                    onLanguageSelected = { language ->
+                        onLanguageSelected(language)
+                        activeSettingsItemKey = null
+                    }
+                )
+            }
+            SettingsListItem.Theme -> FinanceModalBottomSheet(
+                onDismissRequest = {
+                    activeSettingsItemKey = null
+                }
+            ) {
+                ThemeSettingsSheet(
+                    selectedThemeMode = userSettings.themeMode,
+                    onThemeModeSelected = onThemeModeSelected
+                )
+            }
+            null -> SettingsBottomSheet(
+                onDismissRequest = {
+                    isSettingsSheetVisible = false
+                    activeSettingsItemKey = null
+                },
+                onItemClick = { item ->
+                    when (item) {
+                        SettingsListItem.Articles,
+                        SettingsListItem.Language,
+                        SettingsListItem.Theme -> {
+                            activeSettingsItemKey = item.saveableKey
+                        }
+                        SettingsListItem.Biometrics,
+                        SettingsListItem.Currency,
+                        SettingsListItem.PinCode -> Unit
+                    }
+                }
+            )
+            SettingsListItem.Biometrics,
+            SettingsListItem.Currency,
+            SettingsListItem.PinCode -> Unit
+        }
+    }
+
     pendingDeleteTarget?.let { target ->
         DeleteConfirmationDialog(
             onConfirmClick = {
@@ -532,6 +616,15 @@ private enum class TopBarMode {
 private sealed interface DeleteTarget {
     data class Transaction(val id: Long) : DeleteTarget
     data class Account(val id: Long) : DeleteTarget
+}
+
+private fun MainState.settingsCategories(): List<Category> {
+    return (expensesState.categoriesById.values + incomeState.categoriesById.values)
+        .distinctBy { category -> category.id }
+        .sortedWith(
+            compareBy<Category> { category -> category.type }
+                .thenBy { category -> category.name }
+        )
 }
 
 private fun NavHostController.navigateBackToMain() {

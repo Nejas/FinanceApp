@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financeapp.core.network.NetworkMonitor
+import com.example.financeapp.data.error.NetworkDataException
 import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.FinancialSummaryCriteria
 import com.example.financeapp.domain.model.SyncEvent
@@ -73,12 +74,14 @@ class MainViewModel @Inject constructor(
             is MainIntent.DeleteTransaction -> {
                 deleteMainItem(
                     logMessage = "Failed to delete transaction: id=${intent.transactionId}",
+                    errorMapper = { error -> error.toScreenError(networkMonitor.isOnline.value) },
                     delete = { transactionUseCases.delete(intent.transactionId) }
                 )
             }
             is MainIntent.DeleteFinancialAccount -> {
                 deleteMainItem(
                     logMessage = "Failed to delete financial account: id=${intent.accountId}",
+                    errorMapper = ::mapAccountDeleteError,
                     delete = { accountUseCases.delete(intent.accountId) }
                 )
             }
@@ -249,6 +252,7 @@ class MainViewModel @Inject constructor(
 
     private fun deleteMainItem(
         logMessage: String,
+        errorMapper: (Throwable) -> ScreenError,
         delete: suspend () -> Result<Unit>
     ) {
         deleteJob?.cancel()
@@ -261,11 +265,22 @@ class MainViewModel @Inject constructor(
                     Log.e(TAG, logMessage, error)
                     effectChannel.send(
                         MainEffect.DeleteFailed(
-                            error = error.toScreenError(networkMonitor.isOnline.value)
+                            error = errorMapper(error)
                         )
                     )
                 }
             )
+        }
+    }
+
+    private fun mapAccountDeleteError(error: Throwable): ScreenError {
+        if (!networkMonitor.isOnline.value) {
+            return ScreenError.NO_INTERNET
+        }
+        return if (error is NetworkDataException.Http && error.code == HTTP_CONFLICT) {
+            ScreenError.ACCOUNT_HAS_TRANSACTIONS
+        } else {
+            error.toScreenError(isOnline = true)
         }
     }
 
@@ -359,6 +374,7 @@ class MainViewModel @Inject constructor(
     private companion object {
         const val TAG = "MainViewModel"
         const val RefreshTimeoutMillis = 30_000L
+        const val HTTP_CONFLICT = 409
     }
 }
 

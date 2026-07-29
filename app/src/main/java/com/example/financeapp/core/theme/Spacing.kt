@@ -92,6 +92,16 @@ data class Spacing(
     val transactionTimePickerActionsEnd: Dp = 24.dp,
     val transactionTimePickerActionsBottom: Dp = 20.dp,
     val transactionTimePickerActionsGap: Dp = 8.dp,
+    val settingsTitleHorizontal: Dp = 20.dp,
+    val settingsTitleVertical: Dp = 12.dp,
+    val settingsSectionTop: Dp = 12.dp,
+    val settingsSectionTitleHorizontal: Dp = 20.dp,
+    val settingsSectionTitleVertical: Dp = 8.dp,
+    val settingsRowHorizontal: Dp = 20.dp,
+    val settingsRowGap: Dp = 16.dp,
+    val settingsPickerOptionsVertical: Dp = 12.dp,
+    val settingsPickerOptionGap: Dp = 12.dp,
+    val settingsBottomPadding: Dp = 24.dp,
     val contentSwipeEdgeGuard: Dp = 32.dp,
     val contentSwipeThreshold: Dp = 80.dp
 )

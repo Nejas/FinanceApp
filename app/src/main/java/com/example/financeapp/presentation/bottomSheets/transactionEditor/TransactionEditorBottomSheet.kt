@@ -19,7 +19,6 @@ import com.example.financeapp.presentation.common.components.base.FinanceSelecti
 import com.example.financeapp.presentation.common.components.base.FinanceSelectionRow
 import com.example.financeapp.presentation.common.components.base.RoundFrame
 import com.example.financeapp.presentation.common.components.base.TextOvalFrame
-import com.example.financeapp.presentation.common.model.FinanceFieldType
 import com.example.financeapp.presentation.common.placeholders.ErrorContent
 import com.example.financeapp.presentation.common.placeholders.LoadingContent
 import com.example.financeapp.presentation.common.utils.formatDayMonth
@@ -64,7 +63,7 @@ fun TransactionEditorBottomSheet(
     }
 
     when (state.activeField) {
-        FinanceFieldType.Category -> FinanceModalBottomSheet(
+        TransactionEditorField.Category -> FinanceModalBottomSheet(
             onDismissRequest = {
                 onIntent(TransactionEditorIntent.FieldDismissed)
             },
@@ -82,7 +81,7 @@ fun TransactionEditorBottomSheet(
             )
         }
 
-        FinanceFieldType.Account -> FinanceModalBottomSheet(
+        TransactionEditorField.Account -> FinanceModalBottomSheet(
             onDismissRequest = {
                 onIntent(TransactionEditorIntent.FieldDismissed)
             },
@@ -99,7 +98,7 @@ fun TransactionEditorBottomSheet(
             )
         }
 
-        FinanceFieldType.Date -> TransactionDateSelectionScreen(
+        TransactionEditorField.Date -> TransactionDateSelectionScreen(
             selectedDate = state.date,
             onDateSelected = { date ->
                 onIntent(TransactionEditorIntent.DateChanged(date))
@@ -109,7 +108,7 @@ fun TransactionEditorBottomSheet(
             }
         )
 
-        FinanceFieldType.Time -> FinanceModalBottomSheet(
+        TransactionEditorField.Time -> FinanceModalBottomSheet(
             onDismissRequest = {
                 onIntent(TransactionEditorIntent.FieldDismissed)
             },
@@ -127,7 +126,7 @@ fun TransactionEditorBottomSheet(
             )
         }
 
-        FinanceFieldType.Description -> FinanceSingleTextInputBottomSheet(
+        TransactionEditorField.Description -> FinanceSingleTextInputBottomSheet(
             title = stringResource(R.string.editor_description),
             value = state.comment.orEmpty(),
             onValueChange = { comment ->
@@ -142,11 +141,6 @@ fun TransactionEditorBottomSheet(
             capitalization = KeyboardCapitalization.Sentences
         )
 
-        FinanceFieldType.TransactionType,
-        FinanceFieldType.Currency,
-        FinanceFieldType.Period,
-        FinanceFieldType.Name,
-        FinanceFieldType.Emoji,
         null -> TransactionFormBottomSheet(
             state = state,
             onIntent = onIntent,
@@ -190,20 +184,20 @@ private fun TransactionFormBottomSheet(
             null
         }
     ) {
-        TransactionEditorFieldTypes.forEachIndexed { index, fieldType ->
+        TransactionEditorFields.forEach { field ->
             FinanceSelectionRow(
-                title = stringResource(fieldType.titleResId),
+                title = stringResource(field.titleResId),
                 isSelected = false,
                 indicatorType = FinanceSelectionIndicatorType.CheckMark,
                 onClick = {
-                    onIntent(TransactionEditorIntent.FieldClicked(fieldType))
+                    onIntent(TransactionEditorIntent.FieldClicked(field))
                 },
                 showDivider = true,
                 leadingContent = {
                     RoundFrame(
                         content = {
                             FinanceFieldIcon(
-                                type = fieldType,
+                                icon = field.icon,
                                 color = MaterialTheme.colorScheme.onSecondary,
                                 modifier = Modifier.size(LocalSizing.current.icon)
                             )
@@ -214,7 +208,7 @@ private fun TransactionFormBottomSheet(
                 trailingContent = {
                     TextOvalFrame(
                         text = state.resolveFieldValue(
-                            type = fieldType,
+                            field = field,
                             selectLabel = selectLabel
                         ),
                         maxWidth = 190.dp
@@ -226,19 +220,14 @@ private fun TransactionFormBottomSheet(
 }
 
 private fun TransactionEditorState.resolveFieldValue(
-    type: FinanceFieldType,
+    field: TransactionEditorField,
     selectLabel: String
 ): String {
-    return when (type) {
-        FinanceFieldType.Category -> selectedCategory?.name ?: selectLabel
-        FinanceFieldType.Date -> date.formatDayMonth()
-        FinanceFieldType.Time -> time.formatHourMinute()
-        FinanceFieldType.Account -> effectiveAccount?.name ?: selectLabel
-        FinanceFieldType.Description -> comment?.takeIf { it.isNotBlank() } ?: selectLabel
-        FinanceFieldType.TransactionType,
-        FinanceFieldType.Currency,
-        FinanceFieldType.Period,
-        FinanceFieldType.Name,
-        FinanceFieldType.Emoji -> selectLabel
+    return when (field) {
+        TransactionEditorField.Category -> selectedCategory?.name ?: selectLabel
+        TransactionEditorField.Date -> date.formatDayMonth()
+        TransactionEditorField.Time -> time.formatHourMinute()
+        TransactionEditorField.Account -> effectiveAccount?.name ?: selectLabel
+        TransactionEditorField.Description -> comment?.takeIf { it.isNotBlank() } ?: selectLabel
     }
 }

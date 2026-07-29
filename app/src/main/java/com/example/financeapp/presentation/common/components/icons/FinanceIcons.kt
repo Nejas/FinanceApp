@@ -353,18 +353,7 @@ fun FinanceCurrencyIcon(
     }
 }
 
-@Composable
-fun FinanceSettingsCurrencyIcon(
-    color: Color,
-    modifier: Modifier = Modifier
-) {
-    Icon(
-        imageVector = Icons.Outlined.JoinInner,
-        contentDescription = "Валюта",
-        tint = color,
-        modifier = modifier
-    )
-}
+
 
 @Composable
 fun FinanceSettingsArticleIcon(
@@ -586,7 +575,6 @@ private fun FinanceIconsPreview() {
                 FinanceCurrencyIcon(color = color, modifier = Modifier.size(spacing.xl))
             }
             Row(horizontalArrangement = Arrangement.spacedBy(spacing.md)) {
-                FinanceSettingsCurrencyIcon(color = color, modifier = Modifier.size(spacing.xl))
                 FinanceSettingsArticleIcon(color = color, modifier = Modifier.size(spacing.xl))
                 FinanceSettingsMoonIcon(color = color, modifier = Modifier.size(spacing.xl))
                 FinanceThemeLightIcon(color = color, modifier = Modifier.size(spacing.xl))

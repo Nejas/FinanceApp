@@ -8,11 +8,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import com.example.financeapp.R
 import com.example.financeapp.domain.model.TransactionType
+import com.example.financeapp.presentation.analytics.AnalyticsFilterField
 import com.example.financeapp.presentation.bottomSheets.components.common.SheetPrimaryAction
 import com.example.financeapp.presentation.common.components.base.FinanceSelectionIndicatorType
 import com.example.financeapp.presentation.common.components.base.FinanceSelectionRow
 import com.example.financeapp.presentation.common.components.base.FinanceSelectionSheetScaffold
-import com.example.financeapp.presentation.common.model.FinanceFieldType
 
 @Composable
 internal fun AnalyticsTypeSheet(
@@ -22,7 +22,7 @@ internal fun AnalyticsTypeSheet(
     var draftType by remember(selectedType) { mutableStateOf(selectedType) }
 
     FinanceSelectionSheetScaffold(
-        title = stringResource(FinanceFieldType.TransactionType.titleResId)
+        title = stringResource(AnalyticsFilterField.TransactionType.titleResId)
     ) {
         AnalyticsTypeOptions.forEach { option ->
             FinanceSelectionRow(

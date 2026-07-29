@@ -18,6 +18,8 @@
     <string name="delete_confirmation_message">Вы уверены, что хотите удалить элемент?</string>
     <string name="delete_failed">Не удалось удалить элемент. Попробуйте снова</string>
     <string name="delete_failed_no_internet">Нет подключения к интернету. Удаление счёта сейчас недоступно</string>
+    <string name="account_delete_failed_title">Не удалось удалить счёт</string>
+    <string name="account_delete_has_transactions">Нельзя удалить счёт, пока у него есть транзакции</string>
     <string name="retry">Повторить</string>
     <string name="loading">Загрузка…</string>
     <string name="empty_expenses">Расходов пока нет</string>
@@ -88,12 +90,13 @@
     <string name="settings_security">Безопасность</string>
     <string name="settings_about">О приложении</string>
     <string name="settings_open">Открыть настройки</string>
+    <string name="settings_title">Настройки</string>
     <string name="language_russian">Русский</string>
     <string name="language_english">Английский</string>
     <string name="language_german">Немецкий</string>
     <string name="language_french">Французский</string>
     <string name="language_spanish">Испанский</string>
-    <string name="theme_system">Как в системе</string>
+    <string name="theme_system">Системная</string>
     <string name="theme_light">Светлая</string>
     <string name="theme_dark">Тёмная</string>
     <string name="analytics_filter_type">Тип</string>

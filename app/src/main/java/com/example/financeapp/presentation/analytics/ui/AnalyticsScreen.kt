@@ -39,6 +39,7 @@ import com.example.financeapp.presentation.analytics.mappers.AnalyticsCategoryCo
 import com.example.financeapp.presentation.analytics.AnalyticsCategoryUi
 import com.example.financeapp.presentation.analytics.TransactionAnalysisCriteriaUi
 import com.example.financeapp.presentation.analytics.AnalyticsIntent
+import com.example.financeapp.presentation.analytics.AnalyticsFilterField
 import com.example.financeapp.presentation.analytics.AnalyticsState
 import com.example.financeapp.presentation.bottomSheets.analytics.AnalyticsBottomSheet
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodType
@@ -49,7 +50,6 @@ import com.example.financeapp.presentation.common.components.base.FinancePullToR
 import com.example.financeapp.presentation.common.components.base.ListItemColumn
 import com.example.financeapp.presentation.common.components.base.RoundFrame
 import com.example.financeapp.presentation.common.components.base.TextOvalFrame
-import com.example.financeapp.presentation.common.model.FinanceFieldType
 import com.example.financeapp.presentation.common.model.FinanceListItemUiModel
 import com.example.financeapp.presentation.common.placeholders.EmptyContent
 import com.example.financeapp.presentation.common.placeholders.ErrorContent
@@ -136,7 +136,7 @@ private fun AnalyticsChartSurface(
 @Composable
 private fun AnalyticsContent(
     state: AnalyticsState,
-    onFilterClick: (FinanceFieldType) -> Unit,
+    onFilterClick: (AnalyticsFilterField) -> Unit,
     onChartClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -157,11 +157,11 @@ private fun AnalyticsContent(
 
         itemsIndexed(
             items = state.filters,
-            key = { _, filter -> filter.type }
+            key = { _, filter -> filter.field.saveableKey }
         ) { index, filter ->
             TransactionAnalysisCriteriaRow(
                 filter = filter,
-                onClick = { onFilterClick(filter.type) },
+                onClick = { onFilterClick(filter.field) },
                 showDivider = index != state.filters.lastIndex
             )
         }
@@ -263,7 +263,7 @@ private fun TransactionAnalysisCriteriaRow(
                 size = sizing.analyticsFilterIcon,
                 content = {
                     FinanceFieldIcon(
-                        type = filter.type,
+                        icon = filter.field.icon,
                         color = MaterialTheme.colorScheme.onSecondary,
                         modifier = Modifier.size(sizing.analyticsFilterInnerIcon)
                     )
@@ -273,7 +273,7 @@ private fun TransactionAnalysisCriteriaRow(
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = spacing.md, end = spacing.xxs),
-                text = stringResource(filter.type.titleResId),
+                text = stringResource(filter.field.titleResId),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
@@ -320,19 +320,19 @@ private fun AnalyticsScreenPreview() {
                 categoryColors = AnalyticsCategoryColorMapper().map(categories),
                 filters = listOf(
                     TransactionAnalysisCriteriaUi(
-                        type = FinanceFieldType.TransactionType,
+                        field = AnalyticsFilterField.TransactionType,
                         valueResId = R.string.analytics_filter_expenses
                     ),
                     TransactionAnalysisCriteriaUi(
-                        type = FinanceFieldType.Period,
+                        field = AnalyticsFilterField.Period,
                         valueResId = previewPeriodFilter.selectedType.titleResId
                     ),
                     TransactionAnalysisCriteriaUi(
-                        type = FinanceFieldType.Category,
+                        field = AnalyticsFilterField.Category,
                         value = "Ремонт, Авто"
                     ),
                     TransactionAnalysisCriteriaUi(
-                        type = FinanceFieldType.Account,
+                        field = AnalyticsFilterField.Account,
                         valueResId = R.string.analytics_filter_all_accounts
                     )
                 ),

@@ -3,7 +3,6 @@ package com.example.financeapp.presentation.analytics
 import androidx.compose.runtime.Immutable
 import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodType
-import com.example.financeapp.presentation.common.model.FinanceFieldType
 import java.time.LocalDate
 
 @Immutable
@@ -12,7 +11,7 @@ sealed interface AnalyticsIntent {
     data object Retry : AnalyticsIntent
     data object ChartClicked : AnalyticsIntent
     data object DetailDismissed : AnalyticsIntent
-    data class FilterClicked(val type: FinanceFieldType) : AnalyticsIntent
+    data class FilterClicked(val field: AnalyticsFilterField) : AnalyticsIntent
     data object FilterDismissed : AnalyticsIntent
     data class TypeApplied(val type: TransactionType?) : AnalyticsIntent
     data class PeriodSelected(val periodType: AnalyticsPeriodType) : AnalyticsIntent

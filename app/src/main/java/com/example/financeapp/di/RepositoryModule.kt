@@ -1,11 +1,13 @@
 package com.example.financeapp.di
 
 import com.example.financeapp.data.repository.CategoriesDataRepository
+import com.example.financeapp.data.repository.DataStoreUserSettingsRepository
 import com.example.financeapp.data.repository.FinancialAccountsDataRepository
 import com.example.financeapp.data.repository.TransactionsDataRepository
 import com.example.financeapp.domain.repository.CategoriesRepository
 import com.example.financeapp.domain.repository.FinancialAccountsRepository
 import com.example.financeapp.domain.repository.TransactionsRepository
+import com.example.financeapp.domain.repository.UserSettingsRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -35,6 +37,12 @@ abstract class RepositoryModule {
     abstract fun bindCategoriesRepository(
         repository: CategoriesDataRepository
     ): CategoriesRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindUserSettingsRepository(
+        repository: DataStoreUserSettingsRepository
+    ): UserSettingsRepository
 
     companion object {
 

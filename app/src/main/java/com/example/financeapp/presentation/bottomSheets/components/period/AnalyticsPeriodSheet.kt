@@ -6,10 +6,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.example.financeapp.core.theme.LocalSpacing
+import com.example.financeapp.presentation.analytics.AnalyticsFilterField
 import com.example.financeapp.presentation.common.components.base.FinanceSelectionIndicatorType
 import com.example.financeapp.presentation.common.components.base.FinanceSelectionRow
 import com.example.financeapp.presentation.common.components.base.FinanceSelectionSheetScaffold
-import com.example.financeapp.presentation.common.model.FinanceFieldType
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -18,7 +18,7 @@ internal fun AnalyticsPeriodSheet(
     onPeriodClick: (AnalyticsPeriodType) -> Unit
 ) {
     FinanceSelectionSheetScaffold(
-        title = stringResource(FinanceFieldType.Period.titleResId)
+        title = stringResource(AnalyticsFilterField.Period.titleResId)
     ) {
         AnalyticsPeriodOptions.forEach { periodType ->
             FinanceSelectionRow(

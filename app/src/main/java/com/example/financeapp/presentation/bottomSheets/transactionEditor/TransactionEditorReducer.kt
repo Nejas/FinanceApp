@@ -16,9 +16,7 @@ class TransactionEditorReducer @Inject constructor() {
                 formMessageResId = null
             )
             is TransactionEditorIntent.FieldClicked -> state.copy(
-                activeField = intent.type.takeIf { type ->
-                    type in TransactionEditorFieldTypes
-                },
+                activeField = intent.field,
                 formMessageResId = null
             )
             TransactionEditorIntent.FieldDismissed -> state.copy(activeField = null)

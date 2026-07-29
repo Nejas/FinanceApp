@@ -18,6 +18,8 @@
     <string name="delete_confirmation_message">Voulez-vous vraiment supprimer cet élément ?</string>
     <string name="delete_failed">Impossible de supprimer l’élément. Réessayez</string>
     <string name="delete_failed_no_internet">Aucune connexion internet. La suppression est indisponible pour le moment</string>
+    <string name="account_delete_failed_title">Impossible de supprimer le compte</string>
+    <string name="account_delete_has_transactions">Impossible de supprimer un compte qui contient des transactions</string>
     <string name="retry">Réessayer</string>
     <string name="loading">Chargement…</string>
     <string name="empty_expenses">Aucune dépense pour le moment</string>
@@ -88,6 +90,7 @@
     <string name="settings_security">Sécurité</string>
     <string name="settings_about">À propos</string>
     <string name="settings_open">Ouvrir les paramètres</string>
+    <string name="settings_title">Paramètres</string>
     <string name="language_russian">Russe</string>
     <string name="language_english">Anglais</string>
     <string name="language_german">Allemand</string>
