@@ -2,6 +2,7 @@ package com.example.financeapp.presentation.transactionEditor
 
 import com.example.financeapp.R
 import com.example.financeapp.domain.model.Category
+import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.presentation.bottomSheets.transactionEditor.TransactionEditorIntent
 import com.example.financeapp.presentation.bottomSheets.transactionEditor.TransactionEditorField
@@ -17,7 +18,7 @@ class TransactionEditorReducerTest {
     private val reducer = TransactionEditorReducer()
 
     @Test
-    fun amountChanged_keepsOnlyDigitsAndClearsMessage() {
+    fun amountChanged_keepsDecimalSeparatorAndClearsMessage() {
         val state = state().copy(formMessageResId = R.string.transaction_save_failed)
 
         val result = reducer.reduce(
@@ -25,7 +26,7 @@ class TransactionEditorReducerTest {
             intent = TransactionEditorIntent.AmountChanged("12a 34.5")
         )
 
-        assertEquals("12345", result.amount)
+        assertEquals("1234.5", result.amount)
         assertNull(result.formMessageResId)
     }
 
@@ -42,6 +43,21 @@ class TransactionEditorReducerTest {
 
         assertEquals("120", withAmount.amount)
         assertEquals("0", zeroAmount.amount)
+    }
+
+    @Test
+    fun amountChanged_limitsFractionToTwoDigitsAndAcceptsComma() {
+        val withComma = reducer.reduce(
+            state = state(),
+            intent = TransactionEditorIntent.AmountChanged("00012,509")
+        )
+        val withoutInteger = reducer.reduce(
+            state = state(),
+            intent = TransactionEditorIntent.AmountChanged(".50")
+        )
+
+        assertEquals("12.50", withComma.amount)
+        assertEquals("0.50", withoutInteger.amount)
     }
 
     @Test
@@ -83,7 +99,10 @@ class TransactionEditorReducerTest {
     }
 
     private fun state() = TransactionEditorState(
-        mode = TransactionEditorMode.Create(TransactionType.EXPENSE)
+        mode = TransactionEditorMode.Create(
+            transactionType = TransactionType.EXPENSE,
+            currency = Currency.RUB
+        )
     )
 
     private fun category(id: Long) = Category(

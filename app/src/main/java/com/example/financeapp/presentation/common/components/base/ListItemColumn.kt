@@ -20,7 +20,7 @@ import com.example.financeapp.core.theme.FinanceAppTheme
 import com.example.financeapp.core.theme.LocalSpacing
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.presentation.common.model.FinanceListItemUiModel
-import com.example.financeapp.presentation.common.utils.formatWithoutMinorUnits
+import com.example.financeapp.presentation.common.utils.formatWithMinorUnits
 
 @Composable
 fun ListItemColumn(
@@ -87,7 +87,7 @@ fun ListItemColumn(
             }
 
             Text(
-                text = item.money.formatWithoutMinorUnits(),
+                text = item.money.formatWithMinorUnits(),
                 style = MaterialTheme.typography.bodyMedium,
                 color = item.contentColor(),
                 textAlign = TextAlign.End,

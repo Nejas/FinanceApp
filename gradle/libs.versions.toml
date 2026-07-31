@@ -23,6 +23,7 @@ work = "2.9.1"
 hiltWork = "1.2.0"
 dataStore = "1.1.1"
 appCompat = "1.7.1"
+biometric = "1.1.0"
 
 [libraries]
 androidx-core-splashscreen = {group = "androidx.core",name = "core-splashscreen",version.ref = "splashScreen" }
@@ -62,6 +63,7 @@ androidx-hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref 
 androidx-hilt-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltWork" }
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "dataStore" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appCompat" }
+androidx-biometric = { group = "androidx.biometric", name = "biometric", version.ref = "biometric" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

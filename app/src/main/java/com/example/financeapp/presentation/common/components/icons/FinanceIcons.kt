@@ -10,9 +10,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Backspace
 import androidx.compose.material.icons.automirrored.outlined.FormatListBulleted
 import androidx.compose.material.icons.automirrored.outlined.TrendingUp
+import androidx.compose.material.icons.filled.Circle as FilledCircle
 import androidx.compose.material.icons.outlined.ArrowBackIosNew
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Bedtime
+import androidx.compose.material.icons.outlined.Circle as OutlinedCircle
 import androidx.compose.material.icons.outlined.CreditCard
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.DesktopWindows
@@ -441,6 +443,32 @@ fun FinanceSettingsBiometryIcon(
     Icon(
         imageVector = Icons.Outlined.Fingerprint,
         contentDescription = "Биометрия",
+        tint = color,
+        modifier = modifier
+    )
+}
+
+@Composable
+fun FinancePinCodeEmptyDotIcon(
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Icon(
+        imageVector = Icons.Outlined.OutlinedCircle,
+        contentDescription = null,
+        tint = color,
+        modifier = modifier
+    )
+}
+
+@Composable
+fun FinancePinCodeFilledDotIcon(
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Icon(
+        imageVector = Icons.Filled.FilledCircle,
+        contentDescription = null,
         tint = color,
         modifier = modifier
     )

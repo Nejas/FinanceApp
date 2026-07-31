@@ -9,10 +9,12 @@ import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.FinancialSummaryCriteria
 import com.example.financeapp.domain.model.SyncEvent
 import com.example.financeapp.domain.model.SyncStatus
+import com.example.financeapp.domain.model.UserSettings
 import com.example.financeapp.domain.usecase.AccountUseCases
 import com.example.financeapp.domain.usecase.TransactionUseCases
 import com.example.financeapp.domain.usecase.GetFinancialSummaryUseCase
 import com.example.financeapp.domain.usecase.SynchronizationUseCases
+import com.example.financeapp.domain.usecase.UserSettingsUseCases
 import com.example.financeapp.presentation.accounts.AccountsState
 import com.example.financeapp.presentation.common.model.TransactionsSectionState
 import com.example.financeapp.presentation.common.placeholders.ScreenError
@@ -26,6 +28,8 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -38,6 +42,7 @@ class MainViewModel @Inject constructor(
     private val transactionUseCases: TransactionUseCases,
     private val accountUseCases: AccountUseCases,
     private val synchronizationUseCases: SynchronizationUseCases,
+    private val userSettingsUseCases: UserSettingsUseCases,
     private val networkMonitor: NetworkMonitor,
     private val clock: Clock
 ) : ViewModel() {
@@ -52,10 +57,11 @@ class MainViewModel @Inject constructor(
 
     private var loadJob: Job? = null
     private var deleteJob: Job? = null
+    private var selectedCurrency: Currency = UserSettings().selectedCurrency
     private val refreshMutex = Mutex()
 
     init {
-        loadMainData(useRefreshLock = true)
+        startCurrencyObservation()
         startSyncEventObservation()
         startNetworkStateObservation()
     }
@@ -101,6 +107,18 @@ class MainViewModel @Inject constructor(
             isSilent = isSilent,
             useRefreshLock = true
         )
+    }
+
+    private fun startCurrencyObservation() {
+        viewModelScope.launch {
+            userSettingsUseCases.settings
+                .map { settings -> settings.selectedCurrency }
+                .distinctUntilChanged()
+                .collect { currency ->
+                    selectedCurrency = currency
+                    loadMainData(useRefreshLock = false)
+                }
+        }
     }
 
     private fun startSyncEventObservation() {
@@ -169,7 +187,7 @@ class MainViewModel @Inject constructor(
         }
 
         val result = financialSummaryUseCase(
-            FinancialSummaryCriteria(currency = Currency.RUB)
+            FinancialSummaryCriteria(currency = selectedCurrency)
         )
         val transactionsError = result.transactions.exceptionOrNull()
         val accountsError = result.accounts.exceptionOrNull()

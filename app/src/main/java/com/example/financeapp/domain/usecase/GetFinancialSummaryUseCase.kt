@@ -40,7 +40,7 @@ class GetFinancialSummaryUseCase @Inject constructor(
         return coroutineScope {
             val accountsDeferred = async {
                 accountUseCases.getSummary(
-                    query = AccountQuery(),
+                    query = AccountQuery(currency = filter.currency),
                     totalCurrency = filter.currency
                 )
             }

@@ -26,6 +26,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -42,7 +43,9 @@ import com.example.financeapp.core.localization.AppLanguage
 import com.example.financeapp.core.theme.AppThemeMode
 import com.example.financeapp.core.theme.LocalSizing
 import com.example.financeapp.core.theme.LocalSpacing
+import com.example.financeapp.domain.model.AuthProtectionState
 import com.example.financeapp.domain.model.Category
+import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.UserSettings
 import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.presentation.accounts.AccountsRoute
@@ -53,6 +56,7 @@ import com.example.financeapp.presentation.bottomSheets.accountEditor.AccountEdi
 import com.example.financeapp.presentation.bottomSheets.accountEditor.AccountEditorMode
 import com.example.financeapp.presentation.bottomSheets.accountEditor.AccountEditorViewModel
 import com.example.financeapp.presentation.bottomSheets.components.categories.FinanceCategorySelectionSheetContent
+import com.example.financeapp.presentation.bottomSheets.components.currency.FinanceCurrencySelectionSheetContent
 import com.example.financeapp.presentation.bottomSheets.transactionEditor.TransactionEditorBottomSheet
 import com.example.financeapp.presentation.bottomSheets.transactionEditor.TransactionEditorEffect
 import com.example.financeapp.presentation.bottomSheets.transactionEditor.TransactionEditorIntent
@@ -74,19 +78,37 @@ import com.example.financeapp.presentation.income.IncomeRoute
 import com.example.financeapp.presentation.navigation.AppNavGraph
 import com.example.financeapp.presentation.navigation.AppRoute
 import com.example.financeapp.presentation.navigation.isMainRoute
+import com.example.financeapp.presentation.bottomSheets.settings.BiometricSettingsSheet
 import com.example.financeapp.presentation.bottomSheets.settings.LanguageSettingsSheet
+import com.example.financeapp.presentation.bottomSheets.settings.PinCodeSettingsSheet
 import com.example.financeapp.presentation.bottomSheets.settings.SettingsBottomSheet
 import com.example.financeapp.presentation.bottomSheets.settings.SettingsListItem
 import com.example.financeapp.presentation.bottomSheets.settings.ThemeSettingsSheet
 import java.time.LocalDate
 import kotlin.math.abs
+import kotlinx.coroutines.launch
 
 @Composable
 fun FinanceApp(
     userSettings: UserSettings,
+    hasPinCode: Boolean,
+    authProtectionState: AuthProtectionState,
+    isBiometricAvailable: Boolean,
     selectedLanguage: AppLanguage,
     onLanguageSelected: (AppLanguage) -> Unit,
     onThemeModeSelected: (AppThemeMode) -> Unit,
+    onCurrencySelected: (Currency) -> Unit,
+    onBiometricLoginEnabledChange: (Boolean) -> Unit,
+    onBiometricAuthenticationRequest: (
+        onAuthenticated: () -> Unit,
+        onFailure: (isFailedAttempt: Boolean) -> Unit
+    ) -> Unit,
+    onVerifyPinCode: suspend (String) -> Boolean,
+    onSetPinCode: suspend (String) -> Unit,
+    onClearPinCode: suspend () -> Unit,
+    onCanAttemptPin: suspend () -> Boolean,
+    onPinFailure: suspend () -> AuthProtectionState,
+    onAuthSuccess: suspend () -> Unit,
     mainViewModel: MainViewModel = hiltViewModel(),
     networkStatusViewModel: NetworkStatusViewModel = hiltViewModel(),
     transactionEditorViewModel: TransactionEditorViewModel = hiltViewModel(),
@@ -103,11 +125,15 @@ fun FinanceApp(
     val isOnline by networkStatusViewModel.isOnline.collectAsState()
     val navController = rememberNavController()
     val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
     var pendingDeleteTarget by remember { mutableStateOf<DeleteTarget?>(null) }
     var failedSyncOperationsCount by remember { mutableStateOf<Int?>(null) }
     var isSettingsSheetVisible by rememberSaveable { mutableStateOf(false) }
     var activeSettingsItemKey by rememberSaveable { mutableStateOf<String?>(null) }
     val activeSettingsItem = SettingsListItem.fromSaveableKey(activeSettingsItemKey)
+        ?.takeUnless { item ->
+            item == SettingsListItem.Biometrics && !isBiometricAvailable
+        }
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val selectedRoute = navBackStackEntry?.destination?.route.toAppRoute()
     val selectedTransactionType = selectedRoute.toTransactionTypeOrNull()
@@ -115,6 +141,7 @@ fun FinanceApp(
     val deleteFailedNoInternetMessage = stringResource(R.string.delete_failed_no_internet)
     val accountDeleteHasTransactionsMessage = stringResource(R.string.account_delete_has_transactions)
     val transactionSavedLocallyMessage = stringResource(R.string.transaction_saved_locally)
+    val biometricFailedMessage = stringResource(R.string.settings_biometry_failed)
 
     LaunchedEffect(
         mainViewModel,
@@ -198,13 +225,18 @@ fun FinanceApp(
                     onClick = {
                         if (selectedRoute == AppRoute.Accounts) {
                             accountEditorViewModel.onIntent(
-                                AccountEditorIntent.Open(AccountEditorMode.Create)
+                                AccountEditorIntent.Open(
+                                    AccountEditorMode.Create(userSettings.selectedCurrency)
+                                )
                             )
                         } else {
                             selectedTransactionType?.let { transactionType ->
                                 transactionEditorViewModel.onIntent(
                                     TransactionEditorIntent.Open(
-                                        TransactionEditorMode.Create(transactionType)
+                                        TransactionEditorMode.Create(
+                                            transactionType = transactionType,
+                                            currency = userSettings.selectedCurrency
+                                        )
                                     )
                                 )
                             }
@@ -298,7 +330,8 @@ fun FinanceApp(
                                 TransactionEditorIntent.Open(
                                     TransactionEditorMode.Edit(
                                         transactionId = transactionId,
-                                        transactionType = TransactionType.EXPENSE
+                                        transactionType = TransactionType.EXPENSE,
+                                        currency = userSettings.selectedCurrency
                                     )
                                 )
                             )
@@ -320,7 +353,8 @@ fun FinanceApp(
                                 TransactionEditorIntent.Open(
                                     TransactionEditorMode.Edit(
                                         transactionId = transactionId,
-                                        transactionType = TransactionType.INCOME
+                                        transactionType = TransactionType.INCOME,
+                                        currency = userSettings.selectedCurrency
                                     )
                                 )
                             )
@@ -340,7 +374,10 @@ fun FinanceApp(
                         onAccountClick = { accountId ->
                             accountEditorViewModel.onIntent(
                                 AccountEditorIntent.Open(
-                                    AccountEditorMode.Edit(accountId)
+                                    AccountEditorMode.Edit(
+                                        accountId = accountId,
+                                        fallbackCurrency = userSettings.selectedCurrency
+                                    )
                                 )
                             )
                         },
@@ -412,27 +449,84 @@ fun FinanceApp(
                     onThemeModeSelected = onThemeModeSelected
                 )
             }
+            SettingsListItem.PinCode -> FinanceModalBottomSheet(
+                onDismissRequest = {
+                    activeSettingsItemKey = null
+                }
+            ) {
+                PinCodeSettingsSheet(
+                    hasPinCode = hasPinCode,
+                    authProtectionState = authProtectionState,
+                    onVerifyPinCode = onVerifyPinCode,
+                    onSetPinCode = onSetPinCode,
+                    onClearPinCode = onClearPinCode,
+                    onCanAttemptPin = onCanAttemptPin,
+                    onPinFailure = onPinFailure,
+                    onAuthSuccess = onAuthSuccess,
+                    onPinCodeChanged = {
+                        activeSettingsItemKey = null
+                    }
+                )
+            }
+            SettingsListItem.Biometrics -> FinanceModalBottomSheet(
+                onDismissRequest = {
+                    activeSettingsItemKey = null
+                }
+            ) {
+                BiometricSettingsSheet(
+                    isEnabled = userSettings.isBiometricLoginEnabled,
+                    onEnabledChange = { isEnabled ->
+                        if (isEnabled) {
+                            onBiometricAuthenticationRequest(
+                                {
+                                    onBiometricLoginEnabledChange(true)
+                                },
+                                { isFailedAttempt ->
+                                    if (isFailedAttempt) {
+                                        coroutineScope.launch {
+                                            snackbarHostState.showSnackbar(biometricFailedMessage)
+                                        }
+                                    }
+                                }
+                            )
+                        } else {
+                            onBiometricLoginEnabledChange(false)
+                        }
+                    }
+                )
+            }
             null -> SettingsBottomSheet(
                 onDismissRequest = {
                     isSettingsSheetVisible = false
                     activeSettingsItemKey = null
                 },
+                isBiometricAvailable = isBiometricAvailable,
                 onItemClick = { item ->
                     when (item) {
+                        SettingsListItem.Currency,
                         SettingsListItem.Articles,
                         SettingsListItem.Language,
-                        SettingsListItem.Theme -> {
+                        SettingsListItem.Theme,
+                        SettingsListItem.Biometrics,
+                        SettingsListItem.PinCode -> {
                             activeSettingsItemKey = item.saveableKey
                         }
-                        SettingsListItem.Biometrics,
-                        SettingsListItem.Currency,
-                        SettingsListItem.PinCode -> Unit
                     }
                 }
             )
-            SettingsListItem.Biometrics,
-            SettingsListItem.Currency,
-            SettingsListItem.PinCode -> Unit
+            SettingsListItem.Currency -> FinanceModalBottomSheet(
+                onDismissRequest = {
+                    activeSettingsItemKey = null
+                }
+            ) {
+                FinanceCurrencySelectionSheetContent(
+                    selectedCurrency = userSettings.selectedCurrency,
+                    onCurrencyClick = { currency ->
+                        onCurrencySelected(currency)
+                        activeSettingsItemKey = null
+                    }
+                )
+            }
         }
     }
 

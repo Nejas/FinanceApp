@@ -9,7 +9,7 @@ import kotlin.test.assertEquals
 class MoneyFormatterTest {
 
     @Test
-    fun `formatWithoutMinorUnits uses spaces for all locales`() {
+    fun `formatWithMinorUnits uses spaces for all locales`() {
         val originalLocale = Locale.getDefault()
 
         try {
@@ -17,9 +17,9 @@ class MoneyFormatterTest {
                 Locale.setDefault(locale)
 
                 assertEquals(
-                    "123 322 ₽",
-                    Money(amountInMinorUnits = 123_322L * 100, currency = Currency.RUB)
-                        .formatWithoutMinorUnits()
+                    "123 322.45 ₽",
+                    Money(amountInMinorUnits = 12_332_245L, currency = Currency.RUB)
+                        .formatWithMinorUnits()
                 )
             }
         } finally {
@@ -28,11 +28,11 @@ class MoneyFormatterTest {
     }
 
     @Test
-    fun `formatWithoutMinorUnits keeps minus sign before grouped amount`() {
+    fun `formatWithMinorUnits keeps minus sign before grouped amount`() {
         assertEquals(
-            "-9 500 $",
-            Money(amountInMinorUnits = -9_500L * 100, currency = Currency.USD)
-                .formatWithoutMinorUnits()
+            "-9 500.75 $",
+            Money(amountInMinorUnits = -950_075L, currency = Currency.USD)
+                .formatWithMinorUnits()
         )
     }
 }

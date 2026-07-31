@@ -36,6 +36,7 @@ import com.example.financeapp.presentation.common.components.base.RoundFrame
 fun SettingsBottomSheet(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
+    isBiometricAvailable: Boolean = false,
     onItemClick: (SettingsListItem) -> Unit = {}
 ) {
     FinanceModalBottomSheet(
@@ -43,6 +44,7 @@ fun SettingsBottomSheet(
         modifier = modifier
     ) {
         SettingsSheetContent(
+            isBiometricAvailable = isBiometricAvailable,
             onItemClick = onItemClick
         )
     }
@@ -51,9 +53,16 @@ fun SettingsBottomSheet(
 @Composable
 fun SettingsSheetContent(
     modifier: Modifier = Modifier,
+    isBiometricAvailable: Boolean = false,
     onItemClick: (SettingsListItem) -> Unit = {}
 ) {
     val spacing = LocalSpacing.current
+    val sections = SettingsSections.mapNotNull { section ->
+        val visibleItems = section.items.filter { item ->
+            item != SettingsListItem.Biometrics || isBiometricAvailable
+        }
+        section.copy(items = visibleItems).takeIf { visibleItems.isNotEmpty() }
+    }
 
     Column(
         modifier = modifier
@@ -70,7 +79,7 @@ fun SettingsSheetContent(
             color = MaterialTheme.colorScheme.onSurface
         )
 
-        SettingsSections.forEach { section ->
+        sections.forEach { section ->
             SettingsSectionList(
                 titleResId = section.titleResId,
                 items = section.items,
@@ -167,6 +176,6 @@ private fun SettingsSectionRow(
 @Composable
 private fun SettingsSheetContentPreview() {
     FinanceAppTheme(dynamicColor = false) {
-        SettingsSheetContent()
+        SettingsSheetContent(isBiometricAvailable = true)
     }
 }

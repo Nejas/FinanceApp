@@ -13,5 +13,29 @@ enum class AppLanguage(val languageTag: String) {
                 language.languageTag.equals(languageTag, ignoreCase = true)
             }
         }
+
+        val AppLanguage.flag: String
+            get() = let {
+                when (this)
+                {
+                    RUSSIAN -> "🇷🇺"
+                    ENGLISH -> "🇺🇸"
+                    GERMAN -> "🇩🇪"
+                    FRENCH -> "🇫🇷"
+                    SPANISH -> "🇪🇸"
+                }
+            }
+
+        val AppLanguage.displayName: String
+            get() = let{
+                when (this)
+                {
+                    RUSSIAN -> "Русский"
+                    ENGLISH -> "English"
+                    GERMAN -> "Deutsch"
+                    FRENCH -> "Français"
+                    SPANISH -> "Español"
+                }
+            }
     }
 }

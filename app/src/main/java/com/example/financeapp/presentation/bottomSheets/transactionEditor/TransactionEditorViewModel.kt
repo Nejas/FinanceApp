@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.financeapp.R
 import com.example.financeapp.core.network.NetworkMonitor
 import com.example.financeapp.domain.model.Category
-import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.Account
 import com.example.financeapp.domain.model.AccountQuery
 import com.example.financeapp.domain.model.Money
@@ -16,8 +15,8 @@ import com.example.financeapp.domain.usecase.CategoryUseCase
 import com.example.financeapp.domain.usecase.AccountUseCases
 import com.example.financeapp.domain.usecase.TransactionUseCases
 import com.example.financeapp.presentation.common.placeholders.toScreenError
+import com.example.financeapp.presentation.common.utils.toEditableAmount
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.math.RoundingMode
 import java.time.Clock
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
@@ -88,8 +87,8 @@ class TransactionEditorViewModel @Inject constructor(
             }
             val accountsDeferred = async {
                 accountUseCases.getSummary(
-                    query = AccountQuery(),
-                    totalCurrency = Currency.RUB
+                    query = AccountQuery(currency = mode.currency),
+                    totalCurrency = mode.currency
                 )
             }
             val transactionDeferred = (mode as? TransactionEditorMode.Edit)?.let { editMode ->
@@ -147,10 +146,7 @@ class TransactionEditorViewModel @Inject constructor(
 
         val transactionDate = transaction.transactionDate.atZone(clock.zone)
         return copy(
-            amount = transaction.amount.amount
-                .abs()
-                .setScale(0, RoundingMode.DOWN)
-                .toPlainString(),
+            amount = transaction.amount.amount.abs().toEditableAmount(),
             selectedCategory = categories.firstOrNull { category ->
                 category.id == transaction.categoryId
             },
@@ -297,8 +293,8 @@ class TransactionEditorViewModel @Inject constructor(
 
 private fun TransactionEditorMode.logName(): String {
     return when (this) {
-        is TransactionEditorMode.Create -> "Create(type=$transactionType)"
-        is TransactionEditorMode.Edit -> "Edit(id=$transactionId, type=$transactionType)"
+        is TransactionEditorMode.Create -> "Create(type=$transactionType, currency=$currency)"
+        is TransactionEditorMode.Edit -> "Edit(id=$transactionId, type=$transactionType, currency=$currency)"
     }
 }
 

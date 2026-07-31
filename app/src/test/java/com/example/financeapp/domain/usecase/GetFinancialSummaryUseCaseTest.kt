@@ -54,7 +54,7 @@ class GetFinancialSummaryUseCaseTest {
         val transactionsOverview = result.transactions.getOrThrow()
 
         assertEquals(1, accountsRepository.loadCount)
-        assertEquals(accounts, accountsOverview.accounts)
+        assertEquals(listOf(accounts.first()), accountsOverview.accounts)
         assertEquals(Money(amountInMinorUnits = 1_000), accountsOverview.totalBalance)
         assertEquals(
             TransactionsQuery(accountIds = setOf(1L)),

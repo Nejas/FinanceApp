@@ -34,6 +34,7 @@ import com.example.financeapp.R
 import com.example.financeapp.core.theme.FinanceAppTheme
 import com.example.financeapp.core.theme.LocalSizing
 import com.example.financeapp.core.theme.LocalSpacing
+import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.presentation.analytics.mappers.AnalyticsCategoryColorMapper
 import com.example.financeapp.presentation.analytics.AnalyticsCategoryUi
@@ -305,7 +306,10 @@ private fun AnalyticsScreenPreview() {
     FinanceAppTheme(dynamicColor = false) {
         val previewPeriodFilter = defaultAnalyticsPeriodFilterState(today = LocalDate.of(2026, 2, 5))
             .copy(selectedType = AnalyticsPeriodType.Month)
-        val previewFilter = defaultTransactionAnalysisCriteria(periodFilter = previewPeriodFilter)
+        val previewFilter = defaultTransactionAnalysisCriteria(
+            periodFilter = previewPeriodFilter,
+            currency = Currency.RUB
+        )
         val categories = listOf(
             AnalyticsCategoryUi(1, "Ремонт", "🔧", Money(amountInMinorUnits = 80_200L * 100), 61),
             AnalyticsCategoryUi(2, "Авто", "🚗", Money(amountInMinorUnits = 31_500L * 100), 24),

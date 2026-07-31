@@ -64,7 +64,7 @@ val Typography = Typography(
     ),
     titleMedium = TextStyle(
         fontFamily = RobotoFontFamily,
-        fontWeight = FontWeight(500),
+        fontWeight = FontWeight(400),
         fontSize = 16.sp,
         lineHeight = 19.sp,
         letterSpacing = 0.sp,
@@ -72,9 +72,9 @@ val Typography = Typography(
     ),
     titleSmall = TextStyle(
         fontFamily = RobotoFontFamily,
-        fontWeight = FontWeight(600),
+        fontWeight = FontWeight(400),
         fontSize = 14.sp,
-        lineHeight = 20.sp,
+        lineHeight = 19.sp,
         letterSpacing = 0.1.sp
     ),
     bodyLarge = TextStyle(

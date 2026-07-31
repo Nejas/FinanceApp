@@ -130,7 +130,7 @@ private fun AccountFormBottomSheet(
         },
         modifier = modifier,
         title = when (state.mode) {
-            AccountEditorMode.Create -> null
+            is AccountEditorMode.Create -> null
             is AccountEditorMode.Edit -> stringResource(R.string.account_balance_adjustment)
         },
         supportingText = state.formMessageResId?.let { messageResId ->

@@ -28,7 +28,7 @@ import com.example.financeapp.presentation.common.placeholders.EmptyContent
 import com.example.financeapp.presentation.common.placeholders.ErrorContent
 import com.example.financeapp.presentation.common.placeholders.LoadingContent
 import com.example.financeapp.presentation.common.placeholders.ScreenError
-import com.example.financeapp.presentation.common.utils.formatWithoutMinorUnits
+import com.example.financeapp.presentation.common.utils.formatWithMinorUnits
 
 @Composable
 fun RouteScreenContent(
@@ -67,7 +67,7 @@ fun RouteScreenContent(
         Column(modifier = Modifier.fillMaxSize()) {
             TotalSumSurface(
                 totalLabel = totalLabel,
-                totalSum = total.formatWithoutMinorUnits()
+                totalSum = total.formatWithMinorUnits()
             )
             when {
                 isLoading -> LoadingContent(modifier = Modifier.weight(1f))

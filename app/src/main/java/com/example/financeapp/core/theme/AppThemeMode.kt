@@ -17,5 +17,12 @@ enum class AppThemeMode {
                 mode.name.equals(name, ignoreCase = true)
             }
         }
+        fun AppThemeMode.resolveDarkTheme(systemDarkTheme: Boolean): Boolean {
+            return when (this) {
+                SYSTEM -> systemDarkTheme
+                LIGHT -> false
+                DARK -> true
+            }
+        }
     }
 }

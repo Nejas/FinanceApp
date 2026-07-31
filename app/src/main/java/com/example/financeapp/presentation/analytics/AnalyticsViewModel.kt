@@ -5,11 +5,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financeapp.core.coroutines.DefaultDispatcher
 import com.example.financeapp.core.network.NetworkMonitor
+import com.example.financeapp.domain.model.UserSettings
 import com.example.financeapp.domain.model.TransactionAnalysisCriteria
 import com.example.financeapp.domain.model.AccountQuery
 import com.example.financeapp.domain.usecase.GetTransactionAnalysisUseCase
 import com.example.financeapp.domain.usecase.AccountUseCases
 import com.example.financeapp.domain.usecase.SynchronizationUseCases
+import com.example.financeapp.domain.usecase.UserSettingsUseCases
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodFilterState
 import com.example.financeapp.presentation.bottomSheets.components.period.AnalyticsPeriodResolver
 import com.example.financeapp.presentation.analytics.mappers.AnalyticsCategoryColorMapper
@@ -27,6 +29,8 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -39,6 +43,7 @@ class AnalyticsViewModel @Inject constructor(
     private val getTransactionAnalysis: GetTransactionAnalysisUseCase,
     private val accountUseCases: AccountUseCases,
     private val synchronizationUseCases: SynchronizationUseCases,
+    private val userSettingsUseCases: UserSettingsUseCases,
     private val categoryColorMapper: AnalyticsCategoryColorMapper,
     private val periodResolver: AnalyticsPeriodResolver,
     private val filterUiMapper: TransactionAnalysisCriteriaUiMapper,
@@ -49,7 +54,10 @@ class AnalyticsViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val initialPeriodFilter = periodResolver.defaultPeriodFilter()
-    private val initialFilter = defaultTransactionAnalysisCriteria(periodFilter = initialPeriodFilter)
+    private val initialFilter = defaultTransactionAnalysisCriteria(
+        periodFilter = initialPeriodFilter,
+        currency = UserSettings().selectedCurrency
+    )
     private val _state = MutableStateFlow(
         AnalyticsState(
             filter = initialFilter,
@@ -68,8 +76,7 @@ class AnalyticsViewModel @Inject constructor(
     private var currentPeriodFilter = initialPeriodFilter
 
     init {
-        loadReferenceData()
-        loadAnalytics()
+        startCurrencyObservation()
         startSyncEventObservation()
     }
 
@@ -144,6 +151,35 @@ class AnalyticsViewModel @Inject constructor(
                     )
                 )
             }
+        }
+    }
+
+    private fun startCurrencyObservation() {
+        viewModelScope.launch {
+            userSettingsUseCases.settings
+                .map { settings -> settings.selectedCurrency }
+                .distinctUntilChanged()
+                .collect { currency ->
+                    currentFilter = currentFilter.copy(
+                        currency = currency,
+                        accountId = null,
+                        categoryIds = emptySet()
+                    )
+                    _state.update { state ->
+                        state.copy(
+                            filter = currentFilter,
+                            activeFilterSheet = null,
+                            filters = filterUiMapper.map(
+                                filter = currentFilter,
+                                periodFilter = currentPeriodFilter,
+                                categories = state.availableCategories,
+                                accounts = emptyList()
+                            )
+                        )
+                    }
+                    loadReferenceData()
+                    loadAnalytics()
+                }
         }
     }
 

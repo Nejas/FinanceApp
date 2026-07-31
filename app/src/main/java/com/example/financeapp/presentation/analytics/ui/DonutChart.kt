@@ -28,7 +28,7 @@ import com.example.financeapp.core.theme.FinanceDonutLabelText
 import com.example.financeapp.core.theme.LocalSizing
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.presentation.analytics.AnalyticsCategoryUi
-import com.example.financeapp.presentation.common.utils.formatWithoutMinorUnits
+import com.example.financeapp.presentation.common.utils.formatWithMinorUnits
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -67,7 +67,7 @@ fun AnalyticsDonutChart(
                 textAlign = TextAlign.Center
             )
             Text(
-                text = total.formatWithoutMinorUnits(),
+                text = total.formatWithMinorUnits(),
                 style = centerTotalStyle ?: MaterialTheme.typography.displaySmall,
                 color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center,

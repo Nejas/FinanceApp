@@ -2,6 +2,7 @@ package com.example.financeapp.presentation.bottomSheets.accountEditor
 
 import androidx.annotation.StringRes
 import com.example.financeapp.R
+import com.example.financeapp.presentation.common.utils.normalizedDecimalAmountInput
 import javax.inject.Inject
 
 class AccountEditorReducer @Inject constructor() {
@@ -28,7 +29,7 @@ class AccountEditorReducer @Inject constructor() {
                 formMessageResId = null
             )
             is AccountEditorIntent.BalanceChanged -> state.copy(
-                balance = intent.balance.normalizedIntegerAmount(),
+                balance = intent.balance.normalizedDecimalAmountInput(),
                 formMessageResId = null
             )
             AccountEditorIntent.CurrencyClicked -> state.copy(
@@ -62,18 +63,6 @@ class AccountEditorReducer @Inject constructor() {
         }
     }
 }
-
-private fun String.normalizedIntegerAmount(): String {
-    val digits = filter(Char::isDigit)
-    val normalizedDigits = digits.trimStart(LEADING_ZERO)
-
-    return normalizedDigits.ifEmpty {
-        if (digits.isEmpty()) "" else ZERO_AMOUNT_VALUE
-    }
-}
-
-private const val LEADING_ZERO = '0'
-private const val ZERO_AMOUNT_VALUE = "0"
 
 private fun String.normalizedSingleSymbol(): String {
     val value = trim()

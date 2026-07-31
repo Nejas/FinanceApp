@@ -68,7 +68,10 @@ class TransactionEditorViewModelTest {
 
         viewModel.onIntent(
             TransactionEditorIntent.Open(
-                TransactionEditorMode.Create(TransactionType.INCOME)
+                TransactionEditorMode.Create(
+                    transactionType = TransactionType.INCOME,
+                    currency = Currency.RUB
+                )
             )
         )
 
@@ -87,7 +90,10 @@ class TransactionEditorViewModelTest {
 
         viewModel.onIntent(
             TransactionEditorIntent.Open(
-                TransactionEditorMode.Create(TransactionType.INCOME)
+                TransactionEditorMode.Create(
+                    transactionType = TransactionType.INCOME,
+                    currency = Currency.RUB
+                )
             )
         )
         viewModel.onIntent(TransactionEditorIntent.AmountChanged("214"))
@@ -126,14 +132,15 @@ class TransactionEditorViewModelTest {
             TransactionEditorIntent.Open(
                 TransactionEditorMode.Edit(
                     transactionId = existingTransaction.id,
-                    transactionType = TransactionType.INCOME
+                    transactionType = TransactionType.INCOME,
+                    currency = Currency.RUB
                 )
             )
         )
 
         val form = requireNotNull(viewModel.state.value.form)
         assertFalse(form.isLoading)
-        assertEquals("500", form.amount)
+        assertEquals("500.00", form.amount)
         assertEquals(category, form.selectedCategory)
         assertEquals(account, form.selectedAccount)
         assertEquals(LocalDate.of(2026, 7, 20), form.date)
@@ -160,7 +167,8 @@ class TransactionEditorViewModelTest {
             TransactionEditorIntent.Open(
                 TransactionEditorMode.Edit(
                     transactionId = existingTransaction.id,
-                    transactionType = TransactionType.INCOME
+                    transactionType = TransactionType.INCOME,
+                    currency = Currency.RUB
                 )
             )
         )

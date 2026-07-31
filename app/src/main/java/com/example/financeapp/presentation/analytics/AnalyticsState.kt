@@ -87,13 +87,16 @@ enum class TransactionAnalysisCriteriaSheet {
     Account
 }
 
-fun defaultTransactionAnalysisCriteria(periodFilter: AnalyticsPeriodFilterState): TransactionAnalysisCriteria {
+fun defaultTransactionAnalysisCriteria(
+    periodFilter: AnalyticsPeriodFilterState,
+    currency: Currency
+): TransactionAnalysisCriteria {
     return TransactionAnalysisCriteria(
         accountId = null,
         startDate = periodFilter.startDate,
         endDate = periodFilter.endDate,
         type = TransactionType.EXPENSE,
-        currency = Currency.RUB
+        currency = currency
     )
 }
 

@@ -43,6 +43,7 @@ import com.example.financeapp.presentation.common.components.icons.FinanceArticl
 import com.example.financeapp.presentation.common.components.icons.FinanceCalendarIcon
 import com.example.financeapp.presentation.common.components.icons.FinanceCheckIcon
 import com.example.financeapp.presentation.common.components.icons.FinanceCurrencyIcon
+import com.example.financeapp.presentation.common.utils.normalizedDecimalAmountInput
 
 @Composable
 fun FinanceTextInputBottomSheet(
@@ -126,7 +127,7 @@ private fun FinanceAmountInput(
             BasicTextField(
                 value = value,
                 onValueChange = { newValue ->
-                    onValueChange(newValue.normalizedIntegerInput())
+                    onValueChange(newValue.normalizedDecimalAmountInput())
                 },
                 modifier = Modifier.fillMaxWidth(),
                 textStyle = MaterialTheme.typography.displayLarge.copy(
@@ -134,7 +135,7 @@ private fun FinanceAmountInput(
                     textAlign = TextAlign.Center
                 ),
                 singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 visualTransformation = AmountSuffixVisualTransformation(suffix),
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                 decorationBox = { innerTextField ->
@@ -212,18 +213,6 @@ private class AmountSuffixOffsetMapping(
         return offset.coerceAtMost(originalLength)
     }
 }
-
-private fun String.normalizedIntegerInput(): String {
-    val digits = filter(Char::isDigit)
-    val normalizedDigits = digits.trimStart(LEADING_ZERO)
-
-    return normalizedDigits.ifEmpty {
-        if (digits.isEmpty()) "" else ZERO_AMOUNT_VALUE
-    }
-}
-
-private const val LEADING_ZERO = '0'
-private const val ZERO_AMOUNT_VALUE = "0"
 
 @Composable
 private fun FinanceConfirmButton(

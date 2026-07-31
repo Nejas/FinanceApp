@@ -102,6 +102,17 @@ data class Spacing(
     val settingsPickerOptionsVertical: Dp = 12.dp,
     val settingsPickerOptionGap: Dp = 12.dp,
     val settingsBottomPadding: Dp = 24.dp,
+    val securitySheetHorizontal: Dp = 20.dp,
+    val securitySheetBottom: Dp = 34.dp,
+    val pinCodeContentVertical: Dp = 24.dp,
+    val pinCodeContentGap: Dp = 24.dp,
+    val pinCodeDotGap: Dp = 16.dp,
+    val authContentLift: Dp = 30.dp,
+    val biometricTitleBottom: Dp = 16.dp,
+    val biometricContentVertical: Dp = 32.dp,
+    val biometricContentGap: Dp = 24.dp,
+    val biometricDescriptionHorizontal: Dp = 36.dp,
+    val biometricToggleRowPadding: Dp = 20.dp,
     val contentSwipeEdgeGuard: Dp = 32.dp,
     val contentSwipeThreshold: Dp = 80.dp
 )

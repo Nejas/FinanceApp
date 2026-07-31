@@ -7,12 +7,13 @@ import com.example.financeapp.R
 import com.example.financeapp.core.network.NetworkMonitor
 import com.example.financeapp.domain.model.Account
 import com.example.financeapp.domain.model.AccountDraft
+import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.Money
 import com.example.financeapp.domain.usecase.AccountUseCases
 import com.example.financeapp.presentation.common.placeholders.toScreenError
+import com.example.financeapp.presentation.common.utils.toEditableAmount
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.math.BigDecimal
-import java.math.RoundingMode
 import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -56,6 +57,7 @@ class AccountEditorViewModel @Inject constructor(
         _state.value = AccountEditorHostState(
             form = AccountEditorState(
                 mode = mode,
+                selectedCurrency = mode.defaultCurrency(),
                 isLoading = mode is AccountEditorMode.Edit
             )
         )
@@ -92,9 +94,7 @@ class AccountEditorViewModel @Inject constructor(
         return copy(
             name = account.name,
             emoji = account.emoji,
-            balance = account.balance.amount
-                .setScale(0, RoundingMode.DOWN)
-                .toPlainString(),
+            balance = account.balance.amount.toEditableAmount(),
             selectedCurrency = account.balance.currency,
             isLoading = false,
             error = null
@@ -143,7 +143,7 @@ class AccountEditorViewModel @Inject constructor(
         saveJob?.cancel()
         saveJob = viewModelScope.launch {
             val result = when (val mode = form.mode) {
-                AccountEditorMode.Create -> accountUseCases.create(payload)
+                is AccountEditorMode.Create -> accountUseCases.create(payload)
                 is AccountEditorMode.Edit -> accountUseCases.update(
                     id = mode.accountId,
                     draft = payload
@@ -197,6 +197,13 @@ class AccountEditorViewModel @Inject constructor(
 
     private companion object {
         const val TAG = "AccountEditorVM"
+    }
+}
+
+private fun AccountEditorMode.defaultCurrency(): Currency {
+    return when (this) {
+        is AccountEditorMode.Create -> defaultCurrency
+        is AccountEditorMode.Edit -> fallbackCurrency
     }
 }
 

@@ -19,7 +19,7 @@ data class AccountEditorState(
     val name: String = "",
     val emoji: String = "",
     val balance: String = "",
-    val selectedCurrency: Currency = Currency.RUB,
+    val selectedCurrency: Currency,
     val activeField: AccountEditorField? = null,
     @StringRes val formMessageResId: Int? = null,
     val isLoading: Boolean = false,
@@ -38,8 +38,11 @@ data class AccountEditorState(
 
 @Immutable
 sealed interface AccountEditorMode {
-    data object Create : AccountEditorMode
-    data class Edit(val accountId: Long) : AccountEditorMode
+    data class Create(val defaultCurrency: Currency) : AccountEditorMode
+    data class Edit(
+        val accountId: Long,
+        val fallbackCurrency: Currency
+    ) : AccountEditorMode
 }
 
 @Immutable

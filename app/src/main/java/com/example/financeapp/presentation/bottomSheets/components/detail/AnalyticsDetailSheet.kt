@@ -40,7 +40,7 @@ import com.example.financeapp.domain.model.Money
 import com.example.financeapp.presentation.analytics.AnalyticsCategoryUi
 import com.example.financeapp.presentation.analytics.mappers.AnalyticsCategoryColorMapper
 import com.example.financeapp.presentation.analytics.ui.AnalyticsDonutChart
-import com.example.financeapp.presentation.common.utils.formatWithoutMinorUnits
+import com.example.financeapp.presentation.common.utils.formatWithMinorUnits
 
 @Composable
 fun AnalyticsDetailSheet(
@@ -143,7 +143,7 @@ private fun AnalyticsDetailCategoryRow(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = category.amount.formatWithoutMinorUnits(),
+                    text = category.amount.formatWithMinorUnits(),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1

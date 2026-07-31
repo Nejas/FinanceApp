@@ -27,6 +27,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.financeapp.R
 import com.example.financeapp.core.localization.AppLanguage
+import com.example.financeapp.core.localization.AppLanguage.Companion.displayName
+import com.example.financeapp.core.localization.AppLanguage.Companion.flag
 import com.example.financeapp.core.theme.AppThemeMode
 import com.example.financeapp.core.theme.ColorDarkBackground
 import com.example.financeapp.core.theme.LocalSizing
@@ -214,7 +216,7 @@ private fun ThemeOptionCard(
                 )
                 Text(
                     text = stringResource(themeMode.titleResId),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
@@ -264,23 +266,7 @@ private fun ThemeModeIcon(
     }
 }
 
-private val AppLanguage.flag: String
-    get() = when (this) {
-        AppLanguage.RUSSIAN -> "🇷🇺"
-        AppLanguage.ENGLISH -> "🇬🇧"
-        AppLanguage.GERMAN -> "🇩🇪"
-        AppLanguage.FRENCH -> "🇫🇷"
-        AppLanguage.SPANISH -> "🇪🇸"
-    }
 
-private val AppLanguage.displayName: String
-    get() = when (this) {
-        AppLanguage.RUSSIAN -> "Русский"
-        AppLanguage.ENGLISH -> "English"
-        AppLanguage.GERMAN -> "Deutsch"
-        AppLanguage.FRENCH -> "Français"
-        AppLanguage.SPANISH -> "Español"
-    }
 
 private val AppThemeMode.titleResId: Int
     get() = when (this) {

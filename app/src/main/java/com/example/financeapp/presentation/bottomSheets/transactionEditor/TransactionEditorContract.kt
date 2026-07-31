@@ -59,14 +59,17 @@ data class TransactionEditorState(
 @Immutable
 sealed interface TransactionEditorMode {
     val transactionType: TransactionType
+    val currency: Currency
 
     data class Create(
-        override val transactionType: TransactionType
+        override val transactionType: TransactionType,
+        override val currency: Currency
     ) : TransactionEditorMode
 
     data class Edit(
         val transactionId: Long,
-        override val transactionType: TransactionType
+        override val transactionType: TransactionType,
+        override val currency: Currency
     ) : TransactionEditorMode
 }
 

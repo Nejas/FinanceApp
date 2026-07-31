@@ -2,6 +2,7 @@ package com.example.financeapp.presentation.bottomSheets.transactionEditor
 
 import androidx.annotation.StringRes
 import com.example.financeapp.R
+import com.example.financeapp.presentation.common.utils.normalizedDecimalAmountInput
 import javax.inject.Inject
 
 class TransactionEditorReducer @Inject constructor() {
@@ -12,7 +13,7 @@ class TransactionEditorReducer @Inject constructor() {
     ): TransactionEditorState {
         return when (intent) {
             is TransactionEditorIntent.AmountChanged -> state.copy(
-                amount = intent.amount.normalizedIntegerAmount(),
+                amount = intent.amount.normalizedDecimalAmountInput(),
                 formMessageResId = null
             )
             is TransactionEditorIntent.FieldClicked -> state.copy(
@@ -68,15 +69,3 @@ class TransactionEditorReducer @Inject constructor() {
         }
     }
 }
-
-private fun String.normalizedIntegerAmount(): String {
-    val digits = filter(Char::isDigit)
-    val normalizedDigits = digits.trimStart(LEADING_ZERO)
-
-    return normalizedDigits.ifEmpty {
-        if (digits.isEmpty()) "" else ZERO_AMOUNT_VALUE
-    }
-}
-
-private const val LEADING_ZERO = '0'
-private const val ZERO_AMOUNT_VALUE = "0"
