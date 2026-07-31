@@ -9,8 +9,11 @@
 - автоматическая синхронизация с backend через WorkManager раз в 2 часа;
 - интеграция с backend через Retrofit и Bearer token;
 - обработка сетевых ошибок, retry для временных сбоев и offline-баннер;
-- тёмная и светлая тема, общие UI-компоненты и MVI-подобная организация состояния;
-- unit-тесты для domain/use case и sync-логики.
+- тёмная и светлая тема, настройки языка, валюты, PIN-кода и биометрии;
+- общие UI-компоненты и MVI-подобная организация состояния;
+- unit-тесты для domain/use case, sync-логики и PIN-сценариев;
+- Compose UI-тесты для выбора темы и ввода PIN-кода;
+- Android Lint и release-сборка через Gradle.
 
 
 ### Часть 1. Оставшиеся функции
@@ -82,6 +85,17 @@ presentation -> domain -> data -> local / network / sync
 ```text
 app/src/main/java/com/example/financeapp/presentation
 ```
+
+Корневой экран `FinanceApp` отвечает за связывание состояния, навигации и side effects. Тяжёлая UI-логика вынесена в отдельные host-компоненты:
+
+- `MainNavigationContent` — основной `NavHost` и callbacks экранов;
+- `MainAppChrome` — top bar, bottom navigation и floating action button;
+- `EditorSheetHost` — bottom sheet редакторов транзакций и счетов;
+- `SettingsSheetHost` — bottom sheet настроек;
+- `MainDialogHost` — диалоги удаления и синхронизации;
+- `MainNavigation` — маршруты и helper-функции навигации.
+
+Так `Activity` и корневой composable остаются точками сборки сценария, а детали конкретных экранов живут рядом с соответствующей feature-логикой.
 
 ### Основные экраны
 
@@ -311,6 +325,25 @@ DI реализован через Hilt.
 - `NetworkMonitorModule` — связывает `NetworkMonitor` с `ConnectivityNetworkMonitor`;
 - `DispatchersModule` — предоставляет `IoDispatcher` и `DefaultDispatcher`.
 
+## Защищённое хранение PIN-кода
+
+PIN-код не хранится в открытом виде. Для проверки используется соль и криптографический verifier, а состояние защиты хранится через DataStore.
+
+`EncryptedSharedPreferences` намеренно не используется: API из `androidx.security:security-crypto` помечены как deprecated в актуальной версии библиотеки. Вместо этого проект опирается на платформенный Android Keystore и DataStore:
+
+- Android Keystore защищает криптографические операции на уровне платформы;
+- DataStore используется как современная замена SharedPreferences для хранения состояния;
+- presentation-слой работает только через `SecurityUseCases`, не обращаясь к хранилищу напрямую.
+
+PIN-настройки разделены на:
+
+- `PinCodeSettingsSheet` — Compose-координатор состояния экрана;
+- `PinCodeSettingsContent` — отображение действий, подтверждения сброса и success-состояния;
+- `PinCodeSettingsProcessor` — чистая логика переходов между шагами ввода PIN;
+- `PinCodeSettingsProcessorTest` — unit-тесты сценариев смены и ошибки PIN.
+
+Биометрическая авторизация вынесена в `BiometricPromptController`, чтобы `MainActivity` не хранила детали создания `BiometricPrompt`.
+
 ## Как запустить после клонирования
 
 После клонирования проекта из удалённого репозитория нужно настроить локальные параметры окружения.
@@ -336,5 +369,45 @@ SHMR_API_TOKEN=your_token_here
 - `TransactionSyncOperationHandler`;
 - `AccountSyncOperationHandler`;
 - `LastWriteWinsSyncConflictResolver`;
-- сетевого integration/smoke-сценария для реального API.
+- сетевого integration/smoke-сценария для реального API;
+- `PinCodeSettingsProcessor`.
+
+Compose UI-тесты находятся в `app/src/androidTest`:
+
+- `ThemeSettingsSheetTest` — проверяет выбор тёмной темы;
+- `PinCodeSettingsSheetTest` — проверяет ввод и сохранение нового PIN-кода.
+
+Компиляция instrumentation-тестов:
+
+```bash
+./gradlew :app:compileDebugAndroidTestKotlin
+```
+
+Запуск на подключенном устройстве или эмуляторе:
+
+```bash
+./gradlew :app:connectedDebugAndroidTest
+```
+
+## Качество и release
+
+Статический анализ настроен через Android Lint в `app/build.gradle.kts`. Для локальной проверки можно запускать:
+
+```bash
+./gradlew :app:lintDebug
+```
+
+Lint генерирует HTML, XML, SARIF и text-отчёты в `app/build/reports`.
+
+Релизная сборка собирается через Gradle:
+
+```bash
+./gradlew :app:assembleRelease
+```
+
+После успешной сборки APK появляется в:
+
+```text
+app/build/outputs/apk/release/app-release-unsigned.apk
+```
 

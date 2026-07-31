@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
-import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.runtime.LaunchedEffect
@@ -16,7 +15,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.core.content.ContextCompat
 import androidx.core.os.LocaleListCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.financeapp.core.localization.AppLanguage
@@ -24,6 +22,7 @@ import com.example.financeapp.core.theme.AppThemeMode.Companion.resolveDarkTheme
 import com.example.financeapp.core.theme.FinanceAppTheme
 import com.example.financeapp.presentation.auth.AuthGateScreen
 import com.example.financeapp.presentation.auth.AuthSetupScreen
+import com.example.financeapp.presentation.auth.BiometricPromptController
 import com.example.financeapp.presentation.main.FinanceApp
 import com.example.financeapp.presentation.settings.UserSettingsViewModel
 import com.example.financeapp.presentation.splash.DotLottieSplashScreen
@@ -32,7 +31,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
-    private var biometricPrompt: BiometricPrompt? = null
+    private lateinit var biometricPromptController: BiometricPromptController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen().setOnExitAnimationListener { splashScreenViewProvider ->
@@ -48,6 +47,7 @@ class MainActivity : AppCompatActivity() {
                 .start()
         }
         super.onCreate(savedInstanceState)
+        biometricPromptController = BiometricPromptController(this)
         setContent {
             val settingsViewModel: UserSettingsViewModel = hiltViewModel()
             val userSettings by settingsViewModel.settings.collectAsState()
@@ -104,7 +104,7 @@ class MainActivity : AppCompatActivity() {
                             onBiometricOfferShownChange = settingsViewModel::setBiometricLoginOfferShown,
                             onPinCodeSetupOnboardingShownChange = settingsViewModel::setPinCodeSetupOnboardingShown,
                             onAuthSuccess = settingsViewModel::registerAuthSuccess,
-                            onBiometricAuthenticationRequest = ::showBiometricPrompt,
+                            onBiometricAuthenticationRequest = biometricPromptController::authenticate,
                             onCompleted = {
                                 isAuthSetupInProgress = false
                                 isAuthenticated = true
@@ -121,8 +121,8 @@ class MainActivity : AppCompatActivity() {
                             onPinFailure = settingsViewModel::registerPinFailure,
                             onBiometricFailure = settingsViewModel::registerBiometricFailure,
                             onAuthSuccess = settingsViewModel::registerAuthSuccess,
-                            onBiometricAuthenticationRequest = ::showBiometricPrompt,
-                            onBiometricAuthenticationCancel = ::cancelBiometricPrompt,
+                            onBiometricAuthenticationRequest = biometricPromptController::authenticate,
+                            onBiometricAuthenticationCancel = biometricPromptController::cancel,
                             onAuthenticated = {
                                 isAuthenticated = true
                             }
@@ -142,7 +142,7 @@ class MainActivity : AppCompatActivity() {
                         onThemeModeSelected = settingsViewModel::setThemeMode,
                         onCurrencySelected = settingsViewModel::setCurrency,
                         onBiometricLoginEnabledChange = settingsViewModel::setBiometricLoginEnabled,
-                        onBiometricAuthenticationRequest = ::showBiometricPrompt,
+                        onBiometricAuthenticationRequest = biometricPromptController::authenticate,
                         onVerifyPinCode = settingsViewModel::verifyPinCode,
                         onSetPinCode = settingsViewModel::setPinCode,
                         onClearPinCode = settingsViewModel::clearPinProtection,
@@ -153,53 +153,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-    }
-
-    private fun showBiometricPrompt(
-        onAuthenticated: () -> Unit,
-        onFailure: (isFailedAttempt: Boolean) -> Unit
-    ) {
-        val promptInfo = BiometricPrompt.PromptInfo.Builder()
-            .setTitle(getString(R.string.settings_face_id))
-            .setSubtitle(getString(R.string.settings_biometry_description))
-            .setNegativeButtonText(getString(R.string.action_cancel))
-            .setAllowedAuthenticators(BIOMETRIC_STRONG)
-            .build()
-
-        val prompt = BiometricPrompt(
-            this,
-            ContextCompat.getMainExecutor(this),
-            object : BiometricPrompt.AuthenticationCallback() {
-                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                    super.onAuthenticationSucceeded(result)
-                    biometricPrompt = null
-                    onAuthenticated()
-                }
-
-                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-                    super.onAuthenticationError(errorCode, errString)
-                    biometricPrompt = null
-                    when (errorCode) {
-                        BiometricPrompt.ERROR_CANCELED,
-                        BiometricPrompt.ERROR_NEGATIVE_BUTTON,
-                        BiometricPrompt.ERROR_USER_CANCELED -> onFailure(false)
-                        else -> onFailure(true)
-                    }
-                }
-
-                override fun onAuthenticationFailed() {
-                    super.onAuthenticationFailed()
-                    onFailure(true)
-                }
-            }
-        )
-        biometricPrompt = prompt
-        prompt.authenticate(promptInfo)
-    }
-
-    private fun cancelBiometricPrompt() {
-        biometricPrompt?.cancelAuthentication()
-        biometricPrompt = null
     }
 
 }

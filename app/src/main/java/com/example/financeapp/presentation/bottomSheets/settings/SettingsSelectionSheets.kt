@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -22,7 +23,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.financeapp.R
@@ -37,6 +40,7 @@ import com.example.financeapp.presentation.common.components.icons.FinanceCheckI
 import com.example.financeapp.presentation.common.components.icons.FinanceSettingsMoonIcon
 import com.example.financeapp.presentation.common.components.icons.FinanceThemeLightIcon
 import com.example.financeapp.presentation.common.components.icons.FinanceThemeSystemIcon
+import com.example.financeapp.presentation.common.testing.FinanceTestTags
 
 @Composable
 fun LanguageSettingsSheet(
@@ -189,7 +193,12 @@ private fun ThemeOptionCard(
     Surface(
         modifier = modifier
             .height(sizing.settingsThemeCardHeight)
-            .clickable(onClick = onClick),
+            .testTag(FinanceTestTags.themeOption(themeMode))
+            .selectable(
+                selected = isSelected,
+                onClick = onClick,
+                role = Role.RadioButton
+            ),
         shape = RoundedCornerShape(sizing.settingsThemeCardCorner),
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(spacing.hairline * 2, borderColor)

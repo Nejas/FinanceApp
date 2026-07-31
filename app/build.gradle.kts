@@ -62,6 +62,15 @@ android {
     androidResources {
         generateLocaleConfig = true
     }
+    lint {
+        abortOnError = true
+        checkDependencies = true
+        checkReleaseBuilds = true
+        htmlReport = true
+        sarifReport = true
+        textReport = true
+        xmlReport = true
+    }
     testOptions {
         unitTests.isReturnDefaultValues = true
     }

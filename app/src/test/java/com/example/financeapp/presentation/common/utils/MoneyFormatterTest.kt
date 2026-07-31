@@ -3,8 +3,8 @@ package com.example.financeapp.presentation.common.utils
 import com.example.financeapp.domain.model.Currency
 import com.example.financeapp.domain.model.Money
 import java.util.Locale
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import org.junit.Assert.assertEquals
+import org.junit.Test
 
 class MoneyFormatterTest {
 
