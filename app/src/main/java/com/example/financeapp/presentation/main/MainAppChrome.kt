@@ -8,6 +8,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -33,14 +34,18 @@ internal fun MainAppTopBar(
     AnimatedContent(targetState = route.isMainRoute(), label = "MainAppTopBar") { isMainRoute ->
         if (isMainRoute) {
             AppTopBar(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .statusBarsPadding()
+                    .fillMaxWidth(),
                 selectedDate = selectedDate,
                 onAnalyticsClick = onAnalyticsClick,
                 onSettingsClick = onSettingsClick
             )
         } else {
             DetailTopBar(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .statusBarsPadding()
+                    .fillMaxWidth(),
                 title = androidx.compose.ui.res.stringResource(R.string.analytics_title),
                 onBackClick = onBackClick
             )

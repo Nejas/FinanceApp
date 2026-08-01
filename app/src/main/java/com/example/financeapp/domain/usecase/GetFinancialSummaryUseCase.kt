@@ -16,6 +16,8 @@ import com.example.financeapp.domain.model.TransactionSummary
 import com.example.financeapp.domain.model.TransactionsQuery
 import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.domain.repository.TransactionsRepository
+import java.time.Clock
+import java.time.LocalDate
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
@@ -31,6 +33,7 @@ class GetFinancialSummaryUseCase @Inject constructor(
     private val accountUseCases: AccountUseCases,
     private val categoryUseCase: CategoryUseCase,
     private val transactionsRepository: TransactionsRepository,
+    private val clock: Clock,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
@@ -57,8 +60,8 @@ class GetFinancialSummaryUseCase @Inject constructor(
                     val transactions = transactionsRepository.getTransactions(
                         TransactionsQuery(
                             accountIds = accounts.mapTo(mutableSetOf()) { account -> account.id },
-                            startDate = filter.startDate,
-                            endDate = filter.endDate
+                            startDate = filter.startDate ?: accounts.earliestCreatedDate(clock),
+                            endDate = filter.endDate ?: LocalDate.now(clock)
                         )
                     ).getOrThrow()
 
@@ -115,4 +118,8 @@ class GetFinancialSummaryUseCase @Inject constructor(
             categories = typeCategories
         )
     }
+}
+
+private fun List<Account>.earliestCreatedDate(clock: Clock): LocalDate? {
+    return minOfOrNull { account -> account.createdAt.atZone(clock.zone).toLocalDate() }
 }

@@ -39,7 +39,7 @@ private val DarkColorScheme = darkColorScheme(
     error = FinanceWarning,
     onError = FinancePrimary,
     errorContainer = FinanceWarningContainer,
-    onErrorContainer = ColorDarkOnWarningContainer,
+    onErrorContainer = FinanceWarning,
     tertiaryContainer = ColorDarkPendingSyncContainer,
     onTertiaryContainer = ColorDarkOnPendingSyncContainer
 )

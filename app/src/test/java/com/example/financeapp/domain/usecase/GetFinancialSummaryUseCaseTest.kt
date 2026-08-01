@@ -13,7 +13,10 @@ import com.example.financeapp.domain.model.TransactionType
 import com.example.financeapp.domain.repository.CategoriesRepository
 import com.example.financeapp.domain.repository.FinancialAccountsRepository
 import com.example.financeapp.domain.repository.TransactionsRepository
+import java.time.Clock
 import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneOffset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -57,7 +60,11 @@ class GetFinancialSummaryUseCaseTest {
         assertEquals(listOf(accounts.first()), accountsOverview.accounts)
         assertEquals(Money(amountInMinorUnits = 1_000), accountsOverview.totalBalance)
         assertEquals(
-            TransactionsQuery(accountIds = setOf(1L)),
+            TransactionsQuery(
+                accountIds = setOf(1L),
+                startDate = LocalDate.of(2026, 7, 20),
+                endDate = LocalDate.of(2026, 8, 1)
+            ),
             transactionsRepository.requestedQueries.single()
         )
         assertEquals(
@@ -78,6 +85,48 @@ class GetFinancialSummaryUseCaseTest {
         )
         assertEquals(listOf(10L), transactionsOverview.expenses.categories.map { category -> category.id })
         assertEquals(listOf(20L), transactionsOverview.income.categories.map { category -> category.id })
+    }
+
+    @Test
+    fun invoke_usesEarliestSelectedAccountCreationDateAsTransactionsStartDate() = runTest {
+        val transactionsRepository = FakeTransactionsRepository()
+        val useCase = createUseCase(
+            accountsRepository = FakeFinancialAccountsRepository(
+                accounts = listOf(
+                    account(
+                        id = 1,
+                        currency = Currency.RUB,
+                        balance = 1_000,
+                        createdAt = "2026-07-25T00:00:00Z"
+                    ),
+                    account(
+                        id = 2,
+                        currency = Currency.RUB,
+                        balance = 2_000,
+                        createdAt = "2026-07-20T00:00:00Z"
+                    ),
+                    account(
+                        id = 3,
+                        currency = Currency.USD,
+                        balance = 3_000,
+                        createdAt = "2026-07-01T00:00:00Z"
+                    )
+                )
+            ),
+            categoriesRepository = FakeCategoriesRepository(),
+            transactionsRepository = transactionsRepository
+        )
+
+        useCase(FinancialSummaryCriteria(currency = Currency.RUB))
+
+        assertEquals(
+            TransactionsQuery(
+                accountIds = setOf(1L, 2L),
+                startDate = LocalDate.of(2026, 7, 20),
+                endDate = LocalDate.of(2026, 8, 1)
+            ),
+            transactionsRepository.requestedQueries.single()
+        )
     }
 
     @Test
@@ -134,6 +183,7 @@ class GetFinancialSummaryUseCaseTest {
             ),
             categoryUseCase = CategoryUseCase(categoriesRepository),
             transactionsRepository = transactionsRepository,
+            clock = FixedClock,
             defaultDispatcher = Dispatchers.Unconfined
         )
     }
@@ -141,13 +191,14 @@ class GetFinancialSummaryUseCaseTest {
     private fun account(
         id: Long,
         currency: Currency,
-        balance: Long
+        balance: Long,
+        createdAt: String = "2026-07-20T00:00:00Z"
     ) = Account(
         id = id,
         name = "Account $id",
         balance = Money(amountInMinorUnits = balance, currency = currency),
         emoji = "card",
-        createdAt = Instant.parse("2026-07-20T00:00:00Z")
+        createdAt = Instant.parse(createdAt)
     )
 
     private fun category(
@@ -249,5 +300,12 @@ class GetFinancialSummaryUseCaseTest {
         ): Result<Transaction> = getTransaction(id)
 
         override suspend fun deleteTransaction(id: Long): Result<Unit> = Result.success(Unit)
+    }
+
+    private companion object {
+        val FixedClock: Clock = Clock.fixed(
+            Instant.parse("2026-08-01T09:00:00Z"),
+            ZoneOffset.UTC
+        )
     }
 }

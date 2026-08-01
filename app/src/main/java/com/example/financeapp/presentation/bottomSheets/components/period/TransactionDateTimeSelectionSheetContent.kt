@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -35,10 +36,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.financeapp.R
 import com.example.financeapp.core.theme.CustomPeriodActionTextStyle
-import com.example.financeapp.core.theme.FinanceDatePickerContainer
-import com.example.financeapp.core.theme.FinanceDatePickerSelectedDay
-import com.example.financeapp.core.theme.FinanceTimePickerContainer
-import com.example.financeapp.core.theme.FinanceTimePickerField
 import com.example.financeapp.core.theme.LocalSpacing
 import com.example.financeapp.core.theme.LocalSizing
 import com.example.financeapp.core.theme.TransactionTimePickerTitleTextStyle
@@ -73,8 +70,10 @@ internal fun TransactionDateSelectionScreen(
         val sizing = LocalSizing.current
         val closeDatePickerContentDescription =
             stringResource(R.string.transaction_date_picker_close)
+        val datePickerContainerColor = MaterialTheme.colorScheme.surfaceVariant
+        val datePickerAccentColor = MaterialTheme.colorScheme.primary
         val datePickerColors = DatePickerDefaults.colors(
-            containerColor = FinanceDatePickerContainer,
+            containerColor = datePickerContainerColor,
             titleContentColor = MaterialTheme.colorScheme.outline,
             headlineContentColor = MaterialTheme.colorScheme.onSurface,
             weekdayContentColor = MaterialTheme.colorScheme.onSurface,
@@ -82,9 +81,9 @@ internal fun TransactionDateSelectionScreen(
             navigationContentColor = MaterialTheme.colorScheme.outline,
             dayContentColor = MaterialTheme.colorScheme.onSurface,
             selectedDayContentColor = MaterialTheme.colorScheme.onPrimary,
-            selectedDayContainerColor = FinanceDatePickerSelectedDay,
-            todayContentColor = FinanceDatePickerSelectedDay,
-            todayDateBorderColor = FinanceDatePickerSelectedDay,
+            selectedDayContainerColor = datePickerAccentColor,
+            todayContentColor = datePickerAccentColor,
+            todayDateBorderColor = datePickerAccentColor,
             dividerColor = MaterialTheme.colorScheme.outlineVariant
         )
 
@@ -153,6 +152,8 @@ internal fun TransactionDateSelectionScreen(
                         thickness = spacing.hairline
                     )
                     TransactionDatePickerActions(
+                        containerColor = datePickerContainerColor,
+                        contentColor = datePickerAccentColor,
                         onCancelClick = onDismissRequest,
                         onApplyClick = {
                             dateRangePickerState.selectedStartDateMillis
@@ -167,6 +168,8 @@ internal fun TransactionDateSelectionScreen(
 
 @Composable
 private fun TransactionDatePickerActions(
+    containerColor: Color,
+    contentColor: Color,
     onCancelClick: () -> Unit,
     onApplyClick: () -> Unit
 ) {
@@ -177,7 +180,7 @@ private fun TransactionDatePickerActions(
         modifier = Modifier
             .fillMaxWidth()
             .height(sizing.transactionDatePickerActionBarHeight)
-            .background(FinanceDatePickerContainer)
+            .background(containerColor)
             .padding(horizontal = spacing.transactionDatePickerActionsHorizontal),
         horizontalArrangement = Arrangement.spacedBy(
             space = spacing.transactionDatePickerActionsGap,
@@ -189,14 +192,14 @@ private fun TransactionDatePickerActions(
             Text(
                 text = stringResource(R.string.picker_cancel),
                 style = CustomPeriodActionTextStyle,
-                color = FinanceDatePickerSelectedDay
+                color = contentColor
             )
         }
         TextButton(onClick = onApplyClick) {
             Text(
                 text = stringResource(R.string.picker_apply),
                 style = CustomPeriodActionTextStyle,
-                color = FinanceDatePickerSelectedDay
+                color = contentColor
             )
         }
     }
@@ -229,10 +232,11 @@ internal fun TransactionTimeSelectionSheetContent(
         initialMinute = selectedTime.minute,
         is24Hour = true
     )
+    val timePickerContainerColor = MaterialTheme.colorScheme.surfaceVariant
     val timePickerColors = TimePickerDefaults.colors(
-        containerColor = FinanceTimePickerContainer,
+        containerColor = timePickerContainerColor,
         timeSelectorSelectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-        timeSelectorUnselectedContainerColor = FinanceTimePickerField,
+        timeSelectorUnselectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
         timeSelectorSelectedContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
         timeSelectorUnselectedContentColor = MaterialTheme.colorScheme.onSurface
     )
@@ -241,7 +245,7 @@ internal fun TransactionTimeSelectionSheetContent(
         modifier = Modifier
             .fillMaxWidth()
             .height(sizing.transactionTimePickerSheetHeight),
-        color = FinanceTimePickerContainer
+        color = timePickerContainerColor
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
